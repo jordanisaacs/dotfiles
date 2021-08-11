@@ -10,6 +10,12 @@
       ./hardware-configuration.nix
     ];
 
+  # Make ready for nix flakes
+  nix.package = pkgs.nixFlakes;
+  nix.extraOptions = ''
+    experimental-features = nix-command flakes
+  '';
+
   # Use the GRUB  EFI boot loader.
   boot.loader = {
     efi = {
@@ -66,11 +72,6 @@
   services.xserver.displayManager.sddm.enable = true;
   services.xserver.desktopManager.plasma5.enable = true;
   
-
-
-  # Shells
-  programs.zsh.enable = true;
-  
   # Configure keymap in X11
   # services.xserver.layout = "us";
   # services.xserver.xkbOptions = "eurosign:e";
@@ -106,6 +107,9 @@
     firefox
     git
   ];
+
+  # touchscreen for firefox
+  environment.variables.MOZ_USE_XINPUT2 = "1";
 
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.

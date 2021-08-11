@@ -20,11 +20,22 @@
   home.stateVersion = "21.05";
 
 
+  nixpkgs.config.allowUnfree = true;
+
+  fonts.fontconfig.enable = true;
+
+  programs.firefox = {
+    enable = true;
+    extension = with pkgs.nur.repos.rycee.firef
+  };
+
   home.packages = with pkgs; [
     alacritty
     obsidian
     bitwarden
     git-crypt
+    discord
+    (nerdfonts.override { fonts = [ "FiraCode" ]; })
   ];
 
   home.file = {
