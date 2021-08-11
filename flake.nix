@@ -41,7 +41,7 @@
   in {
     homeManagerConfigurations = {
       jd = user.mkHMUser {
-        roles = [ "git" "alacritty" "gpg" "applications" ];
+        roles = [ "git" "alacritty" "gpg" "applications" "dwm" ];
         username = "jd";
       };
     };
@@ -54,7 +54,7 @@
         initrdMods = [ "xhci_pci" "nvme" "usb_storage" "sd_mod" "rtsx_pci_sdmmc" ];
         kernelMods = [ "kvm-intel" ];
         kernelParams = [];
-        roles = [ "efi" "core" "kde" ];
+        roles = [ "efi" "core" "desktop-xorg" ];
         users = [{
           name = "jd";
           groups = [ "wheel" "networkmanager" ];
