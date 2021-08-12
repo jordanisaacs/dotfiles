@@ -6,11 +6,7 @@
   services.xserver = {
     enable = true;
     libinput.enable = true;
-
-    displayManager = {
-      job.logToJournal = true;
-      startx.enable = true;
-    };
+    displayManager.startx.enable = true;
   };
 
   environment.etc = {
@@ -20,7 +16,7 @@
       if [ -f "$HOME/.profile" ]; then
         . "$HOME/.profile"
       fi
-      if [ -z "$DISPLAY" ] && [ $TTY == '/dev/tty1' ]; then
+      if [ -z "$DISPLAY" ] && [ $TTY == "/dev/tty1" ]; then
         exec startx
       fi
     '';

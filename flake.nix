@@ -41,7 +41,7 @@
   in {
     homeManagerConfigurations = {
       jd = user.mkHMUser {
-        roles = [ "git" "alacritty" "gpg" "applications" "dwm" ];
+        roles = [ "git" "alacritty" "gpg" "applications" "desktop/dwm" ];
         username = "jd";
       };
     };

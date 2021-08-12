@@ -25,15 +25,21 @@ in {
   hardware.enableRedistributableFirmware = lib.mkDefault true;
 
   environment.systemPackages = with pkgs; [
-    neovimJD
     wget
     curl
     zsh
+    neofetch
+    pstree
+    htop
+    acpi
+
     git
     git-crypt
 
     nix-index
     manix
+
+    neovimJD
 
     scripts.sysTool
   ];

@@ -90,7 +90,7 @@ in {
       ;;
 
       "installed")
-        nix-store -q -R /run/current-system | sed -n -e 's/\nix\/'
+        nix-store -q -R /run/current-system | sed -n -e 's/\nix\/store\/[0-9a-z]\{32\}-//p' | sort | uniq
       ;;
 
       "which")
