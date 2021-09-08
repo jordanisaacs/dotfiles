@@ -9,7 +9,8 @@ with lib;
         if [ -z "$DBUS_SESSION_BUS_ADDRESS" ]; then
           eval $(dbus-launch --exit-with-session --sh-syntax)
         fi
-        systemctl --user import-environment DISPLAY XAUTHORITY
+        
+        systemctl --user import-environment DISPLAY XAUTHORITY XDG_SESSION_ID
         
         if command -v dbus-update-activation-environment >/dev/null 2>&1; then
           dbus-update-activation-environment DISPLAY XAUTHORITY
@@ -17,6 +18,7 @@ with lib;
 
         systemctl --user start graphical-session.target
 
+        xset s 180 300
         ${args.startCommand}
 
         systemctl --user stop graphical-session.target

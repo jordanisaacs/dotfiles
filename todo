@@ -1,0 +1,25 @@
+Packages
+- Create a jdpkgs user flake repo
+- neovim
+  - setup a good C environment - DONE
+  - start blog - IN PROGRESS
+- dwm
+  - Get systray working
+- Firefox
+  - chrome css for good tree style tabs
+  - Third party plugins (for bypass-paywall)
+- st - COMPLETE
+- zsh
+  - powerlevel10k
+  - vim mode
+  - bindings
+- nnn
+  - figure out xdg and default programs
+  - add to user/applications
+
+
+System
+- Switch to pipewire - DONE
+  - enable media control keys (maybe user?) - DONE
+- Test bluetooth with wh-xm4 and wf-xm3
+- Debug gnome-keyring and get it to work on startup - DONE

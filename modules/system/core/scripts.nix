@@ -20,7 +20,7 @@ in {
 
       "update")
         echo "Updating nixos flake..."
-        pushd ~/.nixos
+        pushd ~/.dotfiles
         nix flake update
         popd
       ;;
@@ -32,7 +32,7 @@ in {
 
       "save")
         echo "Saving changes"
-        pushd ~/.nixos
+        pushd ~/.dotfiles
         git diff
         git add .
         git commit
@@ -80,12 +80,6 @@ in {
         #--impure is required so package can reach out to /etc/hmsystemdata.json
         nix build --impure .#homeManagerConfigurations.$USER.activationPackage
         ./result/activate
-        popd
-      ;;
-
-      "shell")
-        pushd ~/.dotfiles
-        nix develop .#shells.$2 --command zsh
         popd
       ;;
 

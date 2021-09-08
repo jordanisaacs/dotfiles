@@ -8,7 +8,7 @@ let
   login = (import ../shared/login.nix) args;
 in lib.recursiveUpdate {
   home.packages = with pkgs; [
-    dwm st
+    dwm st dmenu
   ];} login
 
 

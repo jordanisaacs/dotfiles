@@ -1,11 +1,15 @@
 { config, pkgs, lib, ... }:
 {
-  sound.enable = true;
   hardware.pulseaudio.enable = true;
 
   services.xserver = {
     enable = true;
-    libinput.enable = true;
+    libinput = {
+      enable = true;
+      touchpad = {
+        naturalScrolling = true;
+      };
+    };
     displayManager.startx.enable = true;
   };
 

@@ -1,35 +1,36 @@
 { pkgs, home-manager, lib, system, overlays, ... }:
 with builtins;
 {
-  mkHMUser = {roles, username}:
+  mkHMUser = {userConfig, username}:
     home-manager.lib.homeManagerConfiguration {
       inherit system username pkgs;
       stateVersion = "21.05";
-      configuration = let
-        mkRole = name: import (../roles/users +"/${name}");
-        mod_roles = map (r: mkRole r) roles;
-        trySettings = tryEval(fromJson(readFile(/etc/hmsystemdata.json)));
-        machineData = if trySettings.success then trySettings.value else {};
+      configuration =
+        let
+          trySettings = tryEval (fromJSON (readFile /etc/hmsystemdata.json));
+          machineData = if trySettings.success then trySettings.value else {};
 
-        machineModule = { pkgs, config, lib, ... }: {
-          options.machineData = lib.mkOption {
-            default = {};
-            description = "Settings passed from nixos system configuration. If not present will be empty";
+          machineModule = { pkgs, config, lib, ... }: {
+            options.machineData = lib.mkOption {
+              default = {};
+              description = "Settings passed from nixos system configuration. If not present will be empty";
+            };
+
+            config.machineData = machineData;
           };
+        in {
+          jd = userConfig;
 
-          config.machineData = machineData;
+          nixpkgs.overlays = overlays;
+          nixpkgs.config.allowUnfree = true;
+
+          systemd.user.startServices = true;
+          home.stateVersion = "21.05";
+          home.username = username;
+          home.homeDirectory = "/home/${username}";
+
+          imports = [ ../modules/users machineModule ];
         };
-      in {
-        nixpkgs.overlays = overlays;
-        nixpkgs.config.allowUnfree = true;
-
-        systemd.user.startServices = true;
-        home.stateVersion = "21.05";
-        home.username = username;
-        home.homeDirectory = "/home/${username}";
-
-        imports = mod_roles ++ [machineModule];
-      };
       homeDirectory = "/home/${username}";
     };
   

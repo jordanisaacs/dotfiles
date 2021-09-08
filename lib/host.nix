@@ -8,9 +8,8 @@ with builtins;
     kernelMods,
     kernelParams,
     kernelPackage,
-    roles,
+    systemConfig,
     cpuCores,
-    laptop,
     users,
     wifi ? [],
     gpuTempSensor ? null,
@@ -22,19 +21,19 @@ with builtins;
     }) NICs);
 
     userCfg = {
-      inherit name NICs roles cpuCores laptop gpuTempSensor cpuTempSensor;
+      inherit name NICs systemConfig cpuCores gpuTempSensor cpuTempSensor;
     };
 
-    roles_mods = (map (r: mkRole r) roles );
     sys_users = (map (u: user.mkSystemUser u) users);
-    
-    mkRole = name: (../roles + "/${name}");
+
   in lib.nixosSystem {
     inherit system;
 
     modules = [
       {
-        imports = [ ../modules ] ++ roles_mods ++ sys_users;
+        imports = [ ../modules/system ] ++ sys_users;
+
+        jd = systemConfig;
 
         environment.etc = {
           "hmsystemdata.json".text = toJSON userCfg;

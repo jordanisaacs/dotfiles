@@ -9,17 +9,16 @@
       enable = true;
       devices = [ "nodev" ];
       efiSupport = true;
+      useOSProber = true;
+      version = 2;
       extraEntries = ''
-        menuentry "Windows 10" {
-          insmod part_gpt
-          insmod fat
-          insmod search_fs_uuid
-          insmod chain
-          search --fs-uuid --set=root C2B6-255C
-          chainload /EFI/Microsoft/Boot/bootmgfw.efi
+        menuentry "Reboot" {
+          reboot
+        }
+        menuentry "Power off" {
+          halt
         }
       '';
-      version = 2;
     };
   };
 

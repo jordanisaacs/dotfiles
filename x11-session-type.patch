@@ -1,0 +1,45 @@
+From: Jordan Isaacs <github@jdisaacs.com>
+Date: Thu, 2 Sep 2021 16:54:51 -0700
+Subject: [PATCH] Set systemd type to x11
+
+---
+ hw/xfree86/os-support/linux/systemd-logind.c | 23 ++++++++++++++++++++
+ 1 file changed, 23 insertions(+)
+
+diff --git a/hw/xfree86/os-support/linux/systemd-logind.c b/hw/xfree86/os-support/linux/systemd-logind.c
+index 13784d1..39ef825 100644
+--- a/hw/xfree86/os-support/linux/systemd-logind.c
++++ b/hw/xfree86/os-support/linux/systemd-logind.c
+@@ -526,6 +526,29 @@ connect_hook(DBusConnection *connection, void *data)
+         goto cleanup;
+     }
+ 
++    msg = dbus_message_new_method_call("org.freedesktop.login1",
++            session, "org.freedesktop.login1.Session", "SetType");
++    if (!msg) {
++        LogMessage(X_ERROR, "systemd-logind: out of memory\n");
++        goto cleanup;
++    }
++
++    const char *type;
++    type = "x11";
++    if (!dbus_message_append_args(msg, DBUS_TYPE_STRING, &type,
++                                  DBUS_TYPE_INVALID)) {
++        LogMessage(X_ERROR, "systemd-logind: out of memory\n");
++        goto cleanup;
++    }
++
++    reply = dbus_connection_send_with_reply_and_block(connection, msg,
++                                                      DBUS_TIMEOUT_USE_DEFAULT, &error);
++    if (!reply) {
++        LogMessage(X_ERROR, "systemd-logind: SetType failed: %s\n",
++                   error.message);
++        goto cleanup;
++    }
++
+     /*
+      * HdG: This is not useful with systemd <= 208 since the signal only
+      * contains invalidated property names there, rather than property, val
+-- 
+2.32.0
+
