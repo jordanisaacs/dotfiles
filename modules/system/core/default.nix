@@ -26,7 +26,7 @@ in {
     environment.shells = [ pkgs.zsh pkgs.bash ];
 
     i18n.defaultLocale = "en_US.UTF-8";
-    time.timeZone = "America/Los_Angeles";
+    time.timeZone = "America/New_York";
 
     powerManagement.cpuFreqGovernor = lib.mkDefault "performance";
     hardware.enableRedistributableFirmware = lib.mkDefault true;
