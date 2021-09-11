@@ -34,9 +34,10 @@
   outputs = { nixpkgs, home-manager, nur, neovim-flake, st-flake, dwm-flake, ... }@inputs:
   let
     inherit (nixpkgs) lib;
-    inherit (lib) attrValues;
 
-    util = import ./lib { inherit system pkgs home-manager lib; overlays = (pkgs.overlays); };
+    util = import ./lib {
+      inherit system pkgs home-manager lib; overlays = (pkgs.overlays);
+    };
 
     inherit (util) user;
     inherit (util) host;
