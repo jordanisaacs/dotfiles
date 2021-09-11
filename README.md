@@ -2,6 +2,9 @@
 
 My NixOS dotfiles for both system and users (home-manager).
 
+## Follow Along
+
+Follow along with my NixOS evolution and things I learn along the way: [NixOS Desktop Series](https://jdisaacs.com/series/nixos-desktop/)
 
 ## Credit
 
