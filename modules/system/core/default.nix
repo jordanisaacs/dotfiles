@@ -2,7 +2,6 @@
 with lib;
 
 let
-  scripts = import ./scripts.nix { inherit pkgs; };
   cfg = config.jd.core;
 in {
   options.jd.core = {
@@ -32,31 +31,41 @@ in {
     hardware.enableRedistributableFirmware = lib.mkDefault true;
 
     environment.systemPackages = with pkgs; [
-      wget
-      curl
-      zsh
       unzip
       neofetch
-      pstree
+
+      # Shells
+      zsh
+
+      # Processors
+      jq
+      gawk
+      gnused
+
+      # Downloaders
+      wget
+      curl
 
       # system monitors
       bottom
       htop
       acpi
+      pstree
 
+      # version ocntrol
       git
       git-crypt
 
+      # Nix tools
       nix-index
       manix
 
+      # Text editor
       neovimJD
 
-      scripts.sysTool
+      # Scripts
+      scripts.sysTools
     ];
-
-    programs.dconf.enable = true;
-    services.dbus.packages = with pkgs; [ gnome.dconf ];
 
     security.sudo.extraConfig = "Defaults env_reset,timestamp_timeout=5";
     security.sudo.execWheelOnly = true;

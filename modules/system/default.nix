@@ -5,7 +5,7 @@
     ./boot
     ./core
     ./desktop-xorg
-    ./keyring
+    ./gnome
     ./laptop
   ];
 }

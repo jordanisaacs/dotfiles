@@ -55,8 +55,11 @@ in {
       startCommand = "${pkgs.dwmJD}/bin/dwm";
     in {
       home.packages = mkIf (cfg.type == "dwm") (with pkgs; [
-        dwmJD stJD dmenu xbindkeys pavucontrol pulsemixer
-      ]);
+        dwmJD stJD dmenu xbindkeys
+      ] ++ (if systemCfg.connectivity.sound.enable then [
+        pavucontrol
+        pasystray
+      ] else []));
 
       home.file.".xinitrc" = mkIf (isStartX) {
         executable = true;
@@ -90,19 +93,19 @@ in {
         '';
       };
 
-      home.file.".xbindkeysrc" = mkIf (cfg.type == "dwm") {
+      home.file.".xbindkeysrc" = mkIf (cfg.type == "dwm" && systemCfg.connectivity.sound.enable) {
         text = ''
           # Mute volume
-          "pactl set-sink-mute @DEFAULT_SINK@ toggle"
+          "${pkgs.scripts.soundTools}/bin/stools vol toggle"
             XF86AudioMute
           # Raise volume
-          "pulsemixer --change-volume +2 --max-volume 150"
+          "${pkgs.scripts.soundTools}/bin/stools vol up"
             XF86AudioRaiseVolume
           # Lower volume
-          "pactl set-sink-volume @DEFAULT_SINK@ -2%"
+          "${pkgs.scripts.soundTools}/bin/stools vol down"
             XF86AudioLowerVolume
           # Mute microphone
-          "pactl set-source-mute @DEFAULT_SOURCE@ toggle"
+          "${pkgs.scripts.soundTools}/bin/stools mic toggle"
             XF86AudioMicMute
         '';
       };
