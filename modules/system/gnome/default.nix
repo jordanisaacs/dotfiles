@@ -18,12 +18,10 @@ in {
         default = false;
       };
 
-      gui = {
-        enable = mkOption {
-          description = "Enable gui for gnome-keyring [seahorse]";
-          type = types.bool;
-          default = false;
-        };
+      gui.enable = mkOption {
+        description = "Enable seahorse (gnome-keyring gui)";
+        type = types.bool;
+        default = false;
       };
     };
 
@@ -37,7 +35,7 @@ in {
     ];
 
     programs = {
-      seahorse.enable = (cfg.keyring.enable && cfg.keyring.gui.enable);
+      seahorse.enable = cfg.keyring.enable && cfg.keyring.gui.enable;
     };
 
     services = {

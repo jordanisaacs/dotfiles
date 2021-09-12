@@ -71,10 +71,13 @@ in {
             eval $(dbus-launch --exit-with-session --sh-syntax)
           fi
           
+          # Need to import XDG_SESSION_ID & PATH for xss-lock and xsecurelock respectively
           systemctl --user import-environment DISPLAY XAUTHORITY XDG_SESSION_ID PATH
           
+          # https://bbs.archlinux.org/viewtopic.php?id=224652
+          # Requires --systemd becuase of gnome-keyring error. Unsure how differs from systemctl --user import-environment
           if command -v dbus-update-activation-environment >/dev/null 2>&1; then
-            dbus-update-activation-environment DISPLAY XAUTHORITY
+            dbus-update-activation-environment --systemd DISPLAY XAUTHORITY
           fi
 
           systemctl --user start graphical-session.target
