@@ -1,6 +1,5 @@
 {
   description = "System Config";
-
   inputs = {
     nixpkgs.url = "nixpkgs/nixos-unstable";
     
@@ -43,8 +42,12 @@
       inherit pkgs lib;
     };
 
+    inherit (import ./pkgs {
+      inherit pkgs;
+    }) myPkgs;
+
     inherit (import ./overlays {
-      inherit system pkgs lib nur neovim-flake st-flake dwm-flake scripts;
+      inherit system pkgs lib nur neovim-flake st-flake dwm-flake scripts myPkgs;
     }) overlays;
 
     inherit (util) user;
@@ -70,6 +73,10 @@
           gpg.enable = true;
           git.enable = true;
           zsh.enable = true;
+          ssh = {
+            enable = true;
+            kerberos.enable = true;
+          };
         };
         username = "jd";
       };
@@ -93,6 +100,7 @@
             enable = true;
             keyring = {
               enable = true;
+              gui.enable = true;
             };
           };
           connectivity = {

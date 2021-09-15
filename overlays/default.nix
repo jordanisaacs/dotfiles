@@ -1,4 +1,4 @@
-{ pkgs, nur, dwm-flake, neovim-flake, st-flake, scripts, system, lib }:
+{ pkgs, nur, dwm-flake, neovim-flake, st-flake, scripts, system, lib, myPkgs }:
 {
   overlays = [
     nur.overlay
@@ -20,6 +20,7 @@
       };
       dwmJD = dwm-flake.packages.${system}.dwmJD;
       stJD = st-flake.packages.${system}.stJD;
+      inherit myPkgs;
     })
   ];
 }

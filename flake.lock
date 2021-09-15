@@ -254,11 +254,11 @@
         "vim-vsnip": "vim-vsnip"
       },
       "locked": {
-        "lastModified": 1631143624,
-        "narHash": "sha256-Xa/DX0JQ13QgEK4pq/2k8+1msH4yitzgcR0TpLE/jEc=",
+        "lastModified": 1631671389,
+        "narHash": "sha256-JRxFzuUOec1H7t328jKY09U4PAlDHFE3OfDyWe5/wI8=",
         "owner": "jordanisaacs",
         "repo": "neovim-flake",
-        "rev": "9c7cf610a9782bda4dcb7103e4c050ae90d98b6c",
+        "rev": "35793124b8e6612ec79385210e4b4bbeff7e7c75",
         "type": "github"
       },
       "original": {

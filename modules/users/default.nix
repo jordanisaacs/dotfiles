@@ -7,5 +7,6 @@
     ./git
     ./gpg
     ./zsh
+    ./ssh
   ];
 }
