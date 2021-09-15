@@ -57,6 +57,7 @@ in {
       git-crypt
 
       # Nix tools
+      patchelf
       nix-index
       manix
 

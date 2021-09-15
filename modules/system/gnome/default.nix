@@ -31,8 +31,10 @@ in {
     programs.dconf.enable = true;
 
     environment.systemPackages = with pkgs; [
-      (if cfg.keyring.enable then libsecret else null)
-    ];
+    ] ++ (if cfg.keyring.enable then [
+      libsecret
+      myPkgs.lssecret
+    ] else []);
 
     programs = {
       seahorse.enable = cfg.keyring.enable && cfg.keyring.gui.enable;
