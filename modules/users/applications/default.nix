@@ -37,6 +37,7 @@ in {
 
       # Messaging
       slack
+      weechat
 
       # Video conference
       zoom-us
