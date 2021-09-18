@@ -9,16 +9,19 @@ sgdisk -n3:0:+${RAM}GiB             -t3:8300    -c3:"swap space (hibernation)"  
 sgdisk -n4:0:"$(sgdisk -E "$DISK")" -t4:8300    -c4:"root filesystem"           "$DISK"
 
 cryptsetup luksFormat   "${DISK}p2" --type luks2   
+cryptsetup config       "${DISK}p3" --label NIXKEY
 cryptsetup luksOpen     "${DISK}p2" cryptkey
 dd if=/dev/urandom of=/dev/mapper/cryptkey
 
 
-cryptsetup luksFormat   "${DISK}p3" --key-file=/dev/mapper/cryptkey 
+cryptsetup luksFormat   "${DISK}p3" --key-file=/dev/mapper/cryptkey --type luks2
+cryptsetup config       "${DISK}p3" --label NIXSWAP
 cryptsetup luksOpen     "${DISK}p3" --key-file=/dev/mapper/cryptkey cryptswap
-mkswap -L DECRYPTNIXSWAP
+mkswap -L DECRYPTNIXSWAP /dev/mapper/cryptswap
 swapon /dev/disk/by-label/DECRYPTNIXSWAP
 
-cryptsetup luksFormat   "${DISK}p4"
+cryptsetup luksFormat   "${DISK}p4" --type luks2
+cryptsetup config       "${DISK}p4" --label NIXROOT
 cryptsetup luksAddKey   "${DISK}p4" /dev/mapper/cryptkey
 cryptsetup luksOpen     "${DISK}p4" --key-file=/dev/mapper/cryptkey cryptroot
 mkfs.ext4 -L DECRYPTNIXROOT /dev/mapper/cryptroot
