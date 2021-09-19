@@ -38,6 +38,9 @@
     strace
     ltrace
 
+    # Setup script(s)
+    scripts.setupTools
+
     # text editor
     neovimJD
 

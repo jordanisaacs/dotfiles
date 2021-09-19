@@ -7,7 +7,7 @@
     enable = true;
     displayManager.sddm.enable = true;
 
-    desktopManager.kde5 = {
+    desktopManager.plasma5 = {
       enable = true;
     };
   };
