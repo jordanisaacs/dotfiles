@@ -27,12 +27,13 @@ in {
 
     systemd = {
       # Replace suspend mode with hybrid-sleep. So can do hybrid-sleep then hibernate
+      # hybrid-sleep broken on framework: https://community.frame.work/t/issues-with-sleep-states-on-linux/7363
       sleep.extraConfig = ''
-        SuspendMode=suspend
-        SuspendState=disk
-        HibernateMode=shutdown
-        HibernateState=disk
         HibernateDelaySec=30min
+        ${ if config.networking.hostName != "framework" then ''
+          SuspendMode=suspend
+          SuspendState=disk
+        '' else ""}
       '';
     };
 

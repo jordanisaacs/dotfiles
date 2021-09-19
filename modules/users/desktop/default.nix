@@ -84,6 +84,7 @@ in {
 
           systemctl --user start graphical-session.target
 
+          ${if config.machineData.name == "framework" then "xrandr --output eDP-1 --scale 1.5x1.5" else ""}
           xset s ${toString cfg.screenlock.timeout.time} ${toString cfg.screenlock.lock.time}
           ${pkgs.xbindkeys}/bin/xbindkeys
           ${startCommand}
