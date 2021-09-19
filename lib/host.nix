@@ -1,6 +1,30 @@
 { system, pkgs, home-manager, lib, user, ... }:
 with builtins;
 {
+  mkISO = { name, initrdMods, kernelMods, kernelParams, kernelPackage, systemConfig }: lib.nixosSystem {
+    inherit system;
+
+    specialArgs = {};
+
+    modules = [
+      {
+        imports = [ ../modules/iso ];
+
+        networking.hostName = "${name}";
+        networking.networkmanager.enable = true;
+        networking.useDHCP = false;
+
+        boot.initrd.availableKernelModules = initrdMods;
+        boot.kernelModules = kernelMods;
+
+        boot.kernelParams = kernelParams;
+        boot.kernelPackages = kernelPackage;
+
+        nixpkgs.pkgs = pkgs;
+      }
+    ];
+  };
+
   mkHost = {
     name,
     NICs,

@@ -8,12 +8,9 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    neovim-flake = {
-      url = "github:jordanisaacs/neovim-flake";
+    neovim-flake = { url = "github:jordanisaacs/neovim-flake";
       inputs.nixpkgs.follows = "nixpkgs";
-      inputs.flake-utils.follows = "flake-utils";
-    };
-
+      inputs.flake-utils.follows = "flake-utils"; };
     st-flake = {
       url = "github:jordanisaacs/st-flake";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -62,6 +59,16 @@
     system = "x86_64-linux";
 
   in {
+    installMedia = {
+      kde = host.mkISO {
+        name = "nixos";
+        kernelPackage = pkgs.linuxPackages_latest;
+        initrdMods = [ "xhci_pci" "ahci" "usb_storage" "sd_mod" "nvme" "usbhid" ];
+        kernelMods = [ "kvm-intel" "kvm-amd" ];
+        kernelParams = [ ];
+        systemConfig = { };
+      };
+    };
     homeManagerConfigurations = {
       jd = user.mkHMUser {
         userConfig = {
@@ -73,9 +80,9 @@
           gpg.enable = true;
           git.enable = true;
           zsh.enable = true;
-          ssh = {
+          office365 = {
             enable = true;
-            kerberos.enable = true;
+            onedriver.enable = false; # pkg currently broken
           };
         };
         username = "jd";
@@ -100,7 +107,6 @@
             enable = true;
             keyring = {
               enable = true;
-              gui.enable = true;
             };
           };
           connectivity = {

@@ -1,5 +1,7 @@
 { pkgs, lib }:
 let
+  # following script from:
+  # https://github.com/wiltaylor/dotfiles/blob/master/roles/core/scripts.nix
   sysTools = with pkgs; writeScriptBin "sys" ''
     #!${runtimeShell}
     if [ -n "$INNIXSHELLHOME" ]; then
@@ -38,7 +40,7 @@ let
         git push
       ;;
 
-      "find")
+      "search")
         if [ $2 = "--overlay" ]; then
           pushd ~/.dotfiles
           nix search .# $3
@@ -81,11 +83,30 @@ let
         popd
       ;;
 
-      "installed")
-        nix-store -q -R /run/current-system | sed -n -e 's/\nix\/store\/[0-9a-z]\{32\}-//p' | sort | uniq
+      "iso")
+        echo "Building iso file $2"
+        pushd ~/.dotfiles
+        nix build ".#installMedia.$2.config.system.build.isoImage"
+
+        if [ -z "$3" ]; then
+          echo "ISO Image is located at ~/.dotfiles/result/iso/nixos.iso"
+        elif [ $3 = "--burn" ]; then
+          if [ -z "$4" ]; then
+            echo "Expected path to a usb drive following --burn"
+          else
+            sudo dd if=./result/iso/nixos.iso of=$4 status=progress bs=1M
+          fi
+        else
+          echo "Unexpected option $3. Expected --burn"
+        fi
+        popd
       ;;
 
-      "which")
+      "installed")
+        nix-store -qR /run/current-system | sed -n -e 's/\/nix\/store\/[0-9a-z]\{32\}-//p' | sort | uniq
+      ;;
+
+      "depends")
         nix-store -qR $(which $2)
       ;;
 
