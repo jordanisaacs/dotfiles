@@ -61,6 +61,8 @@ in {
         pasystray
       ] else []));
 
+      xdg.enable = true;
+
       home.file.".xinitrc" = mkIf (isStartX) {
         executable = true;
         text = ''
@@ -72,7 +74,7 @@ in {
           fi
           
           # Need to import XDG_SESSION_ID & PATH for xss-lock and xsecurelock respectively
-          systemctl --user import-environment DISPLAY XAUTHORITY XDG_SESSION_ID PATH
+          systemctl --user import-environment DISPLAY XAUTHORITY XDG_SESSION_ID PATH XDG_CONFIG_HOME
           
           # https://bbs.archlinux.org/viewtopic.php?id=224652
           # Requires --systemd becuase of gnome-keyring error. Unsure how differs from systemctl --user import-environment

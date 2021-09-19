@@ -8,5 +8,6 @@
     ./gpg
     ./zsh
     ./ssh
+    ./office365
   ];
 }

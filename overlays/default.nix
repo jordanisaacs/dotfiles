@@ -20,6 +20,13 @@
       };
       dwmJD = dwm-flake.packages.${system}.dwmJD;
       stJD = st-flake.packages.${system}.stJD;
+      weechatJD = prev.weechat.override {
+        configure = { availablePlugins , ... }: {
+          scripts = with prev.weechatScripts; [
+            weechat-matrix
+          ];
+        };
+      };
       inherit myPkgs;
     })
   ];
