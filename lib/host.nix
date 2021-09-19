@@ -35,7 +35,9 @@ with builtins;
     systemConfig,
     cpuCores,
     users,
+    stateVersion ? "21.05",
     wifi ? [],
+    passthru ? {},
     gpuTempSensor ? null,
     cpuTempSensor ? null
   }:
@@ -78,8 +80,9 @@ with builtins;
         nixpkgs.pkgs = pkgs;
         nix.maxJobs = lib.mkDefault cpuCores;
 
-        system.stateVersion = "21.05";
+        system.stateVersion = stateVersion;
       }
+      passthru
     ];
   };
 }

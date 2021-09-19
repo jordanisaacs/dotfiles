@@ -58,6 +58,38 @@
 
     system = "x86_64-linux";
 
+    laptopConfig = {
+      core.enable = true;
+      boot = "encrypted-efi";
+      laptop = {
+        enable = true;
+      };
+      gnome = {
+        enable = true;
+        keyring = {
+          enable = true;
+        };
+      };
+      connectivity = {
+        bluetooth.enable = true;
+        sound.enable = true;
+        printing.enable = true;
+      };
+      xserver = {
+        enable = true;
+        display-manager = {
+          type = "startx";
+        };
+      };
+    };
+    
+    laptopUsers = [{
+      name = "jd";
+      groups = [ "wheel" "networkmanager" "video" ];
+      uid = 1000;
+      shell = pkgs.zsh;
+    }];
+
   in {
     installMedia = {
       kde = host.mkISO {
@@ -97,37 +129,25 @@
         initrdMods = [ "xhci_pci" "nvme" "usb_storage" "sd_mod" "rtsx_pci_sdmmc" ];
         kernelMods = [ "kvm-intel" ];
         kernelParams = [];
-        systemConfig = {
-          core.enable = true;
-          boot = "encrypted-efi";
-          laptop = {
-            enable = true;
-          };
-          gnome = {
-            enable = true;
-            keyring = {
-              enable = true;
-            };
-          };
-          connectivity = {
-            bluetooth.enable = true;
-            sound.enable = true;
-            printing.enable = true;
-          };
-          xserver = {
-            enable = true;
-            display-manager = {
-              type = "startx";
-            };
-          };
-        };
-        users = [{
-          name = "jd";
-          groups = [ "wheel" "networkmanager" "video" ];
-          uid = 1000;
-          shell = pkgs.zsh;
-        }];
+        systemConfig = laptopConfig;
+        users = laptopUsers;
         cpuCores = 4;
+      };
+
+      framework = host.mkHost {
+        name = "framework";
+        NICs = [ "wlp170s0" ];
+        kernelPackage = pkgs.linuxPackages_latest;
+        initrdMods = [ "xhci_pci" "thunderbolt" "nvme" "usb_storage" "sd_mod" ];
+        kernelMods = [ "kvm-intel" ];
+        kernelParams = [];
+        systemConfig = laptopConfig;
+        users = laptopUsers;
+        cpuCores = 8;
+        passthru = {
+          hardware.video.hidpi.enable = true;
+        };
+        stateVersion = "21.11";
       };
     };
   };
