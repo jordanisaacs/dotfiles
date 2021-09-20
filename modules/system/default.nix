@@ -7,5 +7,6 @@
     ./desktop-xorg
     ./gnome
     ./laptop
+    ./framework
   ];
 }

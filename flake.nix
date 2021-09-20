@@ -141,12 +141,16 @@
         initrdMods = [ "xhci_pci" "thunderbolt" "nvme" "usb_storage" "sd_mod" ];
         kernelMods = [ "kvm-intel" ];
         kernelParams = [];
-        systemConfig = laptopConfig;
+        systemConfig = laptopConfig // {
+          framework = {
+            enable = true;
+            fprint = {
+              enable = true;
+            };
+          };
+        };
         users = laptopUsers;
         cpuCores = 8;
-        passthru = {
-          hardware.video.hidpi.enable = true;
-        };
         stateVersion = "21.11";
       };
     };
