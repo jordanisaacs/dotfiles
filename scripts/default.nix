@@ -354,12 +354,37 @@ let
       ;;
     esac
   '';
+
+  devTools = with pkgs; writeScriptBin "dtools" ''
+    case $1 in
+      "hubclone")
+        if [ -z "$2" ]; then
+          echo "Need to set a github user to clone"
+        elif [ -z "$3" ]; then
+          echo "Need to set a repo name to clone"
+        else
+          cd ~/Documents/dev/
+          "${git}/bin/git" clone https://github.com/$2/$3.git
+        fi
+      ;;
+
+      *)
+        echo "Dev Tools Usage"
+        echo "dtools command"
+        echo ""
+        echo "Commands:"
+        echo "hubclone \$1 \$2: Clone github repo (\$2) from user (\$1) in dev folder"
+    esac
+
+
+  '';
 in {
   overlay = (final: prev: {
     scripts.sysTools = sysTools;
     scripts.bluetoothTools = bluetoothTools;
     scripts.soundTools = soundTools;
     scripts.setupTools = setupTools;
+    scripts.devTools = devTools;
   });
 }
 
