@@ -88,6 +88,16 @@ let
         fi
       ;;
 
+      "find")
+        if [ $2 = "--overlay" ]; then
+          pushd ~/.dotfiles
+          nix search .# $3
+          popd
+        else
+          nix search nixpkgs $2
+        fi
+      ;;
+
       "find-doc")
         ${manix}/bin/manix $2
       ;;
