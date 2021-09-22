@@ -68,6 +68,10 @@ in {
       scripts.sysTools
     ];
 
+    fonts.fonts = with pkgs; [
+      carlito
+    ];
+
     security.sudo.extraConfig = "Defaults env_reset,timestamp_timeout=5";
     security.sudo.execWheelOnly = true;
   };
