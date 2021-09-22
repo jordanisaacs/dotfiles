@@ -9,5 +9,6 @@
     ./zsh
     ./ssh
     ./office365
+    ./wine
   ];
 }

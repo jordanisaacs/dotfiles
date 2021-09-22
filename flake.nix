@@ -148,6 +148,10 @@
               enable = true;
             };
           };
+          wine = {
+            enable = true;
+            office365 = true;
+          };
         };
         users = laptopUsers;
         cpuCores = 8;
