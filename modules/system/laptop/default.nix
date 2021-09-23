@@ -114,6 +114,10 @@ in {
           "SOUND_POWER_SAVE_ON_AC" = 0;
           "SOUND_POWER_SAVE_ON_BAT" = 1;
           "SOUND_POWER_SAVE_CONTROLLER" = "Y";
+          "START_CHARGE_THRESH_BAT0"=0;
+          "STOP_CHARGE_THRESH_BAT0"=0;
+          "START_CHARGE_THRESH_BAT1"=0;
+          "STOP_CHARGE_THRESH_BAT1"=0;
           "DISK_APM_LEVEL_ON_AC" = "254 254";
           "DISK_APM_LEVEL_ON_BAT" = "128 128";
           "DISK_IOSCHED" = "mq-deadline mq-deadline";
@@ -141,9 +145,12 @@ in {
           "RUNTIME_PM_ON_AC" = "on";
           "RUNTIME_PM_ON_BAT" = "auto";
           "PCIE_ASPM_ON_AC" = "default";
-          "PCIE_ASPM_ON_BAT" = "default";
+          "PCIE_ASPM_ON_BAT" = "powersupersave";
           "USB_AUTOSUSPEND" = 0;
-        };
+        } // (if config.jd.framework.enable == true then {
+          "CPU_ENERGY_PERF_POLICY_ON_AC" = "performance";
+          "CPU_ENERGY_PERF_POLICY_ON_BAT" = "power";
+        } else {});
       };
     };
   };

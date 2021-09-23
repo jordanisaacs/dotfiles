@@ -18,6 +18,21 @@
           patches = drv.patches ++ [ ./x11-session-type.patch ];
         });
       };
+      tlp = prev.tlp.overrideAttrs (old: {
+        version = "1.4.1-beta.2";
+
+        src = prev.fetchFromGitHub {
+          owner = "linrunner";
+          repo = "TLP";
+          rev = "1.4.0-beta.2";
+          sha256 = "coYgKeeTaR8LKUFWxPd5rhJ8x8PfHxTw+jnF87IA6K0=";
+        };
+
+        patches = [ ./makefile_service.patch ];
+        postInstall = old.postInstall + ''
+          mv $out/share/tlp/bat.d $out/usr/share/tlp/bat.d
+        '';
+      });
       dwmJD = dwm-flake.packages.${system}.dwmJD;
       stJD = st-flake.packages.${system}.stJD;
       weechatJD = prev.weechat.override {

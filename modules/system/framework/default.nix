@@ -21,7 +21,22 @@ in {
 
   config = mkIf (cfg.enable) (mkMerge [
     ({
-      hardware.video.hidpi.enable = true;
+      environment.defaultPackages = with pkgs; [ intel-gpu-tools ];
+      hardware = {
+        video.hidpi.enable = true;
+        opengl = {
+          enable = true;
+          extraPackages = with pkgs; [
+            intel-media-driver
+            libvdpau-va-gl
+          ];
+        };
+      };
+      
+      boot.extraModprobeConfig = ''
+        options i915 enable_guc=2
+        options i915 enable_fbc=1
+      '';
     })
     (mkIf cfg.fprint.enable {
       services.fprintd.enable = true;

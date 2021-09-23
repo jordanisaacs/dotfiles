@@ -27,10 +27,11 @@ in {
           menuentry "Reboot" {
             reboot
           }
-          menuEntry "Power off" {
+          menuentry "Power off" {
             halt
           }
         '';
+        extraConfig = if (config.jd.framework.enable) then "i915.enable_psr=0" else "";
       };
     };
 

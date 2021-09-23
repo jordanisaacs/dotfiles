@@ -52,6 +52,11 @@ in {
       acpi
       pstree
 
+      # Graphics
+      libva-utils
+      vdpauinfo
+      glxinfo
+
       # version ocntrol
       git
       git-crypt

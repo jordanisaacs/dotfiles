@@ -116,6 +116,10 @@
             enable = true;
             onedriver.enable = false; # pkg currently broken
           };
+          wine = {
+            enable = true;
+            office365 = true;
+          };
         };
         username = "jd";
       };
@@ -147,10 +151,6 @@
             fprint = {
               enable = true;
             };
-          };
-          wine = {
-            enable = true;
-            office365 = true;
           };
         };
         users = laptopUsers;
