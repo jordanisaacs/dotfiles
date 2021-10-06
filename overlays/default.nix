@@ -1,10 +1,16 @@
-{ pkgs, nur, dwm-flake, neovim-flake, st-flake, scripts, system, lib, myPkgs }:
+{ pkgs, nur, dwm-flake, neovim-flake, st-flake, dwl-flake, sops-nix, scripts, system, lib, myPkgs }:
+
+let
+  dwl-config = builtins.readFile ./dwl-config.c;
+in
 {
   overlays = [
     nur.overlay
     neovim-flake.overlay."${system}"
+    dwl-flake.overlay."${system}"
     scripts.overlay
-    (final: prev: { # Version of xss-lock that supports logind SetLockedHint
+    (final: prev: {
+      # Version of xss-lock that supports logind SetLockedHint
       xss-lock = prev.xss-lock.overrideAttrs (old: {
         src = prev.fetchFromGitHub {
           owner = "xdbob";
@@ -13,7 +19,8 @@
           sha256 = "TG/H2dGncXfdTDZkAY0XAbZ80R1wOgufeOmVL9yJpSk=";
         };
       });
-      xorg = prev.xorg // { # Override xorgserver with patch to set x11 type
+      xorg = prev.xorg // {
+        # Override xorgserver with patch to set x11 type
         xorgserver = lib.overrideDerivation prev.xorg.xorgserver (drv: {
           patches = drv.patches ++ [ ./x11-session-type.patch ];
         });
@@ -36,12 +43,19 @@
       dwmJD = dwm-flake.packages.${system}.dwmJD;
       stJD = st-flake.packages.${system}.stJD;
       weechatJD = prev.weechat.override {
-        configure = { availablePlugins , ... }: {
+        configure = { availablePlugins, ... }: {
           scripts = with prev.weechatScripts; [
             weechat-matrix
           ];
         };
       };
+      dwlJD = prev.dwl.override {
+        conf = dwl-config;
+      };
+      nixUnstable = prev.nixUnstable.override {
+        patches = [ ./unset-is-match.patch ];
+      };
+      inherit sops-nix;
       inherit myPkgs;
     })
   ];

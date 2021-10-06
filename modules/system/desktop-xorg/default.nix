@@ -2,7 +2,8 @@
 with lib;
 let
   cfg = config.jd.xserver;
-in {
+in
+{
   options.jd.xserver = {
     enable = mkOption {
       description = "Enable xserver.";
@@ -41,6 +42,10 @@ in {
 
         if [ -z "$DISPLAY" ] && [ "''${XDG_VTNR}" -eq 1 ]; then
           exec startx
+        fi
+
+        if [ -z "$DISPLAY" ] && [ "''${XDG_VTNR}" -eq 2 ]; then
+          exec $HOME/.winitrc
         fi
       '';
     };

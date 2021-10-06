@@ -3,7 +3,8 @@ with lib;
 
 let
   cfg = config.jd.core;
-in {
+in
+{
   options.jd.core = {
     enable = mkOption {
       description = "Enable core options";
@@ -23,6 +24,7 @@ in {
     };
 
     environment.shells = [ pkgs.zsh pkgs.bash ];
+    environment.pathsToLink = [ "/share/zsh" ];
 
     i18n.defaultLocale = "en_US.UTF-8";
     time.timeZone = "America/New_York";
@@ -56,6 +58,10 @@ in {
       libva-utils
       vdpauinfo
       glxinfo
+
+      # utils
+      usbutils
+      inxi
 
       # version ocntrol
       git

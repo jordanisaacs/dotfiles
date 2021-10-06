@@ -3,7 +3,8 @@ with lib;
 
 let
   cfg = config.jd.connectivity;
-in {
+in
+{
   options.jd.connectivity = {
     wifi.enable = mkOption {
       description = "Enable wifi with default options";
@@ -34,10 +35,10 @@ in {
     environment.systemPackages = with pkgs; [
     ] ++ (if (cfg.bluetooth.enable) then [
       scripts.bluetoothTools
-    ] else []) ++ (if (cfg.sound.enable) then [
+    ] else [ ]) ++ (if (cfg.sound.enable) then [
       pulseaudio
       scripts.soundTools
-    ] else []);
+    ] else [ ]);
 
     networking.wireless.enable = cfg.wifi.enable;
 
@@ -49,8 +50,14 @@ in {
       pulse.enable = cfg.sound.enable;
     };
 
+    #hardware.pulseaudio.enable = cfg.sound.enable;
+
     services.printing.enable = cfg.printing.enable;
 
-    hardware.bluetooth.enable = cfg.bluetooth.enable;
+    hardware.bluetooth = {
+      enable = cfg.bluetooth.enable;
+    };
+
+    services.blueman.enable = true;
   };
 }

@@ -2,7 +2,8 @@
 with lib;
 let
   cfg = config.jd.framework;
-in {
+in
+{
   options.jd.framework = {
     enable = mkOption {
       description = "Enable framework options";
@@ -32,7 +33,7 @@ in {
           ];
         };
       };
-      
+
       boot.extraModprobeConfig = ''
         options i915 enable_guc=2
         options i915 enable_fbc=1
