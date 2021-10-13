@@ -2,7 +2,8 @@
 with lib;
 let
   cfg = config.jd.laptop;
-in {
+in
+{
   options.jd.laptop = {
     enable = mkOption {
       description = "Whether to enable laptop settings. Also tags as laptop for user settings";
@@ -16,7 +17,7 @@ in {
       acpid
       powertop
     ];
- 
+
     programs = {
       light.enable = true;
     };
@@ -28,12 +29,12 @@ in {
     systemd = {
       # Replace suspend mode with hybrid-sleep. So can do hybrid-sleep then hibernate
       # hybrid-sleep broken on framework: https://community.frame.work/t/issues-with-sleep-states-on-linux/7363
+      # Framework: cat /sys/power/mem_sleep -> [s2idle] deep
+      # Change suspendstate to deep for framework
       sleep.extraConfig = ''
         HibernateDelaySec=30min
-        ${ if config.networking.hostName != "framework" then ''
-          SuspendMode=suspend
-          SuspendState=disk
-        '' else ""}
+        SuspendMode=suspend
+        SuspendState=disk
       '';
     };
 
@@ -46,14 +47,13 @@ in {
         # <LeftMouse>https://wiki.archlinux.org/title/Power_management
         # Options: ttps://www.freedesktop.org/software/systemd/man/logind.conf.html
         extraConfig = ''
-          HandlePowerKey=ignore
-          HandleLidSwitch=ignore
+          HandleLidSwitch=suspend-then-hibernate
+          HandlePowerKey=suspend-then-hibernate
           HandleSuspendKey=ignore
           HandleHibernateKey=ignore
-          HandlePowerKey=ignore
           HandleLidSwitchDocked=ignore
           IdleAction=suspend-then-hibernate
-          IdleActionSec=10min
+          IdleActionSec=5min
         '';
       };
 
@@ -87,22 +87,6 @@ in {
               esac
             '';
           };
-          lid-close = {
-            event = "button/lid.*";
-            action = ''
-              vals=($1)
-              case ''${vals[2]} in
-                "close")
-                  systemctl suspend-then-hibernate
-              esac
-            '';
-          };
-          power-btn = {
-            event = "button/power.*";
-            action = ''
-              systemctl suspend-then-hibernate
-            '';
-          };
         };
       };
 
@@ -114,10 +98,10 @@ in {
           "SOUND_POWER_SAVE_ON_AC" = 0;
           "SOUND_POWER_SAVE_ON_BAT" = 1;
           "SOUND_POWER_SAVE_CONTROLLER" = "Y";
-          "START_CHARGE_THRESH_BAT0"=0;
-          "STOP_CHARGE_THRESH_BAT0"=0;
-          "START_CHARGE_THRESH_BAT1"=0;
-          "STOP_CHARGE_THRESH_BAT1"=0;
+          "START_CHARGE_THRESH_BAT0" = 0;
+          "STOP_CHARGE_THRESH_BAT0" = 0;
+          "START_CHARGE_THRESH_BAT1" = 0;
+          "STOP_CHARGE_THRESH_BAT1" = 0;
           "DISK_APM_LEVEL_ON_AC" = "254 254";
           "DISK_APM_LEVEL_ON_BAT" = "128 128";
           "DISK_IOSCHED" = "mq-deadline mq-deadline";
@@ -150,7 +134,7 @@ in {
         } // (if config.jd.framework.enable == true then {
           "CPU_ENERGY_PERF_POLICY_ON_AC" = "performance";
           "CPU_ENERGY_PERF_POLICY_ON_BAT" = "power";
-        } else {});
+        } else { });
       };
     };
   };

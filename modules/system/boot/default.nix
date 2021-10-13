@@ -3,7 +3,8 @@ with lib;
 
 let
   cfg = config.jd.boot;
-in {
+in
+{
   options.jd.boot = mkOption {
     description = "Type of boot. Default encrypted-efi";
     default = null;
