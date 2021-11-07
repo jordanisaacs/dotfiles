@@ -6,5 +6,6 @@ with pkgs;
     onedriver = callPackage ./onedriver.nix { };
     weechat-matrix-rs = callPackage ./weechat-matrix-rs.nix { };
     zsh-vi-mode = callPackage ./zsh-vi-mode.nix { };
+    volantes-cursors = callPackage ./volantes-cursors.nix { };
   };
 }

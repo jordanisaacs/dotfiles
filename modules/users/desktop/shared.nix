@@ -10,11 +10,47 @@ in
     home.packages = with pkgs; mkIf (systemCfg.connectivity.sound.enable) [
       pavucontrol
       pasystray
+      myPkgs.volantes-cursors
     ];
 
     home.file = {
       "${config.xdg.configHome}/wallpapers" = {
         source = ./wallpapers;
+      };
+
+      ".icons/default/index.theme" = {
+        text = ''
+          [icon theme]
+          Inherits=volantes_cursors
+        '';
+      };
+
+      ".icons/volantes_cursors" = {
+        source = "${pkgs.myPkgs.volantes-cursors}/usr/share/icons/volantes_cursors";
+      };
+    };
+
+    gtk = {
+      enable = true;
+      theme = {
+        package = with pkgs; arc-theme;
+        name = "Arc-Dark";
+      };
+      gtk3.extraConfig = {
+        gtk-cursor-theme-name = "volantes-cursors";
+        gtk-application-prefer-dark-theme = true;
+      };
+    };
+
+    xdg.systemDirs.data = [
+      "${pkgs.gtk3}/share/gsettings-schemas/${pkgs.gtk3.name}"
+      "${pkgs.gsettings-desktop-schemas}/share/gsettings-schemas/${pkgs.gsettings-desktop-schemas.name}"
+    ];
+
+    dconf.settings = {
+      "org/gnome/desktop/interface" = {
+        cursor-theme = "volantes-cursors";
+        icon-theme = "Arc-Dark";
       };
     };
 
@@ -23,4 +59,7 @@ in
     };
   };
 }
+
+
+
 

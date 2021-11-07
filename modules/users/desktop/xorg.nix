@@ -190,18 +190,6 @@ in
             };
           };
       };
-
-      services = mkIf (cfg.type == "dwm") {
-        gnome-keyring.enable = true;
-      };
-
-      gtk = {
-        enable = true;
-        theme = {
-          package = with pkgs; arc-theme;
-          name = "Arc-Dark";
-        };
-      };
     }
   );
 }
