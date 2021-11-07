@@ -31,16 +31,11 @@
       inputs.flake-utils.follows = "flake-utils";
     };
 
-    sops-nix = {
-      url = "github:Mic92/sops-nix";
-      inputs.sops-nix.inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     flake-utils.url = "github:numtide/flake-utils";
     nur.url = "github:nix-community/NUR";
   };
 
-  outputs = { nixpkgs, home-manager, nur, neovim-flake, st-flake, dwm-flake, dwl-flake, sops-nix, ... }@inputs:
+  outputs = { nixpkgs, home-manager, nur, neovim-flake, st-flake, dwm-flake, dwl-flake, ... }@inputs:
     let
       inherit (nixpkgs) lib;
 
@@ -57,7 +52,7 @@
       }) myPkgs;
 
       inherit (import ./overlays {
-        inherit system pkgs lib nur neovim-flake st-flake dwm-flake scripts myPkgs sops-nix dwl-flake;
+        inherit system pkgs lib nur neovim-flake st-flake dwm-flake scripts myPkgs dwl-flake;
       }) overlays;
 
       inherit (util) user;
@@ -97,7 +92,6 @@
           enable = true;
           swaylock-pam = true;
         };
-        sops.enable = true;
       };
 
       laptopUsers = [{

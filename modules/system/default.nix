@@ -8,7 +8,6 @@
     ./gnome
     ./laptop
     ./framework
-    ./sops
     ./wayland
   ];
 }

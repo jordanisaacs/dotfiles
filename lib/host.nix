@@ -87,7 +87,6 @@ with builtins;
 
           system.stateVersion = stateVersion;
         }
-        (if enableSops then pkgs.sops-nix.nixosModules.sops else { })
         passthru
       ];
     };
