@@ -3,7 +3,7 @@
 {
   imports = [
     ./applications
-    ./desktop
+    ./graphical
     ./git
     ./gpg
     ./zsh

@@ -82,15 +82,12 @@
           sound.enable = true;
           printing.enable = true;
         };
-        xserver = {
-          enable = true;
-          display-manager = {
-            type = "startx";
+        graphical = {
+          xorg.enable = true;
+          wayland = {
+            enable = true;
+            swaylock-pam = true;
           };
-        };
-        wayland = {
-          enable = true;
-          swaylock-pam = true;
         };
       };
 
@@ -116,13 +113,13 @@
       homeManagerConfigurations = {
         jd = user.mkHMUser {
           userConfig = {
-            desktop = {
+            graphical = {
               wayland = {
                 enable = true;
                 type = "dwl";
                 screenlock.enable = true;
               };
-              xserver = {
+              xorg = {
                 enable = true;
                 type = "dwm";
                 screenlock.enable = true;

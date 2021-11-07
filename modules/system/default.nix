@@ -4,10 +4,9 @@
     ./connectivity
     ./boot
     ./core
-    ./desktop-xorg
     ./gnome
     ./laptop
     ./framework
-    ./wayland
+    ./graphical
   ];
 }

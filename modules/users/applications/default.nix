@@ -52,6 +52,9 @@ in
 
       # Font
       (nerdfonts.override { fonts = [ "JetBrainsMono" ]; })
+
+      # Typing fonts
+      carlito
     ];
 
     fonts.fontconfig.enable = true;

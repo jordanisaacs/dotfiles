@@ -2,11 +2,11 @@
 with lib;
 
 let
-  cfg = config.jd.desktop;
+  cfg = config.jd.graphical;
   systemCfg = config.machineData.systemConfig;
 in
 {
-  config = mkIf (cfg.xserver.enable == true || cfg.wayland.enable == true) {
+  config = mkIf (cfg.xorg.enable == true || cfg.wayland.enable == true) {
     home.packages = with pkgs; mkIf (systemCfg.connectivity.sound.enable) [
       pavucontrol
       pasystray

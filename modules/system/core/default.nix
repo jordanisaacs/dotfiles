@@ -65,7 +65,6 @@ in
 
       # version ocntrol
       git
-      git-crypt
 
       # Nix tools
       patchelf

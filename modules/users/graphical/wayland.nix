@@ -4,8 +4,8 @@ with lib;
 # Work in progress.
 
 let
-  cfg = config.jd.desktop.wayland;
-  systemCfg = config.machineData.systemConfig.wayland;
+  cfg = config.jd.graphical.wayland;
+  systemCfg = config.machineData.systemConfig;
   dwlJD = pkgs.dwlBuilder {
     config.cmds = {
       term = [ "${pkgs.foot}/bin/foot" ];
@@ -24,7 +24,7 @@ let
     ## https://bbs.archlinux.org/viewtopic.php?id=224652
     ## Requires --systemd becuase of gnome-keyring error. Unsure how differs from systemctl --user import-environment
     if command -v dbus-update-activation-environment >/dev/null 2>&1; then
-      dbus-update-activation-environment --systemd WAYLAND_DISPLAY DISPLAY
+      dbus-update-activation-environment --systemd WAYLAND_DISPLAY DISPLAY XDG_CURRENT_DESKTOP
     fi
 
     systemctl --user import-environment PATH
@@ -35,7 +35,7 @@ let
   '';
 in
 {
-  options.jd.desktop.wayland = {
+  options.jd.graphical.wayland = {
     enable = mkOption {
       description = "Enable wayland";
       type = types.bool;
@@ -86,11 +86,16 @@ in
   };
 
   config = (mkIf cfg.enable) {
+    assertions = [{
+      assertion = systemCfg.graphical.wayland.enable;
+      message = "To enable xorg for user, it must be enabled for system";
+    }];
+
     home.packages = with pkgs; mkIf (cfg.type == "dwl") [
       dwlJD
       foot
       bemenu
-      (assert systemCfg.swaylock-pam; (if cfg.screenlock.enable then swaylock else null))
+      (assert systemCfg.graphical.wayland.swaylock-pam; (if cfg.screenlock.enable then swaylock else null))
     ];
 
     home.file =
@@ -105,7 +110,7 @@ in
             export MOZ_ENABLE_WAYLAND=1
             export XDG_CURRENT_DESKTOP=sway
 
-            ${dwlJD}/bin/dwl -s "systemctl --user start dwl-session.target"
+            ${dwlJD}/bin/dwl -s "${waylandStartup}/bin/waylandStartup"
             wait $!
             systemctl --user stop dwl-session.target
           '';
