@@ -3,7 +3,8 @@ with lib;
 
 let
   cfg = config.jd.applications;
-in {
+in
+{
   options.jd.applications = {
     enable = mkOption {
       description = "Enable a set of common applications";
@@ -70,17 +71,17 @@ in {
       extensions = with pkgs.nur.repos.rycee.firefox-addons; [
         # bypass-paywalls third party
         (buildFirefoxXpiAddon {
-            pname = "bypass-paywalls-firefox";
-            addonId = "bypasspaywalls@bypasspaywalls";
-            version = "1.7.9";
-            url = "https://github.com/iamadamdev/bypass-paywalls-chrome/releases/latest/download/bypass-paywalls-firefox.xpi";
-            sha256 = "Nk9ZKUPPSV+EFG9iO6W7Dv/iLX2c3Bh2GxV5nMTQ6q8=";
-            
-            meta = with lib; {
-              description = "Bypass paywalls for a variety of news sites";
-              license = pkgs.lib.licenses.mit;
-              platforms = pkgs.lib.platforms.all;
-            };
+          pname = "bypass-paywalls-firefox";
+          addonId = "bypasspaywalls@bypasspaywalls";
+          version = "1.7.9";
+          url = "https://github.com/iamadamdev/bypass-paywalls-chrome/releases/latest/download/bypass-paywalls-firefox.xpi";
+          sha256 = "Nk9ZKUPPSV+EFG9iO6W7Dv/iLX2c3Bh2GxV5nMTQ6q8=";
+
+          meta = with lib; {
+            description = "Bypass paywalls for a variety of news sites";
+            license = pkgs.lib.licenses.mit;
+            platforms = pkgs.lib.platforms.all;
+          };
         })
         (buildFirefoxXpiAddon {
           pname = "cookie-quick-manager";
@@ -109,7 +110,7 @@ in {
           id = 0;
           settings =
             let
-              frameworkHardwareAccel = {};
+              frameworkHardwareAccel = { };
               #frameworkHardwareAccel = if config.machineData.name == "framework" then {
               #  "media.ffmpeg.vaapi.enabled" = true;
               #  "media.ffvpx.enabled" = false;
@@ -124,10 +125,12 @@ in {
                 let
                   newTabPage = "browser.newtabpage";
                   activityStream = "${newTabPage}.activity-stream";
-                in {
+                in
+                {
                   "${activityStream}.feeds.section.highlights" = true;
                   "${activityStream}.feeds.section.topstories" = false;
                   "${activityStream}.feeds.section.highlights.includePocket" = false;
+                  "${activityStream}.section.highlights.includePocket" = false;
                   "${activityStream}.feeds.topsites" = true;
                   "${activityStream}.showSearch" = false;
                 };
@@ -136,11 +139,38 @@ in {
                 "browser.uiCustomization.state" = ''{"placements":{"widget-overflow-fixed-list":[],"nav-bar":["back-button","forward-button","stop-reload-button","customizableui-special-spring1","urlbar-container","customizableui-special-spring2","downloads-button","fxa-toolbar-menu-button","_446900e4-71c2-419f-a6a7-df9c091e268b_-browser-action","bypasspaywalls_bypasspaywalls-browser-action","_74145f27-f039-47ce-a470-a662b129930a_-browser-action","cookieautodelete_kennydo_com-browser-action","_testpilot-containers-browser-action","ublock0_raymondhill_net-browser-action","_a6c4a591-f1b2-4f03-b3ff-767e5bedf4e7_-browser-action"],"toolbar-menubar":["menubar-items"],"TabsToolbar":["tabbrowser-tabs","new-tab-button","alltabs-button"],"PersonalToolbar":["import-button","personal-bookmarks"]},"seen":["save-to-pocket-button","developer-button","_446900e4-71c2-419f-a6a7-df9c091e268b_-browser-action","bypasspaywalls_bypasspaywalls-browser-action","_74145f27-f039-47ce-a470-a662b129930a_-browser-action","cookieautodelete_kennydo_com-browser-action","_testpilot-containers-browser-action","ublock0_raymondhill_net-browser-action","_a6c4a591-f1b2-4f03-b3ff-767e5bedf4e7_-browser-action"],"dirtyAreaCache":["nav-bar","PersonalToolbar","toolbar-menubar","TabsToolbar"],"currentVersion":17,"newElementCount":2}'';
               };
 
+              searchBar = {
+                "browser.urlbar.suggest.quicksuggest.sponsored" = false;
+              };
+
+              telemetry = {
+                "browser.newtabpage.activity-stream.telemetry" = false;
+                "browser.newtabpage.activity-stream.feeds.telemetry" = false;
+                "browser.ping-centre.telemetry" = false;
+                "toolkit.telemetry.reportingpolicy.firstRun" = false;
+                "toolkit.telemetry.unified" = false;
+                "toolkit.telemetry.archive.enabled" = false;
+                "toolkit.telemetry.updatePing.enabled" = false;
+                "toolkit.telemetry.shutdownPingSender.enabled" = false;
+                "toolkit.telemetry.newProfilePing.enabled" = false;
+                "toolkit.telemetry.bhrPing.enabled" = false;
+                "toolkit.telemetry.firstShutdownPing.enabled" = false;
+                "datareporting.healthreport.uploadEnabled" = false;
+                "datareporting.policy.dataSubmissionEnabled" = false;
+                "app.shield.optoutstudies.enable" = false;
+              };
+
+              privacy = {
+                "dom.event.clipboardevents.enabled" = false;
+                "dom.battery.enabled" = false;
+              };
+
               https = {
                 "dom.security.https_only_mode" = true;
                 "dom.security.https_only_mode_ever_enabled" = true;
               };
-            in https // uiState // newTab // frameworkHardwareAccel;
+            in
+            https // uiState // newTab // frameworkHardwareAccel // privacy // telemetry // searchBar;
         };
       };
     };
