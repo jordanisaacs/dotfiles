@@ -15,6 +15,24 @@ let
       audiomut = [ "${pkgs.scripts.soundTools}/bin/stools" "vol" "toggle" ];
     };
   };
+
+  waylandStartup = pkgs.writeShellScriptBin "waylandStartup" ''
+    if [ -z "$DBUS_SESSION_BUS_ADDRESS" ]; then
+      eval $(dbus-launch --exit-with-session --sh-syntax)
+    fi
+
+    ## https://bbs.archlinux.org/viewtopic.php?id=224652
+    ## Requires --systemd becuase of gnome-keyring error. Unsure how differs from systemctl --user import-environment
+    if command -v dbus-update-activation-environment >/dev/null 2>&1; then
+      dbus-update-activation-environment --systemd WAYLAND_DISPLAY DISPLAY
+    fi
+
+    systemctl --user import-environment PATH
+
+    systemctl --user start dwl-session.target
+    systemctl --user stop graphical-session.target
+    systemctl --user stop graphical-session-pre.target
+  '';
 in
 {
   options.jd.desktop.wayland = {
@@ -85,20 +103,11 @@ in
 
             # firefox enable wayland
             export MOZ_ENABLE_WAYLAND=1
-
-            if [ -z "$DBUS_SESSION_BUS_ADDRESS" ]; then
-              eval $(dbus-launch --exit-with-session --sh-syntax)
-            fi
-
-            ## https://bbs.archlinux.org/viewtopic.php?id=224652
-            ## Requires --systemd becuase of gnome-keyring error. Unsure how differs from systemctl --user import-environment
-            if command -v dbus-update-activation-environment >/dev/null 2>&1; then
-              dbus-update-activation-environment --systemd DISPLAY XAUTHORITY
-            fi
-
-            systemctl --user import-environment;
+            export XDG_CURRENT_DESKTOP=sway
 
             ${dwlJD}/bin/dwl -s "systemctl --user start dwl-session.target"
+            wait $!
+            systemctl --user stop dwl-session.target
           '';
         };
 

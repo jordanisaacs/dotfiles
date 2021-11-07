@@ -16,7 +16,6 @@ in
   config = mkIf (cfg.enable) {
     home.sessionVariables = {
       EDITOR = "vim";
-      MOZ_USE_XINPUT2 = 1;
     };
 
     home.packages = with pkgs; [
@@ -38,6 +37,7 @@ in
 
       # Messaging
       slack
+      discord
       weechat
 
       # Video conference
