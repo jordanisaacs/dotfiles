@@ -30,8 +30,6 @@ let
     systemctl --user import-environment PATH
 
     systemctl --user start dwl-session.target
-    systemctl --user stop graphical-session.target
-    systemctl --user stop graphical-session-pre.target
   '';
 in
 {
@@ -113,6 +111,8 @@ in
             ${dwlJD}/bin/dwl -s "${waylandStartup}/bin/waylandStartup"
             wait $!
             systemctl --user stop dwl-session.target
+            systemctl --user stop graphical-session.target
+            systemctl --user stop graphical-session-pre.target
           '';
         };
 

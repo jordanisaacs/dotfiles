@@ -11,5 +11,7 @@
     ./office365
     ./wine
     ./keybase
+    ./pijul
+    ./homeage
   ];
 }

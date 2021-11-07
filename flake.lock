@@ -106,11 +106,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1633717716,
-        "narHash": "sha256-pfVOK4f1X+rqeXZOd0RTcH3A9Q+d3tdY3gM8MU8VWC4=",
+        "lastModified": 1636311884,
+        "narHash": "sha256-wmUuq4/J06qfdD69rRLQ5mwqO1NBuWdOccY9Tv78KPk=",
         "owner": "jordanisaacs",
         "repo": "dwl-flake",
-        "rev": "8b813aba0ae1addedac53a97ce123a4aaefdd87f",
+        "rev": "41c8cc9f04976284b087ed29b412fb96ecc18773",
         "type": "github"
       },
       "original": {
@@ -221,6 +221,26 @@
       "original": {
         "owner": "nix-community",
         "repo": "home-manager",
+        "type": "github"
+      }
+    },
+    "homeage": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1636303255,
+        "narHash": "sha256-hU0UbivNM4Bt5ZNzcnR6RiM3Z55nL01GNUpdflx60aA=",
+        "owner": "jordanisaacs",
+        "repo": "homeage",
+        "rev": "31ace1e771c4bbfd727ac82c4fc1716b262de3d2",
+        "type": "github"
+      },
+      "original": {
+        "owner": "jordanisaacs",
+        "repo": "homeage",
         "type": "github"
       }
     },
@@ -763,6 +783,7 @@
         "dwm-flake": "dwm-flake",
         "flake-utils": "flake-utils",
         "home-manager": "home-manager",
+        "homeage": "homeage",
         "neovim-flake": "neovim-flake",
         "nixpkgs": "nixpkgs_2",
         "nur": "nur",

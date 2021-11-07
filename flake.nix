@@ -31,11 +31,16 @@
       inputs.flake-utils.follows = "flake-utils";
     };
 
+    homeage = {
+      url = "github:jordanisaacs/homeage";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     flake-utils.url = "github:numtide/flake-utils";
     nur.url = "github:nix-community/NUR";
   };
 
-  outputs = { nixpkgs, home-manager, nur, neovim-flake, st-flake, dwm-flake, dwl-flake, ... }@inputs:
+  outputs = { nixpkgs, home-manager, nur, neovim-flake, st-flake, dwm-flake, dwl-flake, homeage, ... }@inputs:
     let
       inherit (nixpkgs) lib;
 
@@ -52,7 +57,7 @@
       }) myPkgs;
 
       inherit (import ./overlays {
-        inherit system pkgs lib nur neovim-flake st-flake dwm-flake scripts myPkgs dwl-flake;
+        inherit system pkgs lib nur neovim-flake st-flake dwm-flake homeage scripts myPkgs dwl-flake;
       }) overlays;
 
       inherit (util) user;
@@ -138,6 +143,7 @@
               office365 = false;
             };
             keybase.enable = true;
+            pijul.enable = true;
           };
           username = "jd";
         };

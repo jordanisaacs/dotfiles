@@ -40,7 +40,6 @@ with builtins;
     , passthru ? { }
     , gpuTempSensor ? null
     , cpuTempSensor ? null
-    , enableSops ? false
     }:
     let
       networkCfg = listToAttrs (map

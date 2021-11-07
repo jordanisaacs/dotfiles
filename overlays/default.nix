@@ -1,4 +1,4 @@
-{ pkgs, nur, dwm-flake, neovim-flake, st-flake, dwl-flake, scripts, system, lib, myPkgs }:
+{ pkgs, nur, dwm-flake, neovim-flake, st-flake, dwl-flake, scripts, homeage, system, lib, myPkgs }:
 
 let
   dwl-config = builtins.readFile ./dwl-config.c;
@@ -55,6 +55,7 @@ in
       nixUnstable = prev.nixUnstable.override {
         patches = [ ./unset-is-match.patch ];
       };
+      inherit homeage;
       inherit myPkgs;
     })
   ];
