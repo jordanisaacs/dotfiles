@@ -161,7 +161,16 @@
         framework = host.mkHost {
           name = "framework";
           NICs = [ "wlp170s0" ];
-          kernelPackage = pkgs.linuxPackages_5_13;
+          kernelPackage = pkgs.linuxPackagesFor (pkgs.linux_5_14.override {
+            argsOverride = rec {
+              src = pkgs.fetchurl {
+                url = "mirror://kernel/linux/kernel/v5.x/linux-${version}.tar.xz";
+                sha256 = "sha256-R/zqmWwMAeWKxfhS/Cltd6NJbFUPMDQVL+536Drjj9o=";
+              };
+              version = "5.12.15";
+              modDirVersion = "5.12.15";
+            };
+          });
           initrdMods = [ "xhci_pci" "thunderbolt" "nvme" "usb_storage" "sd_mod" ];
           kernelMods = [ "kvm-intel" ];
           kernelParams = [ ];
