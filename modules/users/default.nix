@@ -10,5 +10,6 @@
     ./ssh
     ./office365
     ./wine
+    ./keybase
   ];
 }

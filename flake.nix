@@ -140,6 +140,7 @@
               enable = false; # wine things currently broken
               office365 = false;
             };
+            keybase.enable = true;
           };
           username = "jd";
         };
@@ -182,7 +183,6 @@
               };
             };
           };
-          enableSops = true;
           users = laptopUsers;
           cpuCores = 8;
           stateVersion = "21.11";
