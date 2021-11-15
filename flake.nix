@@ -122,6 +122,7 @@
               wayland = {
                 enable = true;
                 type = "dwl";
+                background.enable = true;
                 screenlock.enable = true;
               };
               xorg = {

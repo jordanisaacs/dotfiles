@@ -5,5 +5,6 @@
     ./wayland.nix
     ./xorg.nix
     ./shared.nix
+    ./config.nix
   ];
 }

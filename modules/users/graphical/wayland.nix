@@ -35,22 +35,41 @@ in
 {
   options.jd.graphical.wayland = {
     enable = mkOption {
-      description = "Enable wayland";
       type = types.bool;
-      default = false;
+      description = "Enable wayland";
     };
 
     type = mkOption {
-      description = ''What desktop/wm to use. Options: "dwl"'';
       type = types.enum [ "dwl" ];
-      default = null;
+      description = ''What desktop/wm to use. Options: "dwl"'';
+    };
+
+    background = {
+      enable = mkOption {
+        type = types.bool;
+        description = "Enable background [swaybg]";
+      };
+
+      image = mkOption {
+        type = types.path;
+        description = "Path to image file used for background";
+      };
+
+      mode = mkOption {
+        type = types.enum [ "stretch" "fill" "fit" "center" "tile" ];
+        description = "Scaling mode for background";
+      };
+
+      pkg = mkOption {
+        type = types.package;
+        description = "Package to use for swaybg";
+      };
     };
 
     screenlock = {
       enable = mkOption {
-        description = "Enable screen locking, must enable it on system as well for pamd (swaylock)";
         type = types.bool;
-        default = false;
+        description = "Enable screen locking, must enable it on system as well for pamd (swaylock)";
       };
 
       #timeout = {
@@ -94,6 +113,7 @@ in
       foot
       bemenu
       wl-clipboard
+      swaybg
       (assert systemCfg.graphical.wayland.swaylock-pam; (if cfg.screenlock.enable then swaylock else null))
     ];
 
@@ -130,8 +150,24 @@ in
         Description = "dwl compositor session";
         Documentation = [ "man:systemd.special(7)" ];
         BindsTo = [ "graphical-session.target" ];
-        Wants = [ "graphical-session-pre.target" ];
         After = [ "graphical-session-pre.target" ];
+      };
+    };
+
+    systemd.user.services.swaybg = mkIf cfg.background.enable {
+      Unit = {
+        Description = "swaybg background service";
+        Documentation = [ "man:swabyg(1)" ];
+        BindsTo = [ "dwl-session.target" ];
+        After = [ "dwl-session.target" ];
+      };
+
+      Service = {
+        ExecStart = "${cfg.background.pkg}/bin/swaybg --image ${cfg.background.image} --mode ${cfg.background.mode}";
+      };
+
+      Install = {
+        WantedBy = [ "dwl-session.target" ];
       };
     };
   };
