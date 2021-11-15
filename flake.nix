@@ -32,7 +32,7 @@
     };
 
     homeage = {
-      url = "github:jordanisaacs/homeage";
+      url = "github:jordanisaacs/homeage/activatecheck";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 

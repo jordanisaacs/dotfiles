@@ -42,18 +42,35 @@ in
       pijul
     ];
 
-    xdg.configFile."pijul/config.toml".text = ''
-      [author]
-      name = "${cfg.username}"
-      full_name = "${cfg.fullName}"
-      email = "${cfg.email}"
-    '';
+    xdg.configFile = {
+      "pijul/publickey.json".source = ./publickey.json;
 
-    homeage.file."pijul/secretkey.json" = {
-      source = cfg.secretKey;
-      symlinks = [
-        "${config.xdg.configHome}/pijul/secretkey.json"
-      ];
+      "pijul/config.toml".text = ''
+        [author]
+        name = "${cfg.username}"
+        full_name = "${cfg.fullName}"
+        email = "${cfg.email}"
+      '';
+    } // (
+      let
+        public_key = builtins.fromJSON (readFile ./publickey.json);
+      in
+      {
+        "pijul/identities/${public_key.key}".text = builtins.toJSON {
+          inherit public_key;
+          login = "nixos";
+        };
+      }
+    );
+
+    homeage.file = {
+      "pijulsecret" = {
+        source = cfg.secretKey;
+        decryptPath = "pijul/secretkey.json";
+        lnOnStartup = [
+          "${config.xdg.configHome}/pijul/secretkey.json"
+        ];
+      };
     };
   };
 }
