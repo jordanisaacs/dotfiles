@@ -93,6 +93,7 @@ in
       dwlJD
       foot
       bemenu
+      wl-clipboard
       (assert systemCfg.graphical.wayland.swaylock-pam; (if cfg.screenlock.enable then swaylock else null))
     ];
 

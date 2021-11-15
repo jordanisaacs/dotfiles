@@ -37,7 +37,7 @@ in
         name = "Arc-Dark";
       };
       gtk3.extraConfig = {
-        gtk-cursor-theme-name = "volantes-cursors";
+        gtk-cursor-theme-name = "volantes_cursors";
         gtk-application-prefer-dark-theme = true;
       };
     };
@@ -49,7 +49,8 @@ in
 
     dconf.settings = {
       "org/gnome/desktop/interface" = {
-        cursor-theme = "volantes-cursors";
+        cursor-theme = "volantes_cursors";
+        text-scaling-factor = 1.25;
         icon-theme = "Arc-Dark";
       };
     };
