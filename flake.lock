@@ -142,6 +142,27 @@
         "type": "github"
       }
     },
+    "extra-container": {
+      "inputs": {
+        "flake-utils": "flake-utils",
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1634384804,
+        "narHash": "sha256-QEWKjO1SRgwupq+7eLuokRrFBIq3Dr4U578lUj4w31g=",
+        "owner": "erikarvstedt",
+        "repo": "extra-container",
+        "rev": "639d62a24932409962857d2134fc9fc3cc5b6b61",
+        "type": "github"
+      },
+      "original": {
+        "owner": "erikarvstedt",
+        "repo": "extra-container",
+        "type": "github"
+      }
+    },
     "flake-compat": {
       "flake": false,
       "locked": {
@@ -160,6 +181,21 @@
     },
     "flake-utils": {
       "locked": {
+        "lastModified": 1631561581,
+        "narHash": "sha256-3VQMV5zvxaVLvqqUrNz3iJelLw30mIVSfZmAaauM3dA=",
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "rev": "7e5bf3925f6fbdfaf50a2a7ca0be2879c4261d19",
+        "type": "github"
+      },
+      "original": {
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "type": "github"
+      }
+    },
+    "flake-utils_2": {
+      "locked": {
         "lastModified": 1634851050,
         "narHash": "sha256-N83GlSGPJJdcqhUxSCS/WwW5pksYf3VP1M13cDRTSVA=",
         "owner": "numtide",
@@ -173,7 +209,7 @@
         "type": "github"
       }
     },
-    "flake-utils_2": {
+    "flake-utils_3": {
       "locked": {
         "lastModified": 1629481132,
         "narHash": "sha256-JHgasjPR0/J1J3DRm4KxM4zTyAj4IOJY8vIl75v/kPI=",
@@ -412,11 +448,11 @@
         "which-key": "which-key"
       },
       "locked": {
-        "lastModified": 1636937773,
-        "narHash": "sha256-sNUXthmh1Ct7GCtGAteAuhIK5PiocZEXA+q8eAaumIs=",
+        "lastModified": 1636949456,
+        "narHash": "sha256-MncOjt5yJah9TA5hsXJ7xbUnNpN8eV0FUcknIdVUwd0=",
         "owner": "jordanisaacs",
         "repo": "neovim-flake",
-        "rev": "3583e93b248a8d2f776443212c62d5af5c30462a",
+        "rev": "76ca34ccc05a1dc1731d8ae76b90194bab186f4c",
         "type": "github"
       },
       "original": {
@@ -427,7 +463,7 @@
     },
     "neovim-flake_2": {
       "inputs": {
-        "flake-utils": "flake-utils_2",
+        "flake-utils": "flake-utils_3",
         "nixpkgs": [
           "neovim-flake",
           "neovim-overlay",
@@ -799,7 +835,8 @@
       "inputs": {
         "dwl-flake": "dwl-flake",
         "dwm-flake": "dwm-flake",
-        "flake-utils": "flake-utils",
+        "extra-container": "extra-container",
+        "flake-utils": "flake-utils_2",
         "home-manager": "home-manager",
         "homeage": "homeage",
         "neovim-flake": "neovim-flake",

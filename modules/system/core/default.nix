@@ -29,11 +29,16 @@ in
     hardware.enableRedistributableFirmware = lib.mkDefault true;
 
     environment.systemPackages = with pkgs; [
-      unzip
-      neofetch
-
       # Shells
       zsh
+
+      # Misc. Utilities
+      exa
+      gping
+      inxi
+      usbutils
+      neofetch
+      unzip
 
       # Processors
       jq
@@ -55,16 +60,13 @@ in
       vdpauinfo
       glxinfo
 
-      # utils
-      usbutils
-      inxi
-
       # version ocntrol
       git
 
       # Nix tools
       patchelf
       nix-index
+      nix-tree
       manix
 
       # Text editor
@@ -72,10 +74,6 @@ in
 
       # Scripts
       scripts.sysTools
-    ];
-
-    fonts.fonts = with pkgs; [
-      carlito
     ];
 
     security.sudo.extraConfig = "Defaults env_reset,timestamp_timeout=5";

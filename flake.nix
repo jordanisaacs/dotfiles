@@ -36,11 +36,16 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    extra-container = {
+      url = "github:erikarvstedt/extra-container";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     flake-utils.url = "github:numtide/flake-utils";
     nur.url = "github:nix-community/NUR";
   };
 
-  outputs = { nixpkgs, home-manager, nur, neovim-flake, st-flake, dwm-flake, dwl-flake, homeage, ... }@inputs:
+  outputs = { nixpkgs, home-manager, nur, neovim-flake, st-flake, dwm-flake, dwl-flake, homeage, extra-container, ... }@inputs:
     let
       inherit (nixpkgs) lib;
 
@@ -57,7 +62,7 @@
       }) myPkgs;
 
       inherit (import ./overlays {
-        inherit system pkgs lib nur neovim-flake st-flake dwm-flake homeage scripts myPkgs dwl-flake;
+        inherit system pkgs lib nur neovim-flake st-flake dwm-flake homeage scripts myPkgs dwl-flake extra-container;
       }) overlays;
 
       inherit (util) user;
@@ -94,6 +99,7 @@
             swaylock-pam = true;
           };
         };
+        extraContainer.enable = true;
       };
 
       laptopUsers = [{
@@ -123,6 +129,7 @@
                 enable = true;
                 type = "dwl";
                 background.enable = true;
+                statusbar.enable = true;
                 screenlock.enable = true;
               };
               xorg = {

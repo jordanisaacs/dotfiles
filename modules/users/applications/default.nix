@@ -50,6 +50,9 @@ in
       # Video
       youtube-dl
 
+      # Bookmarks
+      buku
+
       # Font
       (nerdfonts.override { fonts = [ "JetBrainsMono" ]; })
 

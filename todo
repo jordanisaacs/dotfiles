@@ -1,18 +1,33 @@
-Packages
-- Move custom flakes into .dotfiles
+User:
+
+- Notifications
+  - mako?
+- bemenu
+  - Figure out coloring
+- foot
+  - figure out coloring
 - Firefox
   - chrome css for good tree style tabs
+  - move to its own module
+- Waybar
+  - move to its own module
+  - Get dwl tags working
+  - CSS styling
+  - Figure out tooltips and scroll actions
+  - Figure out tray and libappindicator
 - zsh
-  - powerlevel10k
-  - vim mode
-  - bindings
+  - powerlevel10k (update theming)
+  - figure out foot and vi cursor issue
 - nnn
   - figure out xdg and default programs
   - add to user/applications
+- eww
+  - widgets
 
-System
-- Switch to pipewire - DONE
-  - enable media control keys (maybe user?) - DONE
-- Test bluetooth with wh-xm4 and wf-xm3 - DONE
-- Debug gnome-keyring and get it to work on startup - DONE
-- Figure our gnome-keyring prompt without seahorse
+System:
+
+- login manager
+  - switch from agetty to greetd (tuigreet? https://github.com/apognu/tuigreet)
+- move printer and cmu wifi into config as homeage secret
+
+

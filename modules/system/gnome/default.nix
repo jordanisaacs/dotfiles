@@ -1,9 +1,10 @@
-{ pkgs, config, lib, ...  }:
+{ pkgs, config, lib, ... }:
 # https://nixos.wiki/wiki/GNOME#Running_GNOME_programs_outside_of_GNOME
 with lib;
 let
   cfg = config.jd.gnome;
-in {
+in
+{
   options.jd.gnome = {
     enable = mkOption {
       description = "Enable GNOME programs";
@@ -34,14 +35,16 @@ in {
     ] ++ (if cfg.keyring.enable then [
       libsecret
       myPkgs.lssecret
-    ] else []);
+    ] else [ ]);
 
     programs = {
       seahorse.enable = cfg.keyring.enable && cfg.keyring.gui.enable;
     };
 
-    services = {
-      gnome.gnome-keyring.enable = cfg.keyring.enable;
+    services.gnome = {
+      gnome-keyring.enable = cfg.keyring.enable;
+      # Fixes the org.a11y.Bus not provided by .service file error
+      at-spi2-core.enable = true;
     };
   };
 }

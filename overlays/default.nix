@@ -1,4 +1,4 @@
-{ pkgs, nur, dwm-flake, neovim-flake, st-flake, dwl-flake, scripts, homeage, system, lib, myPkgs }:
+{ pkgs, nur, dwm-flake, neovim-flake, st-flake, dwl-flake, scripts, homeage, system, lib, myPkgs, extra-container }:
 
 let
   dwl-config = builtins.readFile ./dwl-config.c;
@@ -57,6 +57,7 @@ in
       };
       inherit homeage;
       inherit myPkgs;
+      inherit extra-container;
     })
   ];
 }

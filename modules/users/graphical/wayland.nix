@@ -50,6 +50,11 @@ in
         description = "Enable background [swaybg]";
       };
 
+      pkg = mkOption {
+        type = types.package;
+        description = "Package to use for swaybg";
+      };
+
       image = mkOption {
         type = types.path;
         description = "Path to image file used for background";
@@ -59,17 +64,26 @@ in
         type = types.enum [ "stretch" "fill" "fit" "center" "tile" ];
         description = "Scaling mode for background";
       };
+    };
+
+    statusbar = {
+      enable = mkOption {
+        type = types.bool;
+        description = "Enable status bar [waybar]";
+      };
 
       pkg = mkOption {
         type = types.package;
-        description = "Package to use for swaybg";
+        description = "Waybar package";
       };
     };
 
     screenlock = {
       enable = mkOption {
         type = types.bool;
-        description = "Enable screen locking, must enable it on system as well for pamd (swaylock)";
+        description = " Enable
+          screen
+          locking, must enable it on system as well for pamd (swaylock)";
       };
 
       #timeout = {
@@ -102,7 +116,7 @@ in
     };
   };
 
-  config = (mkIf cfg.enable) {
+  config = (mkIf cfg.enable) ({
     assertions = [{
       assertion = systemCfg.graphical.wayland.enable;
       message = "To enable xorg for user, it must be enabled for system";
@@ -113,7 +127,7 @@ in
       foot
       bemenu
       wl-clipboard
-      swaybg
+      (if cfg.background.enable then swaybg else null)
       (assert systemCfg.graphical.wayland.swaylock-pam; (if cfg.screenlock.enable then swaylock else null))
     ];
 
@@ -170,5 +184,104 @@ in
         WantedBy = [ "dwl-session.target" ];
       };
     };
-  };
+
+    programs.waybar = mkIf cfg.statusbar.enable {
+      enable = true;
+      package = cfg.statusbar.pkg;
+      settings = [
+        ({
+          layer = "bottom";
+
+          modules-left = [ ];
+          modules-center = [ "clock" ];
+          modules-right = [ "cpu" "memory" "temperature" "battery" "backlight" "pulseaudio" "network" "tray" ];
+
+          gtk-layer-shell = true;
+          modules = {
+            clock = {
+              format = "{:%I:%M %p}";
+              tooltip = true;
+              tooltip-format = "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>";
+            };
+            cpu = {
+              interval = 10;
+              format = "{usage}% ";
+              tooltip = true;
+            };
+            memory = {
+              interval = 30;
+              format = "{used:0.1f}G/{total:0.1f}G ";
+              tooltip = true;
+            };
+            temperature = { };
+            battery = {
+              bat = "BAT1";
+              states = {
+                good = 80;
+                warning = 30;
+                critical = 15;
+              };
+              format = "{capacity}% {icon}";
+              format-charging = "{capacity}% ";
+              format-plugged = "{capacity}% ";
+              format-alt = "{time} {icon}";
+              format-icons = [ "" "" "" "" "" ];
+              tooltip = true;
+              tooltip-format = "{timeTo}";
+            };
+            backlight = {
+              device = "acpi_video1";
+              format = "{percent}% {icon}";
+              format-icons = [ "" "" ];
+              on-scroll-up = "{pkgs.light}/bin/light -A 4";
+              on-scroll-down = "{pkgs.light}/bin/light -U 4";
+            };
+            pulseaudio = {
+              format = "{volume}% {icon} {format_source}";
+              format-bluetooth = "{volume}% {icon} {format_source}";
+              format-bluetooth-muted = "{volume}%  {format_source}";
+              format-muted = "{volume}%  {format_source}";
+              format-source = "{volume}% ";
+              format-source-muted = "{volume}% ";
+              format-icons = {
+                "default" = [ "" "" "" ];
+              };
+              on-scroll-up = "${pkgs.scripts.soundTools}/bin/stools vol up 1";
+              on-scroll-down = "${pkgs.scripts.soundTools}/bin/stools vol down 1";
+              on-click-right = "${pkgs.scripts.soundTools}/bin/stools vol toggle";
+              on-click = "${pkgs.pavucontrol}/bin/pavucontrol";
+              tooltip = true;
+            };
+            network = {
+              interval = 60;
+              interface = "wlp*";
+              format-wifi = "{essid} ({signalStrength}%) ";
+              format-ethernet = "{ipaddr}/{cidr} ";
+              tooltip-format = "{ifname} via {gwaddr} ";
+              format-linked = "{ifname} (No IP) ";
+              format-disconnected = "Disconnected ⚠";
+              format-alt = "{ifname}: {ipaddr}/{cidr}";
+              tooltip = true;
+            };
+            tray = {
+              spacing = 10;
+            };
+          };
+        })
+      ];
+      style = ''
+        * {
+          font-size: 18px;
+        }
+      '';
+      systemd.enable = true;
+    };
+    systemd.user.services.waybar = mkIf cfg.statusbar.enable {
+      Unit.BindsTo = lib.mkForce [ "dwl-session.target" ];
+      Unit.After = lib.mkForce [ "dwl-session.target" ];
+      Install.WantedBy = lib.mkForce [ "dwl-session.target" ];
+    };
+  });
 }
+
+

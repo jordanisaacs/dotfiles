@@ -86,6 +86,7 @@ with builtins;
 
           system.stateVersion = stateVersion;
         }
+        (if systemConfig.extraContainer.enable then pkgs.extra-container.nixosModule else { })
         passthru
       ];
     };

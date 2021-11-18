@@ -8,5 +8,6 @@
     ./laptop
     ./framework
     ./graphical
+    ./extra-container
   ];
 }
