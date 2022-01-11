@@ -102,9 +102,43 @@ in
             platforms = platforms.all;
           };
         })
-        privacy-badger
+        (buildFirefoxXpiAddon {
+          pname = "pinboard-extension";
+          addonId = "pinboardff@pinboard.in";
+          version = "1.1.0";
+          url = "https://addons.mozilla.org/firefox/downloads/file/3722104/pinboard_extension-1.1.0-fx.xpi";
+          sha256 = "sha256-40bE1GJgoOn7HbO85XCzzfLeVWwuitXBXmWKTkrWGII=";
+
+          meta = with lib; {
+            description = "Quick pinboard adder";
+            platforms = pkgs.lib.platforms.all;
+          };
+        })
+        (buildFirefoxXpiAddon {
+          pname = "redirector";
+          addonId = "redirector@einaregilsson.com";
+          version = "3.5.3";
+          url = "https://addons.mozilla.org/firefox/downloads/file/3535009/redirector-3.5.3-an+fx.xpi";
+          sha256 = "sha256-7dvT1ZROdI0L1uy22enPDgwC3O1vQtshqrZBkOccD3E=";
+
+          meta = with lib; {
+            description = "Redirect links";
+            platforms = pkgs.lib.platforms.all;
+          };
+        })
+        (buildFirefoxXpiAddon {
+          pname = "rust-search-extension";
+          addonId = "rust-search-extension@huhu.io";
+          version = "3.5.3";
+          url = "https://addons.mozilla.org/firefox/downloads/file/3859949/rust_search_extension-1.4.0-fx.xpi";
+          sha256 = "sha256-7uCF49A+HePZ0/yv0eOwqK8ENd6N1t4LMMvLq9fxEAA=";
+
+          meta = with lib; {
+            description = "Rust search extension";
+            platforms = pkgs.lib.platforms.all;
+          };
+        })
         bitwarden
-        tree-style-tab
         ublock-origin
         sponsorblock
         multi-account-containers
