@@ -127,6 +127,7 @@ in
       foot
       bemenu
       wl-clipboard
+      libappindicator-gtk3
       (if cfg.background.enable then swaybg else null)
       (assert systemCfg.graphical.wayland.swaylock-pam; (if cfg.screenlock.enable then swaylock else null))
     ];
