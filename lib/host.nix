@@ -72,7 +72,6 @@ with builtins;
           networking.hostName = "${name}";
           networking.interfaces = networkCfg;
           networking.wireless.interfaces = wifi;
-
           networking.networkmanager.enable = true;
           networking.useDHCP = false; # Disable any new interface added that is not in config
 
