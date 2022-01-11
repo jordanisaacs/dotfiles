@@ -49,12 +49,6 @@ in
           ];
         };
       };
-      dwlJD = prev.dwl.override {
-        conf = dwl-config;
-      };
-      nixUnstable = prev.nixUnstable.override {
-        patches = [ ./unset-is-match.patch ];
-      };
       inherit homeage;
       inherit myPkgs;
       inherit extra-container;

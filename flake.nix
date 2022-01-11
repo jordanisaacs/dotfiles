@@ -26,9 +26,7 @@
     };
 
     dwl-flake = {
-      url = "github:jordanisaacs/dwl-flake";
-      inputs.nixpkgs.follows = "nixpkgs";
-      inputs.flake-utils.follows = "flake-utils";
+      url = "github:jordanisaacs/dwl-flake/updates";
     };
 
     homeage = {
@@ -70,7 +68,12 @@
 
       pkgs = import nixpkgs {
         inherit system overlays;
-        config.allowUnfree = true;
+        config = {
+          permittedInsecurePackages = [
+            "electron-9.4.4"
+          ];
+          allowUnfree = true;
+        };
       };
 
       system = "x86_64-linux";
@@ -173,16 +176,7 @@
         framework = host.mkHost {
           name = "framework";
           NICs = [ "wlp170s0" ];
-          kernelPackage = pkgs.linuxPackagesFor (pkgs.linux_5_14.override {
-            argsOverride = rec {
-              src = pkgs.fetchurl {
-                url = "mirror://kernel/linux/kernel/v5.x/linux-${version}.tar.xz";
-                sha256 = "sha256-R/zqmWwMAeWKxfhS/Cltd6NJbFUPMDQVL+536Drjj9o=";
-              };
-              version = "5.12.15";
-              modDirVersion = "5.12.15";
-            };
-          });
+          kernelPackage = pkgs.linuxPackages_latest;
           initrdMods = [ "xhci_pci" "thunderbolt" "nvme" "usb_storage" "sd_mod" ];
           kernelMods = [ "kvm-intel" ];
           kernelParams = [ ];
