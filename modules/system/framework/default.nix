@@ -35,9 +35,9 @@ in
       };
 
       boot.kernelParams = [ "mem_sleep_default=deep" ];
-
+      # See: https://01.org/linuxgraphics/downloads/firmware
       boot.extraModprobeConfig = ''
-        options i915 enable_guc=2
+        options i915 enable_guc=3
         options i915 enable_fbc=1
       '';
     })

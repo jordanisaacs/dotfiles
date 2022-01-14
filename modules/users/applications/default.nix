@@ -32,8 +32,9 @@ in
       # ssh mount
       sshfs
 
-      # File manager
-      nnn
+      # CLI apps
+      nnn # file manager
+      grit # to-do
 
       # Messaging
       slack

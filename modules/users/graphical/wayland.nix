@@ -81,9 +81,7 @@ in
     screenlock = {
       enable = mkOption {
         type = types.bool;
-        description = " Enable
-          screen
-          locking, must enable it on system as well for pamd (swaylock)";
+        description = " Enable screen locking, must enable it on system as well for pamd (swaylock)";
       };
 
       #timeout = {
