@@ -76,12 +76,9 @@
 
       system = "x86_64-linux";
 
-      laptopConfig = {
+      defaultConfig = {
         core.enable = true;
         boot = "encrypted-efi";
-        laptop = {
-          enable = true;
-        };
         gnome = {
           enable = true;
           keyring = {
@@ -103,7 +100,22 @@
         extraContainer.enable = true;
       };
 
-      laptopUsers = [{
+      laptopConfig = defaultConfig // {
+        laptop = {
+          enable = true;
+        };
+      };
+
+      frameworkConfig = laptopConfig // {
+        framework = {
+          enable = true;
+          fprint = {
+            enable = true;
+          };
+        };
+      };
+
+      defaultUser = [{
         name = "jd";
         groups = [ "wheel" "networkmanager" "video" ];
         uid = 1000;
@@ -167,7 +179,7 @@
           kernelMods = [ "kvm-intel" ];
           kernelParams = [ ];
           systemConfig = laptopConfig;
-          users = laptopUsers;
+          users = defaultUser;
           cpuCores = 4;
         };
 
@@ -178,16 +190,22 @@
           initrdMods = [ "xhci_pci" "thunderbolt" "nvme" "usb_storage" "sd_mod" ];
           kernelMods = [ "kvm-intel" ];
           kernelParams = [ ];
-          systemConfig = laptopConfig // {
-            framework = {
-              enable = true;
-              fprint = {
-                enable = true;
-              };
-            };
-          };
-          users = laptopUsers;
+          systemConfig = frameworkConfig;
+          users = defaultUser;
           cpuCores = 8;
+          stateVersion = "21.11";
+        };
+
+        desktop = host.mkHost {
+          name = "desktop";
+          NICs = [ "enp6s0" "wlp5s0" ];
+          kernelPackage = pkgs.linuxPackages_latest;
+          initrdMods = [ "nvme" "xhci_pci" "ahci" "usb_storage" "usbhid" "sd_mod" ];
+          kernelMods = [ "kvm-amd" ];
+          kernelParams = [ ];
+          systemConfig = defaultConfig;
+          users = defaultUser;
+          cpuCores = 12;
           stateVersion = "21.11";
         };
       };
