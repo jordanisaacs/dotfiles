@@ -10,8 +10,6 @@
 
     neovim-flake = {
       url = "github:jordanisaacs/neovim-flake";
-      inputs.nixpkgs.follows = "nixpkgs";
-      inputs.flake-utils.follows = "flake-utils";
     };
     st-flake = {
       url = "github:jordanisaacs/st-flake";

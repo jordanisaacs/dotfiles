@@ -32,8 +32,9 @@ in
       # ssh mount
       sshfs
 
-      # File manager
-      nnn
+      # CLI apps
+      nnn # file manager
+      grit # to-do
 
       # Messaging
       slack
@@ -209,8 +210,14 @@ in
                 "dom.security.https_only_mode" = true;
                 "dom.security.https_only_mode_ever_enabled" = true;
               };
+
+              graphics = {
+                "media.ffmpeg.vaapi.enabled" = true;
+                "media.rdd-ffmpeg.enabled" = true;
+                "media.navigator.medidataencoder_vpx_enabled" = true;
+              };
             in
-            https // uiState // newTab // frameworkHardwareAccel // privacy // telemetry // searchBar;
+            https // uiState // newTab // frameworkHardwareAccel // privacy // telemetry // searchBar // graphics;
         };
       };
     };

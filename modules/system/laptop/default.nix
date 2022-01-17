@@ -26,6 +26,7 @@ in
       cpuFreqGovernor = "powersave";
     };
 
+
     systemd = {
       # Replace suspend mode with hybrid-sleep. So can do hybrid-sleep then hibernate
       # hybrid-sleep broken on framework: https://community.frame.work/t/issues-with-sleep-states-on-linux/7363
@@ -42,6 +43,12 @@ in
     # https://www.kernel.org/doc/html/latest/admin-guide/pm/sleep-states.html
     # Suspend mode -> Hybrid-Sleep. This enables hybrid-sleep then hibernate 
     services = {
+      # Hibernate on low battery. from: https://wiki.archlinux.org/title/laptop#Hibernate_on_low_battery_level
+      udev.extraRules = ''
+        # Suspend the system when battery level drops to 5% or lower
+        SUBSYSTEM=="power_supply", ATTR{status}=="Discharging", ATTR{capacity}=="[0-5]", RUN+="${pkgs.systemd}/bin/systemctl hibernate"
+      '';
+
       logind = {
         # idleaction with startx: https://bbs.archlinux.org/viewtopic.php?id=207536
         # <LeftMouse>https://wiki.archlinux.org/title/Power_management
