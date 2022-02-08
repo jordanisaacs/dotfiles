@@ -16,7 +16,17 @@ in
   config = mkIf (cfg.enable) {
     nix = {
       package = pkgs.nixUnstable;
-      extraOptions = "experimental-features = nix-command flakes";
+      gc = {
+        persistent = true;
+        automatic = true;
+        dates = "weekly";
+        options = "--delete-older-than 14d";
+      };
+      extraOptions = ''
+        keep-outputs = true
+        keep-derivations = true
+        experimental-features = nix-command flakes
+      '';
     };
 
     environment.shells = [ pkgs.zsh pkgs.bash ];
