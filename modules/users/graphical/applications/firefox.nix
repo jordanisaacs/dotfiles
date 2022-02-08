@@ -1,0 +1,176 @@
+{ pkgs, config, lib, ... }:
+with lib;
+
+let
+  cfg = config.jd.graphical.applications;
+  isGraphical =
+    let
+      cfg = config.jd.graphical;
+    in
+    (cfg.xorg.enable == true || cfg.wayland.enable == true);
+in
+{
+  options.jd.graphical.applications.firefox = {
+    enable = mkOption {
+      type = types.bool;
+      description = "Enable firefox with config [firefox]";
+    };
+  };
+
+  config = mkIf (isGraphical && cfg.enable && cfg.firefox.enable) {
+    programs.firefox = {
+      enable = true;
+      extensions = with pkgs.nur.repos.rycee.firefox-addons; [
+        # bypass-paywalls third party
+        (buildFirefoxXpiAddon {
+          pname = "bypass-paywalls-firefox";
+          addonId = "bypasspaywalls@bypasspaywalls";
+          version = "1.7.9";
+          url = "https://github.com/iamadamdev/bypass-paywalls-chrome/releases/latest/download/bypass-paywalls-firefox.xpi";
+          sha256 = "Nk9ZKUPPSV+EFG9iO6W7Dv/iLX2c3Bh2GxV5nMTQ6q8=";
+
+          meta = with lib; {
+            description = "Bypass paywalls for a variety of news sites";
+            license = pkgs.lib.licenses.mit;
+            platforms = pkgs.lib.platforms.all;
+          };
+        })
+        (buildFirefoxXpiAddon {
+          pname = "cookie-quick-manager";
+          addonId = "{60f82f00-9ad5-4de5-b31c-b16a47c51558}";
+          version = "0.5rc2";
+          url = "https://addons.mozilla.org/firefox/downloads/file/3343599/cookie_quick_manager-0.5rc2-an+fx.xpi";
+          sha256 = "uCbkQ0OMiAs5mOQuCZ0OGUn/UUiceItQGTuS74BCbG4=";
+
+          meta = with lib; {
+            description = "Manage cookies better";
+            license = licenses.gpl3;
+            platforms = platforms.all;
+          };
+        })
+        (buildFirefoxXpiAddon {
+          pname = "pinboard-extension";
+          addonId = "pinboardff@pinboard.in";
+          version = "1.1.0";
+          url = "https://addons.mozilla.org/firefox/downloads/file/3722104/pinboard_extension-1.1.0-fx.xpi";
+          sha256 = "sha256-40bE1GJgoOn7HbO85XCzzfLeVWwuitXBXmWKTkrWGII=";
+
+          meta = with lib; {
+            description = "Quick pinboard adder";
+            platforms = pkgs.lib.platforms.all;
+          };
+        })
+        (buildFirefoxXpiAddon {
+          pname = "redirector";
+          addonId = "redirector@einaregilsson.com";
+          version = "3.5.3";
+          url = "https://addons.mozilla.org/firefox/downloads/file/3535009/redirector-3.5.3-an+fx.xpi";
+          sha256 = "sha256-7dvT1ZROdI0L1uy22enPDgwC3O1vQtshqrZBkOccD3E=";
+
+          meta = with lib; {
+            description = "Redirect links";
+            platforms = pkgs.lib.platforms.all;
+          };
+        })
+        (buildFirefoxXpiAddon {
+          pname = "rust-search-extension";
+          addonId = "rust-search-extension@huhu.io";
+          version = "3.5.3";
+          url = "https://addons.mozilla.org/firefox/downloads/file/3859949/rust_search_extension-1.4.0-fx.xpi";
+          sha256 = "sha256-7uCF49A+HePZ0/yv0eOwqK8ENd6N1t4LMMvLq9fxEAA=";
+
+          meta = with lib; {
+            description = "Rust search extension";
+            platforms = pkgs.lib.platforms.all;
+          };
+        })
+        bitwarden
+        ublock-origin
+        sponsorblock
+        multi-account-containers
+        clearurls
+        cookie-autodelete
+        metamask
+      ];
+      profiles = {
+        personal = {
+          id = 0;
+          settings =
+            let
+              newTab =
+                let
+                  activityStream = "browser.newtabpage.activity-stream";
+                in
+                {
+                  "${activityStream}.feeds.topsites" = true;
+                  "${activityStream}.feeds.section.highlights" = true;
+                  "${activityStream}.feeds.section.topstories" = false;
+                  "${activityStream}.feeds.section.highlights.includePocket" = false;
+                  "${activityStream}.section.highlights.includePocket" = false;
+                  "${activityStream}.showSearch" = false;
+                  "${activityStream}.showSponsoredTopSites" = false;
+                  "${activityStream}.showSponsorsed" = false;
+                };
+
+              searchBar = {
+                "browser.urlbar.suggest.quicksuggest.sponsored" = false;
+                "browser.urlbar.suggest.quicksuggest.nonsponsored" = false;
+              };
+
+              telemetry = {
+                "browser.newtabpage.activity-stream.telemetry" = false;
+                "browser.newtabpage.activity-stream.feeds.telemetry" = false;
+                "browser.ping-centre.telemetry" = false;
+                "toolkit.telemetry.reportingpolicy.firstRun" = false;
+                "toolkit.telemetry.unified" = false;
+                "toolkit.telemetry.archive.enabled" = false;
+                "toolkit.telemetry.updatePing.enabled" = false;
+                "toolkit.telemetry.shutdownPingSender.enabled" = false;
+                "toolkit.telemetry.newProfilePing.enabled" = false;
+                "toolkit.telemetry.bhrPing.enabled" = false;
+                "toolkit.telemetry.firstShutdownPing.enabled" = false;
+                "datareporting.healthreport.uploadEnabled" = false;
+                "datareporting.policy.dataSubmissionEnabled" = false;
+                "app.shield.optoutstudies.enable" = false;
+              };
+
+              domPrivacy = {
+                # clipboard events: https://superuser.com/questions/1595994/dont-let-websites-overwrite-clipboard-in-firefox-without-explicitly-giving-perm
+                #"dom.event.clipboardevents.enabled" = false;
+                "dom.battery.enabled" = false;
+              };
+
+              https = {
+                "dom.security.https_only_mode" = true;
+                "dom.security.https_only_mode_ever_enabled" = true;
+              };
+
+              graphics = {
+                "media.ffmpeg.vaapi.enabled" = true;
+                "media.rdd-ffmpeg.enabled" = true;
+                "media.navigator.medidataencoder_vpx_enabled" = true;
+              };
+
+              general_settings = {
+                "browser.aboutConfig.showWarning" = false;
+                "browser.shell.checkDefaultBrowser" = false;
+                "browser.toolbars.bookmarks.visibility" = "newtab";
+                "browser.urlbar.showSearchSuggestionsFirst" = false;
+                "extensions.htmlaboutaddons.inline-options.enabled" = false;
+                "extensions.htmlaboutaddons.recommendations.enabled" = false;
+                "extensions.pocket.enabled" = false;
+              };
+
+              passwords = {
+                "signon.rememberSignons" = false;
+                "signon.autofillForms" = false;
+                "signon.generation.enabled" = false;
+                "signon.management.page.breach-alerts.enabled" = false;
+              };
+            in
+            general_settings // https // newTab // searchBar // domPrivacy // telemetry // graphics;
+        };
+      };
+    };
+  };
+}

@@ -2,6 +2,7 @@
 
 {
   imports = [
+    ./applications
     ./wayland.nix
     ./xorg.nix
     ./shared.nix
