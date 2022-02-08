@@ -162,6 +162,7 @@
             git.enable = true;
             zsh.enable = true;
             ssh.enable = true;
+            direnv.enable = true;
             office365 = {
               enable = false;
               onedriver.enable = false; # pkg currently broken

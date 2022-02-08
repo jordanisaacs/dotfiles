@@ -13,5 +13,6 @@
     ./keybase
     ./pijul
     ./homeage
+    ./direnv
   ];
 }
