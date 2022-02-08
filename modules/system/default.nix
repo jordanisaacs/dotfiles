@@ -9,5 +9,6 @@
     ./framework
     ./graphical
     ./extra-container
+    ./ssh
   ];
 }
