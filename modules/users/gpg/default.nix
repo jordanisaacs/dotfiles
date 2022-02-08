@@ -3,7 +3,8 @@ with lib;
 
 let
   cfg = config.jd.gpg;
-in {
+in
+{
   options.jd.gpg = {
     enable = mkOption {
       description = "enable gpg";
@@ -19,11 +20,14 @@ in {
 
     programs.gpg = {
       enable = true;
+      homedir = "${config.xdg.dataHome}/gnupg";
     };
 
     services.gpg-agent = {
       enable = true;
       pinentryFlavor = "gnome3";
+      enableExtraSocket = true;
+      enableScDaemon = false;
     };
   };
 }
