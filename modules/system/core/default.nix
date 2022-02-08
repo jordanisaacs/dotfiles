@@ -74,9 +74,23 @@ in
 
       # Scripts
       scripts.sysTools
+
+      man-pages
+      man-pages-posix
     ];
 
     security.sudo.extraConfig = "Defaults env_reset,timestamp_timeout=5";
     security.sudo.execWheelOnly = true;
+
+    documentation = {
+      enable = true;
+      dev.enable = true;
+      man = {
+        enable = true;
+        generateCaches = true;
+      };
+      info.enable = true;
+      nixos.enable = true;
+    };
   };
 }
