@@ -46,7 +46,7 @@
       inherit (nixpkgs) lib;
 
       util = import ./lib {
-        inherit system pkgs home-manager lib; inherit overlays;
+        inherit system pkgs home-manager lib overlays inputs;
       };
 
       scripts = import ./scripts {

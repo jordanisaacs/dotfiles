@@ -1,3 +1,4 @@
+{ inputs }:
 { pkgs, config, lib, ... }:
 with lib;
 
@@ -14,20 +15,45 @@ in
   };
 
   config = mkIf (cfg.enable) {
-    nix = {
-      package = pkgs.nixUnstable;
-      gc = {
-        persistent = true;
-        automatic = true;
-        dates = "weekly";
-        options = "--delete-older-than 14d";
+    # Nix search paths/registries from:
+    # https://github.com/gytis-ivaskevicius/flake-utils-plus/blob/166d6ebd9f0de03afc98060ac92cba9c71cfe550/lib/options.nix
+    # Context thread: https://github.com/gytis-ivaskevicius/flake-utils-plus/blob/166d6ebd9f0de03afc98060ac92cba9c71cfe550/lib/options.nix
+    environment.etc = mapAttrs'
+      (name: value: {
+        name = "nix/inputs/${name}";
+        value = { source = value.outPath; };
+      })
+      inputs;
+
+    nix =
+      let
+        flakes = filterAttrs
+          (name: value: value ? outputs)
+          inputs;
+        flakesWithPkgs = filterAttrs
+          (name: value:
+            value.outputs ? legacyPackages || value.outputs ? packages)
+          flakes;
+        nixRegistry = builtins.mapAttrs (name: v: { flake = v; }) flakes;
+      in
+      {
+        registry = nixRegistry;
+        nixPath = mapAttrsToList
+          (name: _: "${name}=/etc/nix/inputs/${name}")
+          flakesWithPkgs;
+        package = pkgs.nixUnstable;
+        gc = {
+          persistent = true;
+          automatic = true;
+          dates = "weekly";
+          options = "--delete-older-than 14d";
+        };
+        extraOptions = ''
+          keep-outputs = true
+          keep-derivations = true
+          experimental-features = nix-command flakes
+        '';
       };
-      extraOptions = ''
-        keep-outputs = true
-        keep-derivations = true
-        experimental-features = nix-command flakes
-      '';
-    };
 
     environment.shells = [ pkgs.zsh pkgs.bash ];
     environment.pathsToLink = [ "/share/zsh" ];

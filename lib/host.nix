@@ -1,4 +1,4 @@
-{ system, pkgs, home-manager, lib, user, ... }:
+{ system, pkgs, home-manager, lib, user, inputs, ... }:
 with builtins;
 {
   mkISO = { name, initrdMods, kernelMods, kernelParams, kernelPackage, systemConfig }: lib.nixosSystem {
@@ -61,7 +61,7 @@ with builtins;
 
       modules = [
         {
-          imports = [ ../modules/system ] ++ sys_users;
+          imports = [ (import ../modules/system { inherit inputs; }) ] ++ sys_users;
 
           jd = systemConfig;
 

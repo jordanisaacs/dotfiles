@@ -1,9 +1,10 @@
+{ inputs }:
 { pkgs, config, lib, ... }:
 {
   imports = [
     ./connectivity
     ./boot
-    ./core
+    (import ./core { inherit inputs; })
     ./gnome
     ./laptop
     ./framework
