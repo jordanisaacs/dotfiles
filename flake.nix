@@ -97,6 +97,7 @@
             swaylock-pam = true;
           };
         };
+        ssh.enable = true;
         extraContainer.enable = true;
       };
 
@@ -138,6 +139,11 @@
         jd = user.mkHMUser {
           userConfig = {
             graphical = {
+              applications = {
+                enable = true;
+                firefox.enable = true;
+                libreoffice.enable = true;
+              };
               wayland = {
                 enable = true;
                 type = "dwl";
@@ -155,6 +161,7 @@
             gpg.enable = true;
             git.enable = true;
             zsh.enable = true;
+            ssh.enable = true;
             office365 = {
               enable = false;
               onedriver.enable = false; # pkg currently broken
