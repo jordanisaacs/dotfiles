@@ -51,9 +51,9 @@ let
     case $1 in
       "clean")
         echo "Running garbage collection"
-        nix-store --gc
+        nix store gc
         echo "Deduplication running... may take a while"
-        nix-store --optimise
+        nix store optimise
       ;;
 
       "update")
@@ -76,16 +76,6 @@ let
         git commit
         git pull --rebase
         git push
-      ;;
-
-      "search")
-        if [ $2 = "--overlay" ]; then
-          pushd ~/.dotfiles
-          nix search .# $3
-          popd
-        else
-          nix search nixpkgs $2
-        fi
       ;;
 
       "find")
@@ -158,6 +148,10 @@ let
         nix-store -qR $(which $2)
       ;;
 
+      "which")
+        nix show-derivation $(which $2) | jq -r '.[].outputs.out.path'
+      ;;
+
       "exec")
         shift 1
         cmd=$1
@@ -201,14 +195,13 @@ let
         echo ""
         echo "Commands:"
         echo "clean - Garbage collect and hard link nix store"
+        echo "apply - Applies current system configuration in dotfiles."
+        echo "apply-user - Applies current home manager configuration in dotfiles."
         echo "update - Updates dotfiles flake."
-        echo "update-index - Updates index of nix Used for exec"
+        echo "index - Updates index of nix used for exec (nix-index)"
         echo "find [--overlay] - Find a nix package (overlay for custom packages)"
         echo "find-doc - Finds documentation on a config item"
         echo "find-cmd - Finds the package a command is in"
-        echo "apply - Applies current system configuration in dotfiles."
-        echo "apply-user - Applies current home manager configuration in dotfiles."
-        echo "shell - Runs a shell defined in flake."
         echo "installed - Lists all installed packages."
         echo "which - Prints the closure of target file"
         echo "exec - executes a command"
@@ -378,7 +371,8 @@ let
 
 
   '';
-in {
+in
+{
   overlay = (final: prev: {
     scripts.sysTools = sysTools;
     scripts.bluetoothTools = bluetoothTools;
