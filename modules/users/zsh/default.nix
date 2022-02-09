@@ -3,7 +3,8 @@ with lib;
 
 let
   cfg = config.jd.zsh;
-in {
+in
+{
   # Interesting configs:
   # https://vermaden.wordpress.com/2021/09/19/ghost-in-the-shell-part-7-zsh-setup/
 
@@ -19,11 +20,12 @@ in {
     let
       # Remove home directory from xdg
       dotDir = builtins.substring ((builtins.stringLength config.home.homeDirectory) + 1) (builtins.stringLength config.xdg.configHome) config.xdg.configHome;
-    in {
+    in
+    {
       home.file."${config.xdg.configHome}/zsh/.p10k.zsh" = {
         source = ./p10k.zsh;
       };
-      
+
       programs.zsh = {
         enable = true;
         enableAutosuggestions = true;
@@ -68,32 +70,35 @@ in {
 
           # https://unix.stackexchange.com/questions/433273/changing-cursor-style-based-on-mode-in-both-zsh-and-vim
           # vi mode
-          # bindkey -v
-          # export KEYTIMEOUT=1
+          bindkey -v
+          export KEYTIMEOUT=1
 
-          # function zle-keymap-select {
-          #   if [[ ''${KEYMAP} == vicmd ]] ||
-          #      [[ $1 = 'block' ]]; then
-          #     echo -ne '\e[2 q'
-          #   elif [[ ''${KEYMAP} == main ]] ||
-          #        [[ ''${KEYMAP} == viins ]] ||
-          #        [[ ''${KEYMAP} = "" ]] ||
-          #        [[ $1 = 'beam' ]]; then
-          #     echo -ne '\e[5 q'
-          #   fi
-          # }
-          # zle -N zle-keymap-select
-          # zle-line-init() {
-          #   zle -K viins
-          #   echo -ne '\e[6 q'
-          # }
-          # zle -N zle-line-init
-          # echo -ne '\e[6 q' # use beam shape cursor on startup
-          # preexec() { echo -ne '\e[6 q' ;} # use beam shape cursor for each new prompt
+          function zle-keymap-select {
+            if [[ ''${KEYMAP} == vicmd ]] ||
+               [[ $1 = 'block' ]]; then
+              echo -ne '\e[2 q'
+            elif [[ ''${KEYMAP} == main ]] ||
+                 [[ ''${KEYMAP} == viins ]] ||
+                 [[ ''${KEYMAP} = "" ]] ||
+                 [[ $1 = 'beam' ]]; then
+              echo -ne '\e[5 q'
+            fi
+          }
+          zle -N zle-keymap-select
+          zle-line-init() {
+            zle -K viins
+            echo -ne '\e[6 q'
+          }
+          zle -N zle-line-init
+          echo -ne '\e[6 q' # use beam shape cursor on startup
+          preexec() { echo -ne '\e[6 q' ;} # use beam shape cursor for each new prompt
 
-          # Source zsh-vi-mode
+          # Source powerlevel10k
           source ${config.xdg.configHome}/zsh/.p10k.zsh
-          source ${pkgs.myPkgs.zsh-vi-mode}/share/zsh-vi-mode/zsh-vi-mode.zsh
+          ${""
+          # Source zsh-vi-mode
+          # source ${pkgs.myPkgs.zsh-vi-mode}/share/zsh-vi-mode/zsh-vi-mode.zsh
+          }
           source ${pkgs.zsh-powerlevel10k}/share/zsh-powerlevel10k/powerlevel10k.zsh-theme
            
           # Disable less(1) history
@@ -104,3 +109,4 @@ in {
     }
   );
 }
+
