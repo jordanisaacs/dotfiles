@@ -164,8 +164,8 @@
             ssh.enable = true;
             direnv.enable = true;
             office365 = {
-              enable = false;
-              onedriver.enable = false; # pkg currently broken
+              enable = true;
+              onedriver.enable = true; # pkg currently broken
             };
             wine = {
               enable = false; # wine things currently broken

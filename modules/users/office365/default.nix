@@ -14,7 +14,8 @@ let
       systemctl --user start onedrive@onedrive
     fi
   '';
-in {
+in
+{
   options.jd.office365 = {
     enable = mkOption {
       description = "Enable office 365";
@@ -27,6 +28,12 @@ in {
         description = "Enable onedriver client";
         type = types.bool;
         default = false;
+      };
+
+      mountpoint = mkOption {
+        description = "Onedriver mount path";
+        type = types.str;
+        default = "${config.home.homeDirectory}/Onedrive";
       };
     };
 
@@ -41,11 +48,11 @@ in {
 
   config = mkIf (cfg.enable) {
     # onedrive from https://github.com/NixOS/nixpkgs/blob/nixos-21.05/nixos/modules/services/networking/onedrive.nix
-    home.packages = (if cfg.onedrive.enable then [ pkgs.onedrive ] else []) ++
-      (if cfg.onedriver.enable then [ pkgs.myPkgs.onedriver ] else [] );
+    home.packages = (if cfg.onedrive.enable then [ pkgs.onedrive ] else [ ]) ++
+      (if cfg.onedriver.enable then [ pkgs.myPkgs.onedriver ] else [ ]);
 
-    systemd.user.services = mkIf (cfg.onedrive.enable) {
-      "onedrive@" = {
+    systemd.user.services = {
+      "onedrive@" = mkIf (cfg.onedrive.enable) {
         Unit = {
           Description = "Onedrive sync service";
         };
@@ -59,16 +66,26 @@ in {
         };
       };
 
-      onedrive-launcher = {
+      onedriver-launcher = mkIf (cfg.onedriver.enable) {
+        Unit = {
+          Description = "onedrive file system mount service";
+        };
+
         Service = {
-          Type = "oneshot";
-          ExecStart = "${onedriveLauncher}/bin/onedrive-launcher";
+          Type = "simple";
+          ExecStart = "${pkgs.myPkgs.onedriver}/bin/onedriver ${cfg.onedriver.mountpoint}";
         };
 
         Install = {
           WantedBy = [ "default.target" ];
         };
       };
+    };
+
+    home.activation = mkIf (cfg.onedriver.enable) {
+      onedriverMountpoint = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+        $DRY_RUN_CMD mkdir -p ${cfg.onedriver.mountpoint}
+      '';
     };
   };
 }
