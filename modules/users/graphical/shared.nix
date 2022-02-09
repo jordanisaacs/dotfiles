@@ -15,7 +15,7 @@ in
         myPkgs.volantes-cursors
         authy
         spotify
-
+        qt5ct
       ];
 
       home.file = {
@@ -33,6 +33,13 @@ in
         ".icons/volantes_cursors" = {
           source = "${pkgs.myPkgs.volantes-cursors}/usr/share/icons/volantes_cursors";
         };
+
+        "${config.xdg.configHome}/qt5ct/qt5ct.conf" = {
+          text = ''
+            [Appearance]
+            icon_theme=la-capitaine-icon-theme
+          '';
+        };
       };
 
       gtk = {
@@ -41,10 +48,18 @@ in
           package = with pkgs; arc-theme;
           name = "Arc-Dark";
         };
+        iconTheme = {
+          package = with pkgs; la-capitaine-icon-theme;
+          name = "La-Capitaine";
+        };
         gtk3.extraConfig = {
           gtk-cursor-theme-name = "volantes_cursors";
           gtk-application-prefer-dark-theme = true;
         };
+      };
+
+      home.sessionVariables = {
+        QT_QPA_PLATFORMTHEME = "qt5ct";
       };
 
       xdg.systemDirs.data = [
@@ -56,7 +71,6 @@ in
         "org/gnome/desktop/interface" = {
           cursor-theme = "volantes_cursors";
           text-scaling-factor = 1.25;
-          icon-theme = "Arc-Dark";
         };
       };
 
@@ -65,6 +79,7 @@ in
       };
     };
 }
+
 
 
 
