@@ -1,0 +1,61 @@
+From cd14bf41f43e07c300a10e00ff562116a6e844a6 Mon Sep 17 00:00:00 2001
+From: Jordan Isaacs <mail@jdisaacs.com>
+Date: Thu, 10 Feb 2022 14:09:01 -0500
+Subject: [PATCH] Patched configure file to enable use of subsituteInPlace
+
+---
+ configure | 16 +++++++++-------
+ 1 file changed, 9 insertions(+), 7 deletions(-)
+
+diff --git a/configure b/configure
+index d5e018b8..b6da51fc 100755
+--- a/configure
++++ b/configure
+@@ -74,8 +74,12 @@ alt_distromatch() {
+ 
+ # define variables
+ # set distributor logo based on distro detected through lsb_release
+-DISTRO=$(format "$(lsb_release -si 2>/dev/null)")
++DISTRO=@DISTRO@
+ DE=$(format "$XDG_CURRENT_DESKTOP")
++GTKDM=@GTKDM@
++PANELDM=@PANELDM@
++DISTLOGO=@DISTLOGO@
++
+ 
+ distro_error=0
+ de_error=0
+@@ -83,8 +87,7 @@ de_error=0
+ wd=$PWD
+ 
+ # update icons for dark/light GTK themes
+-read -p "Use icons for dark GTK+ themes? [y/N] " yn
+-case $yn in
++case $GTKDM in
+     [Yy]* )
+         rm "$wd/actions/22x22" "$wd/devices/scalable" "$wd/panel/16" \
+         "$wd/panel/24" "$wd/places/16x16" "$wd/status/scalable"
+@@ -107,8 +110,8 @@ case $yn in
+         echo "Updated theme to use icons for light GTK+ themes."
+         ;;
+ esac
+-read -p "Use icons for a dark coloured panel? [y/N] " yn
+-case $yn in
++
++case $PANELDM in
+     [Yy]* )
+         ln -sfr "$wd/panel/16-dark" "$wd/panel/16"
+         ln -sfr "$wd/panel/24-dark" "$wd/panel/24"
+@@ -129,8 +132,7 @@ cd "$wd/places/scalable"
+ ! distromatch && alt_distromatch
+ 
+ # prompt for desktop environment integration instead of distro
+-read -p "Use distributor logo from desktop environment? [y/N] " yn
+-case $yn in
++case $DISTLOGO in
+     [Yy]* )
+         case $DE in
+             budgie|budgiegnome) ln -sf distributor-logo-budgie.svg distributor-logo.svg ;;
+-- 
+2.34.1
+

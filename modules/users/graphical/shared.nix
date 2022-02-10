@@ -15,6 +15,9 @@ in
         myPkgs.volantes-cursors
         authy
         spotify
+
+        # qt
+        libsForQt5.qtstyleplugin-kvantum
         qt5ct
       ];
 
@@ -31,14 +34,59 @@ in
         };
 
         ".icons/volantes_cursors" = {
-          source = "${pkgs.myPkgs.volantes-cursors}/usr/share/icons/volantes_cursors";
+          source = "${pkgs.myPkgs.volantes-cursors}/usr/share/icons/volantes-cursors";
         };
 
-        "${config.xdg.configHome}/qt5ct/qt5ct.conf" = {
+        ".icons/la_capitaine_icon_theme" = {
+          source = "${pkgs.myPkgs.la-capitaine-icon-theme}/share/icons/la-capitaine-icon-theme";
+        };
+
+        ".icons/breeze" = {
+          source = "${pkgs.breeze-icons}/share/icons/breeze";
+        };
+
+        ".icons/elementary" = {
+          source = "${pkgs.pantheon.elementary-icon-theme}/share/icons/elementary";
+        };
+
+        ".icons/gnome" = {
+          source = "${pkgs.gnome-icon-theme}/share/icons/gnome";
+        };
+
+        ".icons/hicolor" = {
+          source = "${pkgs.hicolor-icon-theme}/share/icons/hicolor";
+        };
+
+        #".icons/elementary" = {
+        #  source = "${pkgs.pantheon.la-capitaine-icon-theme}/share/";
+        #};
+
+        #".icons/gnome" = {
+        #  source = "${pkgs.myPkgs.la-capitaine-icon-theme}/share/";
+        #};
+
+        #".icons/deepin" = {
+        #  source = "${pkgs.myPkgs.la-capitaine-icon-theme}/share/";
+        #};
+      };
+
+      xdg.configFile = {
+        "qt5ct/qt5ct.conf" = {
           text = ''
             [Appearance]
-            icon_theme=la-capitaine-icon-theme
+            icon_theme=la_capitaine_icon_theme
+            style=kvantum-dark
           '';
+        };
+
+        "Kvantum/kvantum.kvconfig" = {
+          text = ''
+            theme=ArcDark
+          '';
+        };
+
+        "Kvantum/ArcDark" = {
+          source = "${pkgs.arc-kde-theme}/share/Kvantum/ArcDark";
         };
       };
 
@@ -49,8 +97,7 @@ in
           name = "Arc-Dark";
         };
         iconTheme = {
-          package = with pkgs; la-capitaine-icon-theme;
-          name = "La-Capitaine";
+          name = "la_capitaine_icon_theme";
         };
         gtk3.extraConfig = {
           gtk-cursor-theme-name = "volantes_cursors";
@@ -70,6 +117,7 @@ in
       dconf.settings = {
         "org/gnome/desktop/interface" = {
           cursor-theme = "volantes_cursors";
+          icon-theme = "la_capitaine_icon_theme";
           text-scaling-factor = 1.25;
         };
       };
@@ -79,6 +127,7 @@ in
       };
     };
 }
+
 
 
 

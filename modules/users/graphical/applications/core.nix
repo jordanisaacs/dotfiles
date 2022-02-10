@@ -11,4 +11,8 @@ in
       description = "Enable graphical applications";
     };
   };
+
+  config = {
+    home.packages = with pkgs; [ dolphin ];
+  };
 }
