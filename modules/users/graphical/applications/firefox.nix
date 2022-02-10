@@ -21,6 +21,20 @@ in
     programs.firefox = {
       enable = true;
       extensions = with pkgs.nur.repos.rycee.firefox-addons; [
+        (buildFirefoxXpiAddon {
+          pname = "arc-dark-theme-firefox";
+          addonId = "arc-dark-theme@afnankhan";
+          version = "2021.6.2";
+          url = "https://addons.mozilla.org/firefox/downloads/file/3786185/arc_dark_theme-2021.6.2-an+fx.xpi";
+          sha256 = "TRXQCboplZmxi3/HzU5HYs1xEIO0RRzCClliEu6MEEM=";
+
+
+          meta = with lib; {
+            description = "Arc dark theme";
+            license = pkgs.lib.licenses.cc-by-30;
+            platforms = pkgs.lib.platforms.all;
+          };
+        })
         # bypass-paywalls third party
         (buildFirefoxXpiAddon {
           pname = "bypass-paywalls-firefox";
@@ -72,18 +86,7 @@ in
             platforms = pkgs.lib.platforms.all;
           };
         })
-        (buildFirefoxXpiAddon {
-          pname = "rust-search-extension";
-          addonId = "rust-search-extension@huhu.io";
-          version = "3.5.3";
-          url = "https://addons.mozilla.org/firefox/downloads/file/3859949/rust_search_extension-1.4.0-fx.xpi";
-          sha256 = "sha256-7uCF49A+HePZ0/yv0eOwqK8ENd6N1t4LMMvLq9fxEAA=";
-
-          meta = with lib; {
-            description = "Rust search extension";
-            platforms = pkgs.lib.platforms.all;
-          };
-        })
+        rust-search-extension
         bitwarden
         ublock-origin
         sponsorblock
