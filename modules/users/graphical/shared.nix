@@ -34,10 +34,10 @@ in
         };
 
         ".icons/volantes_cursors" = {
-          source = "${pkgs.myPkgs.volantes-cursors}/usr/share/icons/volantes-cursors";
+          source = "${pkgs.myPkgs.volantes-cursors}/usr/share/icons/volantes_cursors";
         };
 
-        ".icons/la_capitaine_icon_theme" = {
+        ".icons/la-capitaine-icon-theme" = {
           source = "${pkgs.myPkgs.la-capitaine-icon-theme}/share/icons/la-capitaine-icon-theme";
         };
 
@@ -74,7 +74,7 @@ in
         "qt5ct/qt5ct.conf" = {
           text = ''
             [Appearance]
-            icon_theme=la_capitaine_icon_theme
+            icon_theme=la-capitaine-icon-theme
             style=kvantum-dark
           '';
         };
@@ -97,7 +97,7 @@ in
           name = "Arc-Dark";
         };
         iconTheme = {
-          name = "la_capitaine_icon_theme";
+          name = "la-capitaine-icon-theme";
         };
         gtk3.extraConfig = {
           gtk-cursor-theme-name = "volantes_cursors";
@@ -117,7 +117,7 @@ in
       dconf.settings = {
         "org/gnome/desktop/interface" = {
           cursor-theme = "volantes_cursors";
-          icon-theme = "la_capitaine_icon_theme";
+          icon-theme = "la-capitaine-icon-theme";
           text-scaling-factor = 1.25;
         };
       };
