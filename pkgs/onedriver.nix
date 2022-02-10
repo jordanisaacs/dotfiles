@@ -1,6 +1,5 @@
 { pkgs, ... }:
 with pkgs;
-# broken currently
 let
   program = buildGoModule
     rec {
@@ -13,7 +12,7 @@ let
       vendorSha256 = "vHmSmluiJdfIvVyAc7Um9v+1I50AGGIYw6la9w8rNso=";
       nativeBuildInputs = [ pkg-config glib-networking ];
       buildInputs = [ go gcc json-glib webkitgtk ];
-      doCheck = false; # fails GUI test
+      doCheck = false; # fails GUI test as build is headless
     };
 
   # Need to wrap to set the glib-networking directory
