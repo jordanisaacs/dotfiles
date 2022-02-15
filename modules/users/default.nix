@@ -14,5 +14,6 @@
     ./pijul
     ./homeage
     ./direnv
+    ./weechat
   ];
 }

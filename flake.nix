@@ -163,6 +163,7 @@
             zsh.enable = true;
             ssh.enable = true;
             direnv.enable = true;
+            weechat.enable = true;
             office365 = {
               enable = true;
               onedriver.enable = true; # pkg currently broken

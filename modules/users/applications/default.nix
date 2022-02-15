@@ -40,7 +40,6 @@ in
       # Messaging
       slack
       discord
-      weechat
 
       # Video conference
       zoom-us
