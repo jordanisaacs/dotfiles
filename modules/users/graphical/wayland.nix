@@ -232,8 +232,8 @@ in
               device = "acpi_video1";
               format = "{percent}% {icon}";
               format-icons = [ "" "" ];
-              on-scroll-up = "{pkgs.light}/bin/light -A 4";
-              on-scroll-down = "{pkgs.light}/bin/light -U 4";
+              on-scroll-up = "${pkgs.light}/bin/light -A 4";
+              on-scroll-down = "${pkgs.light}/bin/light -U 4";
             };
             pulseaudio = {
               format = "{volume}% {icon} {format_source}";
