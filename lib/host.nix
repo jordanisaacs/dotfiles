@@ -32,6 +32,7 @@ with builtins;
     , kernelMods
     , kernelParams
     , kernelPackage
+    , kernelPatches
     , systemConfig
     , cpuCores
     , users
@@ -79,6 +80,7 @@ with builtins;
           boot.kernelModules = kernelMods;
           boot.kernelParams = kernelParams;
           boot.kernelPackages = kernelPackage;
+          boot.kernelPatches = kernelPatches;
 
           nixpkgs.pkgs = pkgs;
           nix.maxJobs = lib.mkDefault cpuCores;

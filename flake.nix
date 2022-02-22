@@ -101,6 +101,10 @@
         extraContainer.enable = true;
       };
 
+      desktopConfig = defaultConfig // {
+        android.enable = true;
+      };
+
       laptopConfig = defaultConfig // {
         laptop = {
           enable = true;
@@ -187,6 +191,7 @@
           initrdMods = [ "xhci_pci" "nvme" "usb_storage" "sd_mod" "rtsx_pci_sdmmc" ];
           kernelMods = [ "kvm-intel" ];
           kernelParams = [ ];
+          kernelPatches = [ ];
           systemConfig = laptopConfig;
           users = defaultUser;
           cpuCores = 4;
@@ -199,6 +204,7 @@
           initrdMods = [ "xhci_pci" "thunderbolt" "nvme" "usb_storage" "sd_mod" ];
           kernelMods = [ "kvm-intel" ];
           kernelParams = [ ];
+          kernelPatches = [ ];
           systemConfig = frameworkConfig;
           users = defaultUser;
           cpuCores = 8;
@@ -212,7 +218,8 @@
           initrdMods = [ "nvme" "xhci_pci" "ahci" "usb_storage" "usbhid" "sd_mod" ];
           kernelMods = [ "kvm-amd" ];
           kernelParams = [ ];
-          systemConfig = defaultConfig;
+          kernelPatches = [ ];
+          systemConfig = desktopConfig;
           users = defaultUser;
           cpuCores = 12;
           stateVersion = "21.11";

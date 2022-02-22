@@ -58,6 +58,10 @@ in
 
       # Typing fonts
       carlito
+
+      # Calculator
+      bc
+      bitwise
     ];
 
     fonts.fontconfig.enable = true;

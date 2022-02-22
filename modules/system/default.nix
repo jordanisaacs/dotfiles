@@ -11,5 +11,6 @@
     ./graphical
     ./extra-container
     ./ssh
+    ./android
   ];
 }
