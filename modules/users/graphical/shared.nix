@@ -91,10 +91,6 @@ in
             source = "${pkgs.breeze-icons}/share/icons/breeze";
           };
 
-          "icons/breeze" = {
-            source = "${pkgs.breeze-icons}/share/icons/breeze";
-          };
-
           "icons/elementary" = {
             source = "${pkgs.pantheon.elementary-icon-theme}/share/icons/elementary";
           };
@@ -106,19 +102,6 @@ in
           "icons/hicolor" = {
             source = "${pkgs.hicolor-icon-theme}/share/icons/hicolor";
           };
-
-          #".icons/elementary" = {
-          #  source = "${pkgs.pantheon.la-capitaine-icon-theme}/share/";
-          #};
-
-          #".icons/gnome" = {
-          #  source = "${pkgs.myPkgs.la-capitaine-icon-theme}/share/";
-          #};
-
-          "icons/deepin" = {
-            source = "${pkgs.deepin-theme}/share/icons/deepin";
-          };
-
         };
       };
 
