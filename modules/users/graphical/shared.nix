@@ -21,75 +21,6 @@ in
         qt5ct
       ];
 
-      home.file = {
-        "${config.xdg.configHome}/wallpapers" = {
-          source = ./wallpapers;
-        };
-
-        ".icons/default/index.theme" = {
-          text = ''
-            [icon theme]
-            Inherits=volantes_cursors
-          '';
-        };
-
-        ".icons/volantes_cursors" = {
-          source = "${pkgs.myPkgs.volantes-cursors}/usr/share/icons/volantes_cursors";
-        };
-
-        ".icons/la-capitaine-icon-theme" = {
-          source = "${pkgs.myPkgs.la-capitaine-icon-theme}/share/icons/la-capitaine-icon-theme";
-        };
-
-        ".icons/breeze" = {
-          source = "${pkgs.breeze-icons}/share/icons/breeze";
-        };
-
-        ".icons/elementary" = {
-          source = "${pkgs.pantheon.elementary-icon-theme}/share/icons/elementary";
-        };
-
-        ".icons/gnome" = {
-          source = "${pkgs.gnome-icon-theme}/share/icons/gnome";
-        };
-
-        ".icons/hicolor" = {
-          source = "${pkgs.hicolor-icon-theme}/share/icons/hicolor";
-        };
-
-        #".icons/elementary" = {
-        #  source = "${pkgs.pantheon.la-capitaine-icon-theme}/share/";
-        #};
-
-        #".icons/gnome" = {
-        #  source = "${pkgs.myPkgs.la-capitaine-icon-theme}/share/";
-        #};
-
-        #".icons/deepin" = {
-        #  source = "${pkgs.myPkgs.la-capitaine-icon-theme}/share/";
-        #};
-      };
-
-      xdg.configFile = {
-        "qt5ct/qt5ct.conf" = {
-          text = ''
-            [Appearance]
-            icon_theme=la-capitaine-icon-theme
-            style=kvantum-dark
-          '';
-        };
-
-        "Kvantum/kvantum.kvconfig" = {
-          text = ''
-            theme=ArcDark
-          '';
-        };
-
-        "Kvantum/ArcDark" = {
-          source = "${pkgs.arc-kde-theme}/share/Kvantum/ArcDark";
-        };
-      };
-
       gtk = {
         enable = true;
         theme = {
@@ -109,10 +40,87 @@ in
         QT_QPA_PLATFORMTHEME = "qt5ct";
       };
 
-      xdg.systemDirs.data = [
-        "${pkgs.gtk3}/share/gsettings-schemas/${pkgs.gtk3.name}"
-        "${pkgs.gsettings-desktop-schemas}/share/gsettings-schemas/${pkgs.gsettings-desktop-schemas.name}"
-      ];
+      xdg = {
+        systemDirs.data = [
+          "${pkgs.gtk3}/share/gsettings-schemas/${pkgs.gtk3.name}"
+          "${pkgs.gsettings-desktop-schemas}/share/gsettings-schemas/${pkgs.gsettings-desktop-schemas.name}"
+        ];
+
+        configFile = {
+          "qt5ct/qt5ct.conf" = {
+            text = ''
+              [Appearance]
+              icon_theme=la-capitaine-icon-theme
+              style=kvantum-dark
+            '';
+          };
+
+          "Kvantum/kvantum.kvconfig" = {
+            text = ''
+              theme=ArcDark
+            '';
+          };
+
+          "Kvantum/ArcDark" = {
+            source = "${pkgs.arc-kde-theme}/share/Kvantum/ArcDark";
+          };
+
+          "wallpapers" = {
+            source = ./wallpapers;
+          };
+        };
+
+
+        dataFile = {
+          "icons/default/index.theme" = {
+            text = ''
+              [icon theme]
+              Inherits=volantes_cursors
+            '';
+          };
+
+          "icons/volantes_cursors" = {
+            source = "${pkgs.myPkgs.volantes-cursors}/usr/share/icons/volantes_cursors";
+          };
+
+          "icons/la-capitaine-icon-theme" = {
+            source = "${pkgs.myPkgs.la-capitaine-icon-theme}/share/icons/la-capitaine-icon-theme";
+          };
+
+          "icons/breeze" = {
+            source = "${pkgs.breeze-icons}/share/icons/breeze";
+          };
+
+          "icons/breeze" = {
+            source = "${pkgs.breeze-icons}/share/icons/breeze";
+          };
+
+          "icons/elementary" = {
+            source = "${pkgs.pantheon.elementary-icon-theme}/share/icons/elementary";
+          };
+
+          "icons/gnome" = {
+            source = "${pkgs.gnome-icon-theme}/share/icons/gnome";
+          };
+
+          "icons/hicolor" = {
+            source = "${pkgs.hicolor-icon-theme}/share/icons/hicolor";
+          };
+
+          #".icons/elementary" = {
+          #  source = "${pkgs.pantheon.la-capitaine-icon-theme}/share/";
+          #};
+
+          #".icons/gnome" = {
+          #  source = "${pkgs.myPkgs.la-capitaine-icon-theme}/share/";
+          #};
+
+          "icons/deepin" = {
+            source = "${pkgs.deepin-theme}/share/icons/deepin";
+          };
+
+        };
+      };
 
       dconf.settings = {
         "org/gnome/desktop/interface" = {
