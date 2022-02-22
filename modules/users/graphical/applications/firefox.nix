@@ -170,6 +170,10 @@ in
                 "signon.generation.enabled" = false;
                 "signon.management.page.breach-alerts.enabled" = false;
               };
+
+              downloads = {
+                "browser.download.useDownloadDir" = false;
+              };
             in
             general_settings // https // newTab // searchBar // domPrivacy // telemetry // graphics;
         };
