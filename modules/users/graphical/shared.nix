@@ -91,6 +91,10 @@ in
             source = "${pkgs.breeze-icons}/share/icons/breeze";
           };
 
+          "icons/breeze-dark" = {
+            source = "${pkgs.breeze-icons}/share/icons/breeze-dark";
+          };
+
           "icons/elementary" = {
             source = "${pkgs.pantheon.elementary-icon-theme}/share/icons/elementary";
           };
