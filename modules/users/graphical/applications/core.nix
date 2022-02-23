@@ -13,6 +13,10 @@ in
   };
 
   config = {
-    home.packages = with pkgs; [ dolphin ];
+    home.packages = with pkgs; [
+      dolphin
+      jdpkgs.rstudioWrapper
+      jdpkgs.texstudioWrapper
+    ];
   };
 }
