@@ -1,33 +1,41 @@
 User:
+    Blocker: MVP custom compositor... flurry :)
 
-- Notifications
-  - mako?
-- bemenu
-  - Figure out coloring
-- foot
-  - figure out coloring
-- Firefox
-  - chrome css for good tree style tabs
-  - move to its own module
-- Waybar
-  - move to its own module
-  - Get dwl tags working
-  - CSS styling
-  - Figure out tooltips and scroll actions
-  - Figure out tray and libappindicator
-- zsh
-  - powerlevel10k (update theming)
-  - figure out foot and vi cursor issue
-- nnn
-  - figure out xdg and default programs
-  - add to user/applications
-- eww
-  - widgets
+    Desktop:
+        Theming:
+        - Waybar indicators, colors, etc
+        - foot coloring
+        - bemenu coloring & font size
+
+        Widgets:
+        - setup some eww widgets
+
+        Notification:
+        - Setup notifications (mako?)
+
+        Systemd:
+        - Fix systemd services. Sometimes programs break and don't realize on wayland
+
+        XDG:
+        - Fix all the default programs
+
+        SSH-Agent:
+        - Setup auto-login bitwarden-cli using gnome-keyring
+        - Bitwarden ssh-agent python script
 
 System:
+    Login manager:
+    - switch from agetty to greetd (tuigreet? https://github.com/apognu/tuigreet)
 
-- login manager
-  - switch from agetty to greetd (tuigreet? https://github.com/apognu/tuigreet)
-- move printer and cmu wifi into config as homeage secret
+    Printer/wifi:
+    - Find a good way to automatically set up
 
+    Waydroid:
+    - Get waydroid up and running
 
+General Repo:
+    Refactoring:
+    - Refactor general functions to be less clunky
+    - Move more out of dotfiles and into jdpkgs
+
+    Re-setup git-crypt for private files
