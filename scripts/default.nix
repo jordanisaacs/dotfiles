@@ -79,12 +79,14 @@ let
       ;;
 
       "find")
-        if [ $2 = "--overlay" ]; then
-          pushd ~/.dotfiles
-          nix search .# $3
-          popd
+        if [ -z "$3" ]; then
+            nix search nixpkgs $2
+        elif [ $3 = "--jd" ]; then
+          nix search github:jordanisaacs/jdpkgs $2
+        elif [ $3 = "--dot" ]; then
+          nix search github:jordanisaacs/dotfiles $2
         else
-          nix search nixpkgs $2
+          echo "Unknown option $3"
         fi
       ;;
 

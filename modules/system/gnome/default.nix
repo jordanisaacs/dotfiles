@@ -34,7 +34,7 @@ in
     environment.systemPackages = with pkgs; [
     ] ++ (if cfg.keyring.enable then [
       libsecret
-      myPkgs.lssecret
+      jdpkgs.lssecret
     ] else [ ]);
 
     programs = {

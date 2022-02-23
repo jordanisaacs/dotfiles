@@ -356,6 +356,26 @@
         "type": "github"
       }
     },
+    "jdpkgs": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1645582518,
+        "narHash": "sha256-wO8MfT6vyY+f0+br5zEXNG0vTAaOAuakST+MperAGHw=",
+        "owner": "jordanisaacs",
+        "repo": "jdpkgs",
+        "rev": "1db1a034be6e662520b16e91ed7dea6e4a313e44",
+        "type": "github"
+      },
+      "original": {
+        "owner": "jordanisaacs",
+        "repo": "jdpkgs",
+        "type": "github"
+      }
+    },
     "kommentary": {
       "flake": false,
       "locked": {
@@ -979,6 +999,7 @@
         "flake-utils": "flake-utils_3",
         "home-manager": "home-manager",
         "homeage": "homeage",
+        "jdpkgs": "jdpkgs",
         "neovim-flake": "neovim-flake",
         "nixpkgs": "nixpkgs_7",
         "nur": "nur",

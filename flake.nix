@@ -8,9 +8,15 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    jdpkgs = {
+      url = "github:jordanisaacs/jdpkgs";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     neovim-flake = {
       url = "github:jordanisaacs/neovim-flake";
     };
+
     st-flake = {
       url = "github:jordanisaacs/st-flake";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -41,7 +47,7 @@
     nur.url = "github:nix-community/NUR";
   };
 
-  outputs = { nixpkgs, home-manager, nur, neovim-flake, st-flake, dwm-flake, dwl-flake, homeage, extra-container, ... }@inputs:
+  outputs = { nixpkgs, jdpkgs, home-manager, nur, neovim-flake, st-flake, dwm-flake, dwl-flake, homeage, extra-container, ... }@inputs:
     let
       inherit (nixpkgs) lib;
 
@@ -53,12 +59,8 @@
         inherit pkgs lib;
       };
 
-      inherit (import ./pkgs {
-        inherit pkgs;
-      }) myPkgs;
-
       inherit (import ./overlays {
-        inherit system pkgs lib nur neovim-flake st-flake dwm-flake homeage scripts myPkgs dwl-flake extra-container;
+        inherit system pkgs lib nur neovim-flake st-flake dwm-flake homeage scripts jdpkgs dwl-flake extra-container;
       }) overlays;
 
       inherit (util) user;

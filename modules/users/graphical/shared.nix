@@ -12,7 +12,7 @@ in
         calibre
         pavucontrol
         pasystray
-        myPkgs.volantes-cursors
+        jdpkgs.volantes-cursors
         authy
         spotify
 
@@ -80,11 +80,11 @@ in
           };
 
           "icons/volantes_cursors" = {
-            source = "${pkgs.myPkgs.volantes-cursors}/usr/share/icons/volantes_cursors";
+            source = "${pkgs.jdpkgs.volantes-cursors}/usr/share/icons/volantes_cursors";
           };
 
           "icons/la-capitaine-icon-theme" = {
-            source = "${pkgs.myPkgs.la-capitaine-icon-theme}/share/icons/la-capitaine-icon-theme";
+            source = "${pkgs.jdpkgs.la-capitaine-icon-theme}/share/icons/la-capitaine-icon-theme";
           };
 
           "icons/breeze" = {

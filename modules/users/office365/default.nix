@@ -49,7 +49,7 @@ in
   config = mkIf (cfg.enable) {
     # onedrive from https://github.com/NixOS/nixpkgs/blob/nixos-21.05/nixos/modules/services/networking/onedrive.nix
     home.packages = (if cfg.onedrive.enable then [ pkgs.onedrive ] else [ ]) ++
-      (if cfg.onedriver.enable then [ pkgs.myPkgs.onedriver ] else [ ]);
+      (if cfg.onedriver.enable then [ pkgs.jdpkgs.onedriverWrapper ] else [ ]);
 
     systemd.user.services = {
       "onedrive@" = mkIf (cfg.onedrive.enable) {
@@ -73,7 +73,7 @@ in
 
         Service = {
           Type = "simple";
-          ExecStart = "${pkgs.myPkgs.onedriver}/bin/onedriver ${cfg.onedriver.mountpoint}";
+          ExecStart = "${pkgs.jdpkgs.onedriverWrapper}/bin/onedriverWrapper ${cfg.onedriver.mountpoint}";
         };
 
         Install = {
