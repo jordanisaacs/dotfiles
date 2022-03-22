@@ -178,7 +178,7 @@
               enable = false; # wine things currently broken
               office365 = false;
             };
-            keybase.enable = true;
+            keybase.enable = false;
             pijul.enable = true;
           };
           username = "jd";
