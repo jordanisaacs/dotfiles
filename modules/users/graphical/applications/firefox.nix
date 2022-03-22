@@ -162,6 +162,7 @@ in
                 "extensions.htmlaboutaddons.inline-options.enabled" = false;
                 "extensions.htmlaboutaddons.recommendations.enabled" = false;
                 "extensions.pocket.enabled" = false;
+                "browser.fullscreen.autohide" = false;
               };
 
               passwords = {
@@ -175,7 +176,7 @@ in
                 "browser.download.useDownloadDir" = false;
               };
             in
-            general_settings // https // newTab // searchBar // domPrivacy // telemetry // graphics;
+            general_settings // https // newTab // searchBar // domPrivacy // telemetry // graphics // downloads;
         };
       };
     };

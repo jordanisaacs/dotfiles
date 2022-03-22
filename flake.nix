@@ -152,7 +152,7 @@
               };
               wayland = {
                 enable = true;
-                type = "dwl";
+                type = "sway";
                 background.enable = true;
                 statusbar.enable = true;
                 screenlock.enable = true;

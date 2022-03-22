@@ -16,7 +16,7 @@ let
     };
   };
 
-  waylandStartup = pkgs.writeShellScriptBin "waylandStartup" ''
+  dwlStartup = pkgs.writeShellScriptBin "dwl-setup" ''
     if [ -z "$DBUS_SESSION_BUS_ADDRESS" ]; then
       eval $(dbus-launch --exit-with-session --sh-syntax)
     fi
@@ -27,9 +27,76 @@ let
       dbus-update-activation-environment --systemd WAYLAND_DISPLAY DISPLAY XDG_CURRENT_DESKTOP
     fi
 
-    systemctl --user import-environment PATH
-
+    systemctl --user import-environment PATH XDG_RUNTIME_DIR WAYLAND_DISPLAY XDG_CURRENT_DESKTOP
     systemctl --user start dwl-session.target
+  '';
+
+  swayStartup = pkgs.writeShellScriptBin "sway-setup" ''
+    if [ -z "$DBUS_SESSION_BUS_ADDRESS" ]; then
+      eval $(dbus-launch --exit-with-session --sh-syntax)
+    fi
+
+    ## https://bbs.archlinux.org/viewtopic.php?id=224652
+    ## Requires --systemd becuase of gnome-keyring error. Unsure how differs from systemctl --user import-environment
+    if command -v dbus-update-activation-environment >/dev/null 2>&1; then
+      dbus-update-activation-environment --systemd WAYLAND_DISPLAY DISPLAY XDG_CURRENT_DESKTOP SWAYSOCK
+    fi
+
+    systemctl --user import-environment PATH
+    systemctl --user start sway-session.target
+  '';
+
+  swayConfig = ''
+    exec ${swayStartup}/bin/sway-setup
+
+    # Alt key
+    set $mod Mod1
+      
+    set $left h
+    set $down j
+    set $up k
+    set $right l
+
+    set $term ${pkgs.foot}/bin/foot
+    set $menu ${pkgs.bemenu}/bin | bemenu | xargs swaymsg exec --
+
+    bindsym $mod+Shift+Return exec $term
+    bindsym $mod+Shift+c kill
+    bindsym $mod+p exec $menu
+    bindsym $mod+Shift+q exec swaynag -t warning -m 'Do you really want to exit?' -B 'Yes' 'swaymsg exit'
+
+    bindsym $mod+g+$left focus left
+    bindsym $mod+g+$down focus down
+    bindsym $mod+g+$up focus up
+    bindsym $mod+g+$right focus right
+
+    bindsym $mod+v splitv
+    bindsym $mod+b splith
+
+    bindsym $mod+a focus parent
+
+    bindsym $mod+Shift+$left move left
+    bindsym $mod+Shift+$down move down
+    bindsym $mod+Shift+$up move up
+    bindsym $mod+Shift+$right move right
+
+    bindsym $mod+r+$left resize shrink width 5px
+    bindsym $mod+r+$down resize grow height 5px
+    bindsym $mod+r+$up resize shrink height 5px
+    bindsym $mod+r+$right resize grow width 5px
+
+    bindsym $mod+m fullscreen toggle
+
+    smart_borders on
+    default_border pixel 2
+    output eDP-1 scale 1
+
+    input "type:touchpad" {
+      dwt enabled
+      tap enabled
+      natural_scroll enabled
+      drag enabled
+    }
   '';
 in
 {
@@ -40,8 +107,8 @@ in
     };
 
     type = mkOption {
-      type = types.enum [ "dwl" ];
-      description = ''What desktop/wm to use. Options: "dwl"'';
+      type = types.enum [ "dwl" "sway" ];
+      description = ''What desktop/wm to use. Options: "dwl", "sway"'';
     };
 
     background = {
@@ -120,8 +187,8 @@ in
       message = "To enable xorg for user, it must be enabled for system";
     }];
 
-    home.packages = with pkgs; mkIf (cfg.type == "dwl") [
-      dwlJD
+    home.packages = with pkgs; [
+      (if (cfg.type == "dwl") then dwlJD else sway)
       foot
       bemenu
       wl-clipboard
@@ -142,28 +209,63 @@ in
             export MOZ_ENABLE_WAYLAND=1
             export XDG_CURRENT_DESKTOP=sway
 
-            ${dwlJD}/bin/dwl -s "${waylandStartup}/bin/waylandStartup"
+            ${if (cfg.type == "dwl") then ''
+              ${dwlJD}/bin/dwl -s "${waylandStartup}/bin/waylandStartup"
+            '' else ''
+              ${pkgs.sway}/bin/sway
+            ''
+            }
             wait $!
-            systemctl --user stop dwl-session.target
             systemctl --user stop graphical-session.target
             systemctl --user stop graphical-session-pre.target
+
+            # Wait until the units actually stop.
+            while [ -n "$(systemctl --user --no-legend --state=deactivating list-units)" ]; do
+              sleep 0.5
+            done
           '';
         };
 
-        "${config.xdg.configHome}/foot/foot.ini" = {
-          text = ''
-            pad=2x2 center
-            font=JetBrainsMono Nerd Font Mono
-          '';
+        "${config.xdg.configHome}/foot/foot.ini" = { };
+      };
+
+    xdg.configFile = {
+      "foot/foot.ini" = {
+        text = ''
+          pad=2x2 center
+          font=JetBrainsMono Nerd Font Mono
+        '';
+      };
+      "sway/config" = {
+        text = swayConfig;
+      };
+    };
+
+    systemd.user.targets = {
+      dwl-session = mkIf (cfg.type == "dwl") {
+        Unit = {
+          Description = "dwl compositor session";
+          Documentation = [ "man:systemd.special(7)" ];
+          BindsTo = [ "wayland-session.target" ];
+          After = [ "wayland-session.target" ];
         };
       };
 
-    systemd.user.targets.dwl-session = {
-      Unit = {
-        Description = "dwl compositor session";
-        Documentation = [ "man:systemd.special(7)" ];
-        BindsTo = [ "graphical-session.target" ];
-        After = [ "graphical-session-pre.target" ];
+      sway-session = mkIf (cfg.type == "sway") {
+        Unit = {
+          Description = "sway compositor session";
+          Documentation = [ "man:systemd.special(7)" ];
+          BindsTo = [ "wayland-session.target" ];
+          After = [ "wayland-session.target" ];
+        };
+      };
+
+      wayland-session = {
+        Unit = {
+          Description = "sway compositor session";
+          BindsTo = [ "graphical-session.target" ];
+          After = [ "graphical-session.target" ];
+        };
       };
     };
 
@@ -171,8 +273,8 @@ in
       Unit = {
         Description = "swaybg background service";
         Documentation = [ "man:swabyg(1)" ];
-        BindsTo = [ "dwl-session.target" ];
-        After = [ "dwl-session.target" ];
+        BindsTo = [ "wayland-session.target" ];
+        After = [ "wayland-session.target" ];
       };
 
       Service = {
@@ -180,7 +282,7 @@ in
       };
 
       Install = {
-        WantedBy = [ "dwl-session.target" ];
+        WantedBy = [ "wayland-session.target" ];
       };
     };
 
@@ -275,10 +377,11 @@ in
       '';
       systemd.enable = true;
     };
+
     systemd.user.services.waybar = mkIf cfg.statusbar.enable {
-      Unit.BindsTo = lib.mkForce [ "dwl-session.target" ];
-      Unit.After = lib.mkForce [ "dwl-session.target" ];
-      Install.WantedBy = lib.mkForce [ "dwl-session.target" ];
+      Unit.BindsTo = lib.mkForce [ "wayland-session.target" ];
+      Unit.After = lib.mkForce [ "wayland-session.target" ];
+      Install.WantedBy = lib.mkForce [ "wayland-session.target" ];
     };
   });
 }
