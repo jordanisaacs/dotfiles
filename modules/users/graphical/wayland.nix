@@ -59,7 +59,7 @@ let
     set $right l
 
     set $term ${pkgs.foot}/bin/foot
-    set $menu ${pkgs.j4-dmenu-desktop}/bin/j4-dmenu-desktop --dmenu="BEMENU_SCALE=2 ${pkgs.bemenu}/bin/bemenu -i -l 8 --scrollbar autohide" --term="$term" | xargs swaymsg exec --
+    set $menu ${pkgs.j4-dmenu-desktop}/bin/j4-dmenu-desktop --dmenu="BEMENU_SCALE=2 ${pkgs.bemenu}/bin/bemenu -i -l 8 --scrollbar autohide" --term="$term" --no-generic | xargs swaymsg exec --
 
     bindsym $mod+Shift+Return exec $term
     bindsym $mod+Shift+c kill
