@@ -120,11 +120,12 @@
             enable = true;
           };
         };
+        windows.enable = true;
       };
 
       defaultUser = [{
         name = "jd";
-        groups = [ "wheel" "networkmanager" "video" ];
+        groups = [ "wheel" "networkmanager" "video" "libvirtd" ];
         uid = 1000;
         shell = pkgs.zsh;
       }];

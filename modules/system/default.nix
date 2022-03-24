@@ -12,5 +12,6 @@
     ./extra-container
     ./ssh
     ./android
+    ./windows
   ];
 }
