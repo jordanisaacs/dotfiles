@@ -39,7 +39,6 @@ in
 
       # Messaging
       slack
-      discord
 
       # Video conference
       zoom-us

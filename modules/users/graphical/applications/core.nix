@@ -15,8 +15,22 @@ in
   config = {
     home.packages = with pkgs; [
       dolphin
+      discord
+
       jdpkgs.rstudioWrapper
       jdpkgs.texstudioWrapper
+
+      libsixel
     ];
+
+    xdg.configFile = {
+      "discord/settings.json" = {
+        text = ''
+          {
+            "SKIP_HOST_UPDATE": true
+          }
+        '';
+      };
+    };
   };
 }
