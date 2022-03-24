@@ -86,8 +86,9 @@ let
     bindsym $mod+r+$up resize shrink height 5px
     bindsym $mod+r+$right resize grow width 5px
 
-    bindsym $mod+m fullscreen toggle
-    bindsym $mod+t fullscreen disable, floating disable
+    bindsym $mod+Shift+space fullscreen toggle
+    bindsym $mod+m layout stacking
+    bindsym $mod+t fullscreen disable, floating disable, layout default
 
     bindsym --locked XF86AudioRaiseVolume exec \
       ${pkgs.scripts.soundTools}/bin/stools vol up 5
