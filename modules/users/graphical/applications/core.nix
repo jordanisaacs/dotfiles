@@ -16,6 +16,7 @@ in
     home.packages = with pkgs; [
       dolphin
       discord
+      okular
 
       jdpkgs.rstudioWrapper
       jdpkgs.texstudioWrapper

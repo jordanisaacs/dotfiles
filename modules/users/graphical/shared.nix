@@ -68,6 +68,13 @@ in
           "wallpapers" = {
             source = ./wallpapers;
           };
+
+          "kdeglobals" = {
+            text = ''
+              [General]
+              TerminalApplication=${pkgs.foot}/bin/foot
+            '';
+          };
         };
 
 
@@ -106,6 +113,22 @@ in
           "icons/hicolor" = {
             source = "${pkgs.hicolor-icon-theme}/share/icons/hicolor";
           };
+
+          # https://wiki.archlinux.org/title/XDG_MIME_Applications#New_MIME_types
+          # https://specifications.freedesktop.org/shared-mime-info-spec/shared-mime-info-spec-latest.html#idm46292897757504
+          # "mime/text/x-r-markdown.xml" = {
+          #   text = ''
+          #     <?xml version="1.0" encoding="UTF-8"?>
+          #     <mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
+          #       <mime-type type="text/x-r-markdown">
+          #         <comment>RMarkdown file</comment>
+          #         <icon name="text-x-r-markdown"/>
+          #         <glob pattern="*.Rmd"/>
+          #         <glob pattern="*.Rmarkdown"/>
+          #       </mime-type>
+          #     </mime-info>
+          #   '';
+          # };
         };
       };
 
@@ -119,6 +142,27 @@ in
 
       services = {
         gnome-keyring.enable = true;
+      };
+
+      xdg = {
+        mime.enable = true;
+        mimeApps = {
+          enable = true;
+          defaultApplications = {
+            "application/pdf" = "okularApplication_pdf.desktop";
+            "application/x-shellscript" = "nvim.desktop";
+            "application/x-perl" = "nvim.desktop";
+            "application/json" = "nvim.desktop";
+            "text/x-readme" = "nvim.desktop";
+            "text/plain" = "nvim.desktop";
+            "text/markdown" = "nvim.desktop";
+            "text/x-csrc" = "nvim.desktop";
+            "text/x-chdr" = "nvim.desktop";
+            "text/x-python" = "nvim.desktop";
+            "text/x-tex" = "texstudio.desktop";
+            "text/x-makefile" = "nvim.desktop";
+          };
+        };
       };
     };
 }
