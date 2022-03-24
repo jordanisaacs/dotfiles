@@ -15,6 +15,8 @@ in
   config = {
     home.packages = with pkgs; [
       dolphin
+      okular
+
       jdpkgs.rstudioWrapper
       jdpkgs.texstudioWrapper
     ];
