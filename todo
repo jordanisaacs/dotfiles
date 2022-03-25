@@ -16,9 +16,6 @@ User:
         Systemd:
         - Fix systemd services. Sometimes programs break and don't realize on wayland
 
-        XDG:
-        - Fix all the default programs
-
         SSH-Agent:
         - Setup auto-login bitwarden-cli using gnome-keyring
         - Bitwarden ssh-agent python script
@@ -33,9 +30,15 @@ System:
     Waydroid:
     - Get waydroid up and running
 
+    Win10:
+    - Get qemu working
+
 General Repo:
     Refactoring:
     - Refactor general functions to be less clunky
     - Move more out of dotfiles and into jdpkgs
+
+    Submodules:
+    - Switch to submodules to fix all the nested sections
 
     Re-setup git-crypt for private files
