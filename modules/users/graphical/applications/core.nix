@@ -21,6 +21,7 @@ in
       jdpkgs.rstudioWrapper
       jdpkgs.texstudioWrapper
 
+      flameshot
       libsixel
     ];
 
