@@ -9,6 +9,7 @@ in
     home.packages = with pkgs; [
       vimiv-qt
       pinta
+      inkscape
     ];
 
     xdg.configFile = {
