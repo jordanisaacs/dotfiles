@@ -241,15 +241,13 @@
       "locked": {
         "lastModified": 1638122382,
         "narHash": "sha256-sQzZzAbvKEqN9s0bzWuYmRaA03v40gaJ4+iL1LXjaeI=",
-        "owner": "numtide",
-        "repo": "flake-utils",
+        "path": "/nix/store/qcvnd2dsa5a3h4gq8x5x7hds6z85i4dw-source",
         "rev": "74f7e4319258e287b0f9cb95426c9853b282730b",
-        "type": "github"
+        "type": "path"
       },
       "original": {
-        "owner": "numtide",
-        "repo": "flake-utils",
-        "type": "github"
+        "id": "flake-utils",
+        "type": "indirect"
       }
     },
     "flake-utils_5": {
@@ -297,6 +295,22 @@
         "owner": "ellisonleao",
         "repo": "glow.nvim",
         "type": "github"
+      }
+    },
+    "hare-vim": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1645709211,
+        "narHash": "sha256-9L9czxcJeJnIVYtgN7/dngb1VVEjZPjmpcU09+DHXOI=",
+        "ref": "master",
+        "rev": "d15cbd00575bc517dfd54d1d27a4de18223e3a9c",
+        "revCount": 30,
+        "type": "git",
+        "url": "https://git.sr.ht/~sircmpwn/hare.vim"
+      },
+      "original": {
+        "type": "git",
+        "url": "https://git.sr.ht/~sircmpwn/hare.vim"
       }
     },
     "home-manager": {
@@ -363,11 +377,32 @@
         ]
       },
       "locked": {
-        "lastModified": 1648203279,
-        "narHash": "sha256-kqTU1es+3NPA2lHV0tumDBjRhUaUvbXgJLQT71Yv0Ig=",
+        "lastModified": 1648810170,
+        "narHash": "sha256-KbfVy3vwforZt4ujE7ohmp+tPi3ijT49Fe7JJ2dvYRg=",
         "owner": "jordanisaacs",
         "repo": "jdpkgs",
-        "rev": "17929b8bcdbbbfcb2b56105a6b31a37c1c01d3cb",
+        "rev": "c8060cdcb110eb259c7a9c7e673030524204a83c",
+        "type": "github"
+      },
+      "original": {
+        "owner": "jordanisaacs",
+        "repo": "jdpkgs",
+        "type": "github"
+      }
+    },
+    "jdpkgs_2": {
+      "inputs": {
+        "nixpkgs": [
+          "neovim-flake",
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1645770577,
+        "narHash": "sha256-Ad5sVL70SFzfH7GoW0Vk1XOuSvJjD8kF4+gtMxwtLMs=",
+        "owner": "jordanisaacs",
+        "repo": "jdpkgs",
+        "rev": "a940623ce40854cbbe21e30356d105b7a959ec8c",
         "type": "github"
       },
       "original": {
@@ -458,7 +493,7 @@
     },
     "naersk": {
       "inputs": {
-        "nixpkgs": "nixpkgs_5"
+        "nixpkgs": "nixpkgs_4"
       },
       "locked": {
         "lastModified": 1639947939,
@@ -486,14 +521,16 @@
         "flake-utils": "flake-utils_4",
         "gitsigns-nvim": "gitsigns-nvim",
         "glow-nvim": "glow-nvim",
+        "hare-vim": "hare-vim",
         "indent-blankline": "indent-blankline",
+        "jdpkgs": "jdpkgs_2",
         "kommentary": "kommentary",
         "lsp-signature": "lsp-signature",
         "lspkind": "lspkind",
         "lspsaga": "lspsaga",
         "lualine": "lualine",
         "neovim-overlay": "neovim-overlay",
-        "nixpkgs": "nixpkgs_4",
+        "nixpkgs": "nixpkgs_3",
         "null-ls": "null-ls",
         "nvim-autopairs": "nvim-autopairs",
         "nvim-bufferline-lua": "nvim-bufferline-lua",
@@ -517,16 +554,17 @@
         "telescope": "telescope",
         "todo-comments": "todo-comments",
         "tokyonight": "tokyonight",
+        "tree-sitter-hare": "tree-sitter-hare",
         "trouble": "trouble",
         "vim-vsnip": "vim-vsnip",
         "which-key": "which-key"
       },
       "locked": {
-        "lastModified": 1642458431,
-        "narHash": "sha256-8gEMVV0cUSFVULGxibPRWSwCVczOCBc1DqJIYMhdr8M=",
+        "lastModified": 1645771706,
+        "narHash": "sha256-gReB0HCg88WDP0hkCORaVtCaV0mDkFie9Ue2t/MIPRU=",
         "owner": "jordanisaacs",
         "repo": "neovim-flake",
-        "rev": "af6104a7e98397cda638dff1ea7c98f3c3cc3fc8",
+        "rev": "d5fc2d3e23dcb4f1dd7c55ded2e0f431d84653ea",
         "type": "github"
       },
       "original": {
@@ -560,7 +598,10 @@
       "inputs": {
         "flake-compat": "flake-compat",
         "neovim-flake": "neovim-flake_2",
-        "nixpkgs": "nixpkgs_3"
+        "nixpkgs": [
+          "neovim-flake",
+          "nixpkgs"
+        ]
       },
       "locked": {
         "lastModified": 1642061982,
@@ -593,11 +634,11 @@
     },
     "nixpkgs_2": {
       "locked": {
-        "lastModified": 1642104392,
-        "narHash": "sha256-m71b7MgMh9FDv4MnI5sg9MiBVW6DhE1zq+d/KlLWSC8=",
+        "lastModified": 1641887635,
+        "narHash": "sha256-kDGpufwzVaiGe5e1sBUBPo9f1YN+nYHJlYqCaVpZTQQ=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "5aaed40d22f0d9376330b6fa413223435ad6fee5",
+        "rev": "b2737d4980a17cc2b7d600d7d0b32fd7333aca88",
         "type": "github"
       },
       "original": {
@@ -608,22 +649,6 @@
       }
     },
     "nixpkgs_3": {
-      "locked": {
-        "lastModified": 1642104392,
-        "narHash": "sha256-m71b7MgMh9FDv4MnI5sg9MiBVW6DhE1zq+d/KlLWSC8=",
-        "owner": "nixos",
-        "repo": "nixpkgs",
-        "rev": "5aaed40d22f0d9376330b6fa413223435ad6fee5",
-        "type": "github"
-      },
-      "original": {
-        "owner": "nixos",
-        "ref": "nixos-unstable",
-        "repo": "nixpkgs",
-        "type": "github"
-      }
-    },
-    "nixpkgs_4": {
       "locked": {
         "lastModified": 1641969095,
         "narHash": "sha256-WCiFqG6+E5NmeI6xnw/fxuKHgdsfb8xjL8N9Gxu4/hU=",
@@ -639,7 +664,7 @@
         "type": "github"
       }
     },
-    "nixpkgs_5": {
+    "nixpkgs_4": {
       "locked": {
         "lastModified": 1641969095,
         "narHash": "sha256-WCiFqG6+E5NmeI6xnw/fxuKHgdsfb8xjL8N9Gxu4/hU=",
@@ -653,7 +678,7 @@
         "type": "indirect"
       }
     },
-    "nixpkgs_6": {
+    "nixpkgs_5": {
       "locked": {
         "lastModified": 1630481079,
         "narHash": "sha256-leWXLchbAbqOlLT6tju631G40SzQWPqaAXQG3zH1Imw=",
@@ -669,7 +694,7 @@
         "type": "github"
       }
     },
-    "nixpkgs_7": {
+    "nixpkgs_6": {
       "locked": {
         "lastModified": 1648069223,
         "narHash": "sha256-BXzQV8p/RR440EB9qY0ULYfTH0zSW1stjUCYeP4SF+E=",
@@ -974,7 +999,7 @@
     "rnix-lsp": {
       "inputs": {
         "naersk": "naersk",
-        "nixpkgs": "nixpkgs_6",
+        "nixpkgs": "nixpkgs_5",
         "utils": "utils"
       },
       "locked": {
@@ -1001,7 +1026,7 @@
         "homeage": "homeage",
         "jdpkgs": "jdpkgs",
         "neovim-flake": "neovim-flake",
-        "nixpkgs": "nixpkgs_7",
+        "nixpkgs": "nixpkgs_6",
         "nur": "nur",
         "st-flake": "st-flake"
       }
@@ -1107,6 +1132,22 @@
         "owner": "folke",
         "repo": "tokyonight.nvim",
         "type": "github"
+      }
+    },
+    "tree-sitter-hare": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1618403902,
+        "narHash": "sha256-u8mqBVMxbaFQB6uQTcd5Cln6kRAZQ9blqa2TwPvJkUI=",
+        "ref": "master",
+        "rev": "bc26a6a949f2e0d98b7bfc437d459b250900a165",
+        "revCount": 8,
+        "type": "git",
+        "url": "https://git.sr.ht/~ecmma/tree-sitter-hare"
+      },
+      "original": {
+        "type": "git",
+        "url": "https://git.sr.ht/~ecmma/tree-sitter-hare"
       }
     },
     "trouble": {

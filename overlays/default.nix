@@ -6,7 +6,7 @@ in
 {
   overlays = [
     nur.overlay
-    neovim-flake.overlay."${system}"
+    neovim-flake.overlay
     dwl-flake.overlay."${system}"
     scripts.overlay
     (final: prev: {
