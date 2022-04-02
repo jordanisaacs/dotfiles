@@ -73,6 +73,7 @@ in
       gping
       inxi
       usbutils
+      dnsutils
       neofetch
       unzip
 
