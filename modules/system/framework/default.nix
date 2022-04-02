@@ -34,6 +34,30 @@ in
         };
       };
 
+      # wireguard
+      networking = {
+        nat.enable = true;
+        nat.externalInterface = "eth0";
+        nat.internalInterfaces = [ "thevoid" ];
+
+        wireguard.interfaces = {
+          thevoid = {
+            ips = [ "10.55.1.2/16" ];
+
+            privateKeyFile = "/keys/wireguard/private";
+
+            peers = [
+              {
+                publicKey = "mgDg5mc/60FatP+/pUgHun1e6a7xaiw2wWVEPtjPfGo=";
+                allowedIPs = [ "10.55.0.1/32" ];
+                endpoint = "172.26.26.90:51820";
+              }
+            ];
+          };
+        };
+      };
+
+
       boot.kernelParams = [ "mem_sleep_default=deep" ];
       # See: https://01.org/linuxgraphics/downloads/firmware
       boot.extraModprobeConfig = ''

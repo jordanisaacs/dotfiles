@@ -24,6 +24,9 @@ System:
     Login manager:
     - switch from agetty to greetd (tuigreet? https://github.com/apognu/tuigreet)
 
+    Wireguard:
+    - Refactor into single module with functions to make it "automagic"
+
     Printer/wifi:
     - Find a good way to automatically set up
 
