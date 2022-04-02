@@ -91,6 +91,7 @@
           bluetooth.enable = true;
           sound.enable = true;
           printing.enable = true;
+          firewall.enable = true;
         };
         graphical = {
           xorg.enable = true;
@@ -205,17 +206,7 @@
         framework = host.mkHost {
           name = "framework";
           NICs = [ "wlp170s0" ];
-          # kernelPackage = pkgs.linuxPackages_latest;
-          kernelPackage = pkgs.linuxPackagesFor (pkgs.linux_5_16.override {
-            argsOverride = rec {
-              src = pkgs.fetchurl {
-                url = "mirror://kernel/linux/kernel/v5.x/linux-${version}.tar.xz";
-                sha256 = "zu5NkFtH8wFAxvm4FZMNqQvAmsSjF+diP+fobMY38fw=";
-              };
-              version = "5.16.11";
-              modDirVersion = "5.16.11";
-            };
-          });
+          kernelPackage = pkgs.linuxPackages_latest;
           initrdMods = [ "xhci_pci" "thunderbolt" "nvme" "usb_storage" "sd_mod" ];
           kernelMods = [ "kvm-intel" ];
           kernelParams = [ ];
