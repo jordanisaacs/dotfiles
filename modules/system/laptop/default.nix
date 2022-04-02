@@ -34,8 +34,6 @@ in
       # Change suspendstate to deep for framework
       sleep.extraConfig = ''
         HibernateDelaySec=30min
-        SuspendMode=suspend
-        SuspendState=disk
       '';
     };
 
