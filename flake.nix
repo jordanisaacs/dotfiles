@@ -106,6 +106,7 @@
       desktopConfig = defaultConfig // {
         android.enable = true;
         windows.enable = true;
+        desktop.enable = true;
       };
 
       laptopConfig = defaultConfig // {

@@ -13,5 +13,6 @@
     ./ssh
     ./android
     ./windows
+    ./desktop
   ];
 }
