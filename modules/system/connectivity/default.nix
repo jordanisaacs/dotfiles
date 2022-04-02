@@ -18,6 +18,12 @@ in
       default = false;
     };
 
+    firewall.enable = mkOption {
+      description = "Enable firewall";
+      type = types.bool;
+      default = false;
+    };
+
     printing.enable = mkOption {
       description = "Enable printer";
       type = types.bool;
@@ -41,6 +47,7 @@ in
     ] else [ ]);
 
     networking.wireless.enable = cfg.wifi.enable;
+    networking.firewall.enable = cfg.firewall.enable;
 
     security.rtkit.enable = cfg.sound.enable;
     services.pipewire = {

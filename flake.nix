@@ -91,6 +91,7 @@
           bluetooth.enable = true;
           sound.enable = true;
           printing.enable = true;
+          firewall.enable = true;
         };
         graphical = {
           xorg.enable = true;
