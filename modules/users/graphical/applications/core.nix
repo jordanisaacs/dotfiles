@@ -17,6 +17,7 @@ in
       dolphin
       discord
       okular
+      wdisplays
 
       jdpkgs.rstudioWrapper
       jdpkgs.texstudioWrapper
