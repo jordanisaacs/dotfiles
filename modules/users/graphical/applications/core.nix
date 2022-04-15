@@ -21,6 +21,7 @@ in
 
       jdpkgs.rstudioWrapper
       jdpkgs.texstudioWrapper
+      jdpkgs.microsoft-edge-stable
 
       flameshot
       libsixel
