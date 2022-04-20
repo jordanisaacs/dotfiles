@@ -1,6 +1,9 @@
 { inputs }:
 { pkgs, config, lib, ... }:
 {
+  # Not all modules are imported here
+  # some are modules that are reliant on non nixos modules.
+  # Thus imported at top level in lib/mkhost
   imports = [
     ./connectivity
     ./boot
@@ -9,7 +12,6 @@
     ./laptop
     ./framework
     ./graphical
-    ./extra-container
     ./ssh
     ./android
     ./windows

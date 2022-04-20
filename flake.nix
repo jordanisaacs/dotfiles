@@ -10,12 +10,21 @@
 
     jdpkgs = {
       url = "github:jordanisaacs/jdpkgs";
+      # Broken rstudio
+      # inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    impermanence = {
+      url = "github:nix-community/impermanence";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    neovim-flake = {
-      url = "github:jordanisaacs/neovim-flake";
+    deploy-rs = {
+      url = "github:serokell/deploy-rs";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    neovim-flake.url = "github:jordanisaacs/neovim-flake";
 
     st-flake = {
       url = "github:jordanisaacs/st-flake";
@@ -23,15 +32,9 @@
       inputs.flake-utils.follows = "flake-utils";
     };
 
-    dwm-flake = {
-      url = "github:jordanisaacs/dwm-flake";
-      inputs.nixpkgs.follows = "nixpkgs";
-      inputs.flake-utils.follows = "flake-utils";
-    };
+    dwm-flake.url = "github:jordanisaacs/dwm-flake";
 
-    dwl-flake = {
-      url = "github:jordanisaacs/dwl-flake/updates";
-    };
+    dwl-flake.url = "github:jordanisaacs/dwl-flake/updates";
 
     homeage = {
       url = "github:jordanisaacs/homeage/activatecheck";
@@ -47,7 +50,7 @@
     nur.url = "github:nix-community/NUR";
   };
 
-  outputs = { nixpkgs, jdpkgs, home-manager, nur, neovim-flake, st-flake, dwm-flake, dwl-flake, homeage, extra-container, ... }@inputs:
+  outputs = { self, nixpkgs, jdpkgs, impermanence, deploy-rs, home-manager, nur, neovim-flake, st-flake, dwm-flake, dwl-flake, homeage, extra-container, ... }@inputs:
     let
       inherit (nixpkgs) lib;
 
@@ -60,7 +63,9 @@
       };
 
       inherit (import ./overlays {
-        inherit system pkgs lib nur neovim-flake st-flake dwm-flake homeage scripts jdpkgs dwl-flake extra-container;
+        inherit system pkgs lib nur neovim-flake st-flake dwm-flake
+          homeage scripts jdpkgs dwl-flake extra-container
+          impermanence deploy-rs;
       }) overlays;
 
       inherit (util) user;
@@ -78,9 +83,35 @@
 
       system = "x86_64-linux";
 
-      defaultConfig = {
+      authorizedKeys = ''
+        ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPKIspidvrzy1NFoUXMEs1A2Wpx3E8nxzCKGZfBXyezV mail@jdisaacs.com
+      '';
+
+      authorizedKeyFiles = pkgs.writeTextFile {
+        name = "authorizedKeys";
+        text = authorizedKeys;
+      };
+
+      defaultServerConfig = {
+        isQemuGuest = true;
         core.enable = true;
-        boot = "encrypted-efi";
+        boot = {
+          type = "zfs";
+          hostId = "2d360981";
+          swapPartuuid = "52c2b662-0b7b-430c-9a10-068acbe9d15d";
+        };
+        ssh = {
+          enable = true;
+          type = "server";
+          authorizedKeys = [ (builtins.toString authorizedKeys) ];
+          initrdKeys = [ authorizedKeys ];
+        };
+        impermanence.enable = true;
+      };
+
+      defaultClientConfig = {
+        core.enable = true;
+        boot.type = "encrypted-efi";
         gnome = {
           enable = true;
           keyring = {
@@ -88,29 +119,33 @@
           };
         };
         connectivity = {
+          networkmanager.enable = true;
           bluetooth.enable = true;
           sound.enable = true;
           printing.enable = true;
           firewall.enable = true;
         };
         graphical = {
-          xorg.enable = true;
+          xorg.enable = false;
           wayland = {
             enable = true;
             swaylock-pam = true;
           };
         };
-        ssh.enable = true;
+        ssh = {
+          enable = true;
+          type = "client";
+        };
         extraContainer.enable = true;
       };
 
-      desktopConfig = defaultConfig // {
+      desktopConfig = defaultClientConfig // {
         android.enable = true;
         windows.enable = true;
         desktop.enable = true;
       };
 
-      laptopConfig = defaultConfig // {
+      laptopConfig = defaultClientConfig // {
         laptop = {
           enable = true;
         };
@@ -126,13 +161,18 @@
         windows.enable = true;
       };
 
-      defaultUser = [{
+      defaultUser = {
         name = "jd";
-        groups = [ "wheel" "networkmanager" "video" "libvirtd" ];
+        groups = [ "wheel" ];
         uid = 1000;
         shell = pkgs.zsh;
-      }];
+      };
 
+      defaultUsers = [ defaultUser ];
+
+      defaultDesktopUser = defaultUser // {
+        groups = defaultUser.groups ++ [ "networkmanager" "video" "libvirtd" ];
+      };
     in
     {
       installMedia = {
@@ -145,6 +185,7 @@
           systemConfig = { };
         };
       };
+
       homeManagerConfigurations = {
         jd = user.mkHMUser {
           userConfig = {
@@ -162,14 +203,17 @@
                 screenlock.enable = true;
               };
               xorg = {
-                enable = true;
+                enable = false;
                 type = "dwm";
                 screenlock.enable = true;
               };
             };
             applications.enable = true;
             gpg.enable = true;
-            git.enable = true;
+            git = {
+              enable = true;
+              allowedSignerFile = builtins.toString authorizedKeyFiles;
+            };
             zsh.enable = true;
             ssh.enable = true;
             direnv.enable = true;
@@ -199,8 +243,9 @@
           kernelParams = [ ];
           kernelPatches = [ ];
           systemConfig = laptopConfig;
-          users = defaultUser;
+          users = defaultUsers;
           cpuCores = 4;
+          stateVersion = "21.05";
         };
 
         framework = host.mkHost {
@@ -212,7 +257,7 @@
           kernelParams = [ ];
           kernelPatches = [ ];
           systemConfig = frameworkConfig;
-          users = defaultUser;
+          users = defaultUsers;
           cpuCores = 8;
           stateVersion = "21.11";
         };
@@ -226,10 +271,43 @@
           kernelParams = [ ];
           kernelPatches = [ ];
           systemConfig = desktopConfig;
-          users = defaultUser;
+          users = defaultUsers;
           cpuCores = 12;
           stateVersion = "21.11";
         };
+
+        chairlift = host.mkHost {
+          name = "chairlift";
+          NICs = [ "enp1s0" ];
+          initrdMods = [ "sd_mod" "sr_mod" "ahci" "xhci_pci" ];
+          kernelMods = [ ];
+          kernelPackage = pkgs.linuxPackages_5_17;
+          kernelParams = [ "nohibernate" ];
+          kernelPatches = [ ];
+          systemConfig = defaultServerConfig;
+          users = [ defaultUser ];
+          cpuCores = 2;
+          stateVersion = "21.11";
+        };
+
+        # deploy.nodes.chairlift = {
+        #   hostname = "5.161.103.90";
+        #   sshOpts = [ "-p" "23" ];
+        #   autoRollback = true;
+        #   magicRollback = true;
+        #   profiles = {
+        #     system = {
+        #       sshUser = "root";
+        #       user = "root";
+        #       path = deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations.chairlift;
+        #     };
+        #   };
+        # };
+
+        # checks = builtins.mapAttrs
+        #   (system: deployLib: deployLib.deployChecks self.deploy)
+        #   deploy-rs.lib;
       };
     };
 }
+

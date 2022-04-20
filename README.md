@@ -20,6 +20,10 @@ Mounted on login onedrive filesystem using [onedriver](https://github.com/jstaf/
 
 A working `x11` (using `startx` and patched `xserver` to support idle-action) and `wayland` setup on `tty1` and `tty2` respectively. See *./modules/users/graphical/*
 
+Stateless (utilizing `impermanence`/snapshots) and encrypted ZFS server configuration with initrd SSH support. See */modules/system/ssh*, */modules/system/boot*, and */modules/system/impermanence*
+
+Seamless, behind-the-scenes, conditional importing of modules (avoiding infinite recursion) for modularity. See *./lib/host.nix*
+
 ## Credit
 
 Based on Wil Taylor's [dotfiles](https://github.com/wiltaylor/dotfiles). Would not have the setup I have today without his [youtube series](https://www.youtube.com/watch?v=QKoQ1gKJY5A&list=PL-saUBvIJzOkjAw_vOac75v-x6EzNzZq-) and repo as a guide.
