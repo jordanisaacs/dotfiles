@@ -289,25 +289,25 @@
           cpuCores = 2;
           stateVersion = "21.11";
         };
-
-        # deploy.nodes.chairlift = {
-        #   hostname = "5.161.103.90";
-        #   sshOpts = [ "-p" "23" ];
-        #   autoRollback = true;
-        #   magicRollback = true;
-        #   profiles = {
-        #     system = {
-        #       sshUser = "root";
-        #       user = "root";
-        #       path = deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations.chairlift;
-        #     };
-        #   };
-        # };
-
-        # checks = builtins.mapAttrs
-        #   (system: deployLib: deployLib.deployChecks self.deploy)
-        #   deploy-rs.lib;
       };
+
+      deploy.nodes.chairlift = {
+        hostname = "5.161.103.90";
+        sshOpts = [ "-p" "23" ];
+        autoRollback = true;
+        magicRollback = true;
+        profiles = {
+          system = {
+            sshUser = "root";
+            user = "root";
+            path = deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations.chairlift;
+          };
+        };
+      };
+
+      checks = builtins.mapAttrs
+        (system: deployLib: deployLib.deployChecks self.deploy)
+        deploy-rs.lib;
     };
 }
 
