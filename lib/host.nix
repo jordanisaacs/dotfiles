@@ -1,6 +1,7 @@
-{ system, pkgs, home-manager, lib, user, inputs, ... }:
+{ system, pkgs, lib, user, inputs, utils }:
 
-with builtins ;
+with builtins;
+with utils;
 
 {
   mkISO = { name, initrdMods, kernelMods, kernelParams, kernelPackage, systemConfig }: lib.nixosSystem {
@@ -45,60 +46,6 @@ with builtins ;
     , cpuTempSensor ? null
     }:
     let
-      # Removes attributes by path. Used to remove module options when disabled
-      # Example:
-      # removeAttrByPath [ "x" "y" ] { x = { y = { f = 4; }; z = 3; } -> { x = { z = 3; }; }
-      removeAttrByPath = with lib; attrPath: set:
-        let
-          removeAttrRec = recPath: rem: set':
-            if recPath == [ ] then
-              let
-                removed = removeAttrs set' [ rem ];
-
-                result = updateManyAttrsByPath [
-                  {
-                    path = (init attrPath);
-                    update = old: removed;
-                  }
-                ]
-                  set;
-              in
-              if isAttrs set' then
-                result
-              else
-                set
-            else
-              if (hasAttr rem set') then
-                removeAttrRec (drop 1 recPath) (head recPath) (getAttr rem set')
-              else set;
-        in
-        if (length attrPath) == 0 then set
-        else
-          removeAttrRec (drop 1 attrPath) (head attrPath) set;
-
-      # Enable a module if attribute exists and is true
-      enableModule = module: path:
-        if (lib.attrByPath path false systemConfig) then
-          [ module ]
-        else
-          [{ }];
-
-      # Enable a module if attribute exists and is activated, along with importing the respective config
-      enableModuleWithConfig = module: path: activate:
-        if (lib.attrByPath (path ++ activate) false systemConfig) then
-          [
-            module
-            (import (inputs.self + "/modules/system/" + (lib.concatStringsSep "/" path)))
-          ]
-        else
-          [{ }];
-
-      # Remove the module options from systemConfig if the module is not activated
-      removeModuleOptions = path: activate: config:
-        if (lib.attrByPath (path ++ activate) false config) then
-          config
-        else
-          removeAttrByPath path config;
 
       networkCfg = listToAttrs (map
         (n: {
@@ -107,22 +54,33 @@ with builtins ;
         })
         NICs);
 
+      sys_users = (map (u: user.mkSystemUser u) users);
+
       enable = [ "enable" ];
       extraContainerPath = [ "extraContainer" ];
       impermanencePath = [ "impermanence" ];
       qemuPath = [ "isQemuGuest" ];
+      moduleFolder = "/modules/system/";
 
       systemConfigStripped =
-        (removeModuleOptions impermanencePath enable
-          (removeModuleOptions extraContainerPath enable
+        (removeModuleOptions
+          {
+            path = impermanencePath;
+            activate = enable;
+          }
+          (removeModuleOptions
+            {
+              path = extraContainerPath;
+              activate = enable;
+            }
             (removeAttrByPath qemuPath systemConfig)));
+
+      systemEnableModule = enableModule systemConfigStripped;
+      systemEnableModuleConfig = enableModuleConfig systemConfigStripped;
 
       userCfg = {
         inherit name NICs systemConfig cpuCores gpuTempSensor cpuTempSensor;
       };
-
-      sys_users = (map (u: user.mkSystemUser u) users);
-
     in
     lib.nixosSystem {
       inherit system;
@@ -155,8 +113,8 @@ with builtins ;
         }
         passthru
       ] ++
-      (enableModule (import (inputs.nixpkgs + "/nixos/modules/profiles/qemu-guest.nix")) qemuPath) ++
-      (enableModuleWithConfig inputs.impermanence.nixosModule impermanencePath enable) ++
-      (enableModuleWithConfig inputs.extra-container.nixosModule extraContainerPath enable);
+      (systemEnableModule (import (inputs.nixpkgs + "/nixos/modules/profiles/qemu-guest.nix")) qemuPath) ++
+      (systemEnableModuleConfig inputs.impermanence.nixosModule moduleFolder { path = impermanencePath; activate = enable; }) ++
+      (systemEnableModuleConfig inputs.extra-container.nixosModule moduleFolder { path = extraContainerPath; activate = enable; });
     };
 }
