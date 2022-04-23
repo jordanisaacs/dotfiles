@@ -1,47 +1,53 @@
-User:
-    Blocker: MVP custom compositor... flurry :)
+Refactors:
+    Move things out of flake.nix to make file smaller
+    Refactor builder functions (IN PROGRESS)
+    Switch to submodules to make nested options work better (IN PROGRESS)
+    
+Broken:
+    System:
+        Printer/wifi:
+        - Find a good way to automatically set up
 
-    Desktop:
-        Theming:
-        - Waybar indicators, colors, etc
-        - foot coloring
-        - bemenu coloring & font size
+        Waydroid:
+        - Get waydroid up and running
 
-        Widgets:
-        - setup some eww widgets
+        Win10:
+        - Get qemu working
 
-        Notification:
-        - Setup notifications (mako?)
+        xorg:
+        - settype patch needs to be update to work on most recent xserver
 
+    User:
         Systemd:
-        - Fix systemd services. Sometimes programs break and don't realize on wayland
+        - Currently jankily working around xdg-portal-gtk failing by force restart, figure out what is wrong
 
-        SSH-Agent:
-        - Setup auto-login bitwarden-cli using gnome-keyring
-        - Bitwarden ssh-agent python script
+        Firefox:
+        - Doesn't respect mimeapps, no open in folder
 
-System:
-    Login manager:
-    - switch from agetty to greetd (tuigreet? https://github.com/apognu/tuigreet)
+Improvements:
+    User:
+        Desktop:
+            Theming:
+            - Waybar indicators, colors, etc
+            - foot coloring
+            - bemenu coloring & font size
 
-    Wireguard:
-    - Refactor into single module with functions to make it "automagic"
+            Widgets:
+            - setup some eww widgets
 
-    Printer/wifi:
-    - Find a good way to automatically set up
+            Notification:
+            - Setup notifications (mako?)
 
-    Waydroid:
-    - Get waydroid up and running
+            SSH-Agent:
+            - Setup auto-login bitwarden-cli using gnome-keyring
+            - Bitwarden ssh-agent python script
 
-    Win10:
-    - Get qemu working
+    System:
+        Login manager:
+        - switch from agetty to greetd (tuigreet? https://github.com/apognu/tuigreet)
 
-General Repo:
-    Refactoring:
-    - Refactor general functions to be less clunky
-    - Move more out of dotfiles and into jdpkgs
-
-    Submodules:
-    - Switch to submodules to fix all the nested sections
-
-    Re-setup git-crypt for private files
+Blocked
+    - jdpkgs follows current nixpkgs (waiting on rstudio as broken with current nixpkgs (jdpkgs pinned to old nixpkgs)
+    - systemd boot & plymouth (waiting on systemd-stage-1 - not currently feature complete)
+    - wireguard dns (waiting on jdns - my recursive resolver project)
+    - wayland compositor setting improvements (waiting on flurry - my wayland compositor project)
