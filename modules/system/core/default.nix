@@ -15,16 +15,14 @@ in
   };
 
   config = mkIf (cfg.enable) {
+    i18n.defaultLocale = "en_US.UTF-8";
+    time.timeZone = "America/New_York";
+
+    hardware.enableRedistributableFirmware = lib.mkDefault true;
+
     # Nix search paths/registries from:
     # https://github.com/gytis-ivaskevicius/flake-utils-plus/blob/166d6ebd9f0de03afc98060ac92cba9c71cfe550/lib/options.nix
     # Context thread: https://github.com/gytis-ivaskevicius/flake-utils-plus/blob/166d6ebd9f0de03afc98060ac92cba9c71cfe550/lib/options.nix
-    environment.etc = mapAttrs'
-      (name: value: {
-        name = "nix/inputs/${name}";
-        value = { source = value.outPath; };
-      })
-      inputs;
-
     nix =
       let
         flakes = filterAttrs
@@ -55,66 +53,69 @@ in
         '';
       };
 
-    environment.shells = [ pkgs.zsh pkgs.bash ];
-    environment.pathsToLink = [ "/share/zsh" ];
+    environment = {
+      etc = mapAttrs'
+        (name: value: {
+          name = "nix/inputs/${name}";
+          value = { source = value.outPath; };
+        })
+        inputs;
 
-    i18n.defaultLocale = "en_US.UTF-8";
-    time.timeZone = "America/New_York";
+      shells = [ pkgs.zsh pkgs.bash ];
+      # ZSH completions
+      pathsToLink = [ "/share/zsh" ];
+      systemPackages = with pkgs; [
+        # Shells
+        zsh
 
-    powerManagement.cpuFreqGovernor = lib.mkDefault "performance";
-    hardware.enableRedistributableFirmware = lib.mkDefault true;
+        # Misc. Utilities
+        exa
+        gping
+        inxi
+        usbutils
+        dnsutils
+        neofetch
+        unzip
 
-    environment.systemPackages = with pkgs; [
-      # Shells
-      zsh
+        # Processors
+        jq
+        gawk
+        gnused
 
-      # Misc. Utilities
-      exa
-      gping
-      inxi
-      usbutils
-      dnsutils
-      neofetch
-      unzip
+        # Downloaders
+        wget
+        curl
 
-      # Processors
-      jq
-      gawk
-      gnused
+        # system monitors
+        bottom
+        htop
+        acpi
+        pstree
 
-      # Downloaders
-      wget
-      curl
+        # Graphics
+        libva-utils
+        vdpauinfo
+        glxinfo
 
-      # system monitors
-      bottom
-      htop
-      acpi
-      pstree
+        # version ocntrol
+        git
 
-      # Graphics
-      libva-utils
-      vdpauinfo
-      glxinfo
+        # Nix tools
+        patchelf
+        nix-index
+        nix-tree
+        manix
 
-      # version ocntrol
-      git
+        # Text editor
+        vim
 
-      # Nix tools
-      patchelf
-      nix-index
-      nix-tree
-      manix
+        # Scripts
+        scripts.sysTools
 
-      # Text editor
-      neovimJD
-
-      # Scripts
-      scripts.sysTools
-
-      man-pages
-      man-pages-posix
-    ];
+        man-pages
+        man-pages-posix
+      ];
+    };
 
     security.sudo.extraConfig = "Defaults env_reset,timestamp_timeout=5";
     security.sudo.execWheelOnly = true;

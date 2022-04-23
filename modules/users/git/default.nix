@@ -29,6 +29,12 @@ in
       type = types.bool;
       default = true;
     };
+
+    allowedSignerFile = mkOption {
+      description = "Allowed ssh file for signing";
+      type = types.str;
+      default = "";
+    };
   };
 
   config = mkIf (cfg.enable) {
@@ -43,23 +49,18 @@ in
           ssh = {
             defaultKeyCommand = "${pkgs.openssh}/bin/ssh-add -L";
             program = "${pkgs.openssh}/bin/ssh-keygen";
-            allowedSignersFile =
-              let
-                file = pkgs.writeTextFile {
-                  name = "git-authorized-keys";
-                  text = ''
-                    mail@jdisaacs.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPKIspidvrzy1NFoUXMEs1A2Wpx3E8nxzCKGZfBXyezV
-                  '';
-                };
-              in
-              builtins.toString file;
+            allowedSignersFile = cfg.allowedSignerFile;
           };
         };
-        credential.helper = "${
-            pkgs.git.override { withLibsecret = true; }
-          }/bin/git-credential-libsecret";
+        # Use SSH now, don't need credential helper/libsecret
+        # credential.helper = "${
+        #     pkgs.git.override { withLibsecret = true; }
+        #   }/bin/git-credential-libsecret";
         init.defaultBranch = "main";
         pull.rebase = "true";
+        # https://blog.nilbus.com/take-the-pain-out-of-git-conflict-resolution-use-diff3/
+        # https://stackoverflow.com/questions/27417656/should-diff3-be-default-conflictstyle-on-git
+        merge.conflictstyle = "zdiff3";
       };
     };
 

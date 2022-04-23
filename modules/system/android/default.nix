@@ -12,6 +12,7 @@ in
   };
 
   config = mkIf (cfg.enable) {
+
     # https://wiki.archlinux.org/title/Waydroid#Using_binderfs
     # https://nixos.wiki/wiki/Linux_kernel#Custom_configuration
     virtualisation.waydroid.enable = true;

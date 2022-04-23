@@ -1,5 +1,8 @@
-{ system, pkgs, home-manager, lib, user, inputs, ... }:
+{ system, pkgs, lib, user, inputs, utils }:
+
 with builtins;
+with utils;
+
 {
   mkISO = { name, initrdMods, kernelMods, kernelParams, kernelPackage, systemConfig }: lib.nixosSystem {
     inherit system;
@@ -27,7 +30,6 @@ with builtins;
 
   mkHost =
     { name
-    , NICs
     , initrdMods
     , kernelMods
     , kernelParams
@@ -36,26 +38,41 @@ with builtins;
     , systemConfig
     , cpuCores
     , users
-    , stateVersion ? "21.05"
+    , stateVersion
     , wifi ? [ ]
     , passthru ? { }
     , gpuTempSensor ? null
     , cpuTempSensor ? null
     }:
     let
-      networkCfg = listToAttrs (map
-        (n: {
-          name = "${n}";
-          value = { useDHCP = true; };
-        })
-        NICs);
-
-      userCfg = {
-        inherit name NICs systemConfig cpuCores gpuTempSensor cpuTempSensor;
-      };
 
       sys_users = (map (u: user.mkSystemUser u) users);
 
+      enable = [ "enable" ];
+      extraContainerPath = [ "extraContainer" ];
+      impermanencePath = [ "impermanence" ];
+      qemuPath = [ "isQemuGuest" ];
+      moduleFolder = "/modules/system/";
+
+      systemConfigStripped =
+        (removeModuleOptions
+          {
+            path = impermanencePath;
+            activate = enable;
+          }
+          (removeModuleOptions
+            {
+              path = extraContainerPath;
+              activate = enable;
+            }
+            (removeAttrByPath qemuPath systemConfig)));
+
+      systemEnableModule = enableModule systemConfigStripped;
+      systemEnableModuleConfig = enableModuleConfig systemConfigStripped;
+
+      userCfg = {
+        inherit name systemConfig cpuCores gpuTempSensor cpuTempSensor;
+      };
     in
     lib.nixosSystem {
       inherit system;
@@ -64,17 +81,15 @@ with builtins;
         {
           imports = [ (import ../modules/system { inherit inputs; }) ] ++ sys_users;
 
-          jd = systemConfig;
+          jd = systemConfigStripped;
 
           environment.etc = {
             "hmsystemdata.json".text = toJSON userCfg;
           };
 
           networking.hostName = "${name}";
-          networking.interfaces = networkCfg;
           networking.wireless.interfaces = wifi;
-          networking.networkmanager.enable = true;
-          networking.useDHCP = false; # Disable any new interface added that is not in config
+          networking.useDHCP = lib.mkDefault false; # Disable any new interface added that is not in config
 
           boot.initrd.availableKernelModules = initrdMods;
           boot.kernelModules = kernelMods;
@@ -87,8 +102,10 @@ with builtins;
 
           system.stateVersion = stateVersion;
         }
-        (if systemConfig.extraContainer.enable then pkgs.extra-container.nixosModule else { })
         passthru
-      ];
+      ] ++
+      (systemEnableModule (import (inputs.nixpkgs + "/nixos/modules/profiles/qemu-guest.nix")) qemuPath) ++
+      (systemEnableModuleConfig inputs.impermanence.nixosModule moduleFolder { path = impermanencePath; activate = enable; }) ++
+      (systemEnableModuleConfig inputs.extra-container.nixosModule moduleFolder { path = extraContainerPath; activate = enable; });
     };
 }

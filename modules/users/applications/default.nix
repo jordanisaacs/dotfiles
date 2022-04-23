@@ -32,6 +32,9 @@ in
       # ssh mount
       sshfs
 
+      # Deployment
+      deploy-rs
+
       # CLI apps
       nnn # file manager
       grit # to-do
