@@ -23,7 +23,7 @@ in
         direnv_layout_dir() {
           echo "''${direnv_layout_dirs[$PWD]:=$(
             echo -n ${config.xdg.cacheHome}/direnv/layouts/
-            echo -n "$PWD" | shasum | cut -d ' ' -f 1
+            echo -n "$PWD" | ${pkgs.perl}/bin/shasum | cut -d ' ' -f 1
           )}"
         }
       '';
