@@ -30,7 +30,6 @@ with utils;
 
   mkHost =
     { name
-    , NICs
     , initrdMods
     , kernelMods
     , kernelParams
@@ -46,13 +45,6 @@ with utils;
     , cpuTempSensor ? null
     }:
     let
-
-      networkCfg = listToAttrs (map
-        (n: {
-          name = "${n}";
-          value = { useDHCP = true; };
-        })
-        NICs);
 
       sys_users = (map (u: user.mkSystemUser u) users);
 
@@ -79,7 +71,7 @@ with utils;
       systemEnableModuleConfig = enableModuleConfig systemConfigStripped;
 
       userCfg = {
-        inherit name NICs systemConfig cpuCores gpuTempSensor cpuTempSensor;
+        inherit name systemConfig cpuCores gpuTempSensor cpuTempSensor;
       };
     in
     lib.nixosSystem {
@@ -96,7 +88,6 @@ with utils;
           };
 
           networking.hostName = "${name}";
-          networking.interfaces = networkCfg;
           networking.wireless.interfaces = wifi;
           networking.useDHCP = lib.mkDefault false; # Disable any new interface added that is not in config
 

@@ -9,10 +9,12 @@
     ./boot
     (import ./core { inherit inputs; })
     ./gnome
+    ./networking
     ./laptop
     ./framework
     ./graphical
     ./ssh
+    ./wireguard
     ./android
     ./windows
     ./desktop

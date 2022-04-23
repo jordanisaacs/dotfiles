@@ -81,6 +81,21 @@
         };
       };
 
+      # Recursively merge (semi-naive)
+      # https://stackoverflow.com/questions/54504685/nix-function-to-merge-attributes-records-recursively-and-concatenate-arrays
+      recursiveMerge = with lib; attrList:
+        let f = attrPath:
+          zipAttrsWith (n: values:
+            if tail values == [ ]
+            then head values
+            else if all isList values
+            then unique (concatLists values)
+            else if all isAttrs values
+            then f (attrPath ++ [ n ]) values
+            else last values
+          );
+        in f [ ] attrList;
+
       system = "x86_64-linux";
 
       authorizedKeys = ''
@@ -90,6 +105,52 @@
       authorizedKeyFiles = pkgs.writeTextFile {
         name = "authorizedKeys";
         text = authorizedKeys;
+      };
+
+      wireguardConf = {
+        enable = true;
+        interface = "thevoid";
+        peers = {
+          "intothevoid" = {
+            wgAddrV4 = "10.55.1.1";
+            publicKey = "alkGf4EOzctjDL67HQxo/kGYuBGe+1S/2Rk0xcg+Dzs=";
+
+            tags = [{ name = "net"; }];
+          };
+          "framework" = {
+            wgAddrV4 = "10.55.1.2";
+            interfaceMask = 16;
+            listenPort = 41024;
+
+            privateKeyFile = "/etc/wireguard/private_key";
+            publicKey = "ruxqBTX1+ReVUwQY3u5qwJIcm6d/ZnUJddP9OewNqjI=";
+
+            tags = [{ name = "home"; ipAddr = "172.26.40.247"; } { name = "net"; }];
+          };
+
+          "desktop" = {
+            wgAddrV4 = "10.55.0.1";
+            interfaceMask = 16;
+            listenPort = 51820;
+
+            firewall = {
+              allowedTCPPorts = [ 8080 ];
+            };
+
+            postSetup = ''
+              ${pkgs.iptables}/bin/iptables -A FORWARD -i ${wireguardConf.interface} -o ${wireguardConf.interface} -j ACCEPT
+            '';
+
+            postShutdown = ''
+              ${pkgs.iptables}/bin/iptables -D FORWARD -i ${wireguardConf.interface} -o ${wireguardConf.interface} -j ACCEPT
+            '';
+
+            privateKeyFile = "/etc/wireguard/private_key";
+            publicKey = "mgDg5mc/60FatP+/pUgHun1e6a7xaiw2wWVEPtjPfGo=";
+
+            tags = [{ name = "home"; ipAddr = "172.26.26.90"; } { name = "net"; }];
+          };
+        };
       };
 
       defaultServerConfig = {
@@ -109,9 +170,14 @@
         impermanence.enable = true;
       };
 
+      chairliftConfig = {
+        networking.interfaces = [ "enp1s0" ];
+      };
+
       defaultClientConfig = {
         core.enable = true;
         boot.type = "encrypted-efi";
+        wireguard = wireguardConf;
         gnome = {
           enable = true;
           keyring = {
@@ -119,11 +185,13 @@
           };
         };
         connectivity = {
-          networkmanager.enable = true;
           bluetooth.enable = true;
           sound.enable = true;
           printing.enable = true;
+        };
+        networking = {
           firewall.enable = true;
+          networkmanager.enable = true;
         };
         graphical = {
           xorg.enable = false;
@@ -139,27 +207,36 @@
         extraContainer.enable = true;
       };
 
-      desktopConfig = defaultClientConfig // {
-        android.enable = true;
-        windows.enable = true;
-        desktop.enable = true;
-      };
+      desktopConfig = recursiveMerge [
+        defaultClientConfig
+        {
+          desktop.enable = true;
+          networking.interfaces = [ "enp6s0" "wlp5s0" ];
+        }
+      ];
 
-      laptopConfig = defaultClientConfig // {
-        laptop = {
-          enable = true;
-        };
-      };
+      laptopConfig = recursiveMerge [
+        defaultClientConfig
+        {
+          laptop.enable = true;
+          networking.interfaces = [ "enp0s31f6" "wlp2s0" ];
+        }
+      ];
 
-      frameworkConfig = laptopConfig // {
-        framework = {
-          enable = true;
-          fprint = {
+      frameworkConfig = recursiveMerge [
+        laptopConfig
+        {
+          framework = {
             enable = true;
+            fprint = {
+              enable = true;
+            };
           };
-        };
-        windows.enable = true;
-      };
+
+          windows.enable = true;
+          networking.interfaces = [ "wlp170s0" ];
+        }
+      ];
 
       defaultUser = {
         name = "jd";
@@ -236,7 +313,6 @@
       nixosConfigurations = {
         laptop = host.mkHost {
           name = "laptop";
-          NICs = [ "enp0s31f6" "wlp2s0" ];
           kernelPackage = pkgs.linuxPackages;
           initrdMods = [ "xhci_pci" "nvme" "usb_storage" "sd_mod" "rtsx_pci_sdmmc" ];
           kernelMods = [ "kvm-intel" ];
@@ -250,7 +326,6 @@
 
         framework = host.mkHost {
           name = "framework";
-          NICs = [ "wlp170s0" ];
           kernelPackage = pkgs.linuxPackages_latest;
           initrdMods = [ "xhci_pci" "thunderbolt" "nvme" "usb_storage" "sd_mod" ];
           kernelMods = [ "kvm-intel" ];
@@ -264,7 +339,6 @@
 
         desktop = host.mkHost {
           name = "desktop";
-          NICs = [ "enp6s0" "wlp5s0" ];
           kernelPackage = pkgs.linuxPackages_latest;
           initrdMods = [ "nvme" "xhci_pci" "ahci" "usb_storage" "usbhid" "sd_mod" ];
           kernelMods = [ "kvm-amd" ];
@@ -278,13 +352,12 @@
 
         chairlift = host.mkHost {
           name = "chairlift";
-          NICs = [ "enp1s0" ];
           initrdMods = [ "sd_mod" "sr_mod" "ahci" "xhci_pci" ];
           kernelMods = [ ];
           kernelPackage = pkgs.linuxPackages_5_17;
           kernelParams = [ "nohibernate" ];
           kernelPatches = [ ];
-          systemConfig = defaultServerConfig;
+          systemConfig = chairliftConfig;
           users = [ defaultUser ];
           cpuCores = 2;
           stateVersion = "21.11";

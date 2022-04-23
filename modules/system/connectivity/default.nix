@@ -6,18 +6,6 @@ let
 in
 {
   options.jd.connectivity = {
-    networkmanager.enable = mkOption {
-      description = "Enable network manager with default options";
-      type = types.bool;
-      default = false;
-    };
-
-    wifi.enable = mkOption {
-      description = "Enable wifi with default options";
-      type = types.bool;
-      default = false;
-    };
-
     bluetooth.enable = mkOption {
       description = "Enable bluetooth with default options";
       type = types.bool;
@@ -52,9 +40,6 @@ in
       scripts.soundTools
     ] else [ ]);
 
-    networking.networkmanager.enable = cfg.networkmanager.enable;
-    networking.wireless.enable = cfg.wifi.enable;
-    networking.firewall.enable = cfg.firewall.enable;
 
     security.rtkit.enable = cfg.sound.enable;
     services.pipewire = {
