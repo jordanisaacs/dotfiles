@@ -120,7 +120,7 @@
           "framework" = {
             wgAddrV4 = "10.55.1.2";
             interfaceMask = 16;
-            listenPort = 41024;
+            listenPort = 51820;
 
             privateKeyFile = "/etc/wireguard/private_key";
             publicKey = "ruxqBTX1+ReVUwQY3u5qwJIcm6d/ZnUJddP9OewNqjI=";

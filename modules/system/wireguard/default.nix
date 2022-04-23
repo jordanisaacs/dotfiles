@@ -183,11 +183,13 @@ let
       };
 
       postSetup = mkOption {
+        default = "";
         type = types.str;
         description = "";
       };
 
       postShutdown = mkOption {
+        default = "";
         type = types.str;
         description = "";
       };
