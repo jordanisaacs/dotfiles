@@ -46,6 +46,10 @@ in
         ({
           environment.persistence."/persist" = {
             hideMounts = true;
+            directories = [
+              # secret key directory
+              "/etc/age"
+            ];
           };
         })
       ];

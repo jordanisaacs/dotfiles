@@ -77,6 +77,10 @@ in
         neofetch
         unzip
 
+        # secrets
+        rage
+        agenix
+
         # Processors
         jq
         gawk

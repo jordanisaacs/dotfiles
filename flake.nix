@@ -24,6 +24,16 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    agenix = {
+      url = "github:ryantm/agenix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    homeage = {
+      url = "github:jordanisaacs/homeage/activatecheck";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     neovim-flake.url = "github:jordanisaacs/neovim-flake";
 
     st-flake = {
@@ -36,11 +46,6 @@
 
     dwl-flake.url = "github:jordanisaacs/dwl-flake/updates";
 
-    homeage = {
-      url = "github:jordanisaacs/homeage/activatecheck";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     extra-container = {
       url = "github:erikarvstedt/extra-container";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -50,7 +55,7 @@
     nur.url = "github:nix-community/NUR";
   };
 
-  outputs = { self, nixpkgs, jdpkgs, impermanence, deploy-rs, home-manager, nur, neovim-flake, st-flake, dwm-flake, dwl-flake, homeage, extra-container, ... }@inputs:
+  outputs = { self, nixpkgs, jdpkgs, impermanence, deploy-rs, agenix, home-manager, nur, neovim-flake, st-flake, dwm-flake, dwl-flake, homeage, extra-container, ... }@inputs:
     let
       inherit (nixpkgs) lib;
 
@@ -65,7 +70,7 @@
       inherit (import ./overlays {
         inherit system pkgs lib nur neovim-flake st-flake dwm-flake
           homeage scripts jdpkgs dwl-flake extra-container
-          impermanence deploy-rs;
+          impermanence deploy-rs agenix;
       }) overlays;
 
       inherit (util) user;
@@ -117,6 +122,7 @@
 
             tags = [{ name = "net"; }];
           };
+
           "framework" = {
             wgAddrV4 = "10.55.1.2";
             interfaceMask = 16;
@@ -167,17 +173,20 @@
           authorizedKeys = [ (builtins.toString authorizedKeys) ];
           initrdKeys = [ authorizedKeys ];
         };
+        networking = {
+          firewall.enable = true;
+        };
         impermanence.enable = true;
       };
 
-      chairliftConfig = {
-        networking.interfaces = [ "enp1s0" ];
-      };
+      chairliftConfig = recursiveMerge [
+        defaultServerConfig
+        { networking.interfaces = [ "enp1s0" ]; }
+      ];
 
       defaultClientConfig = {
         core.enable = true;
         boot.type = "encrypted-efi";
-        wireguard = wireguardConf;
         gnome = {
           enable = true;
           keyring = {
@@ -211,6 +220,7 @@
         defaultClientConfig
         {
           desktop.enable = true;
+          wireguard = wireguardConf;
           networking.interfaces = [ "enp6s0" "wlp5s0" ];
         }
       ];
@@ -232,6 +242,7 @@
               enable = true;
             };
           };
+          wireguard = wireguardConf;
 
           windows.enable = true;
           networking.interfaces = [ "wlp170s0" ];

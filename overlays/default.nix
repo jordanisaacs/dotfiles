@@ -1,4 +1,4 @@
-{ pkgs, nur, dwm-flake, deploy-rs, neovim-flake, st-flake, dwl-flake, scripts, homeage, system, lib, jdpkgs, extra-container, impermanence }:
+{ pkgs, nur, dwm-flake, deploy-rs, neovim-flake, st-flake, dwl-flake, scripts, homeage, system, lib, jdpkgs, extra-container, impermanence, agenix }:
 
 let
   dwl-config = builtins.readFile ./dwl-config.c;
@@ -64,6 +64,8 @@ in
             ];
           };
         };
+
+        agenix = agenix.defaultPackage."${system}";
         deploy-rs = deploy-rs.packages."${system}".deploy-rs;
         jdpkgs = jdpkgs.packages."${system}";
         inherit homeage extra-container impermanence calibre;
