@@ -234,8 +234,9 @@
       ];
 
       frameworkConfig = recursiveMerge [
-        laptopConfig
+        defaultClientConfig
         {
+          networking.interfaces = [ "wlp170s0" ];
           framework = {
             enable = true;
             fprint = {
@@ -245,7 +246,6 @@
           wireguard = wireguardConf;
 
           windows.enable = true;
-          networking.interfaces = [ "wlp170s0" ];
         }
       ];
 

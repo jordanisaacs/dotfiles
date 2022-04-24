@@ -31,12 +31,11 @@ in
   };
 
   config =
-    let
-      client = {
+    mkMerge [
+      (mkIf (cfg.type == "client") {
         programs.ssh.startAgent = true;
-      };
-
-      server = mkMerge [
+      })
+      (mkIf (cfg.type == "server") (mkMerge [
         ({
           services.openssh = {
             enable = true;
@@ -78,9 +77,7 @@ in
             };
           };
         })
-      ];
 
-      ssh = if (cfg.type == "client") then client else server;
-    in
-    server;
+      ]))
+    ];
 }
