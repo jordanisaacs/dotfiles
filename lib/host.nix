@@ -104,6 +104,7 @@ with utils;
         }
         passthru
       ] ++
+      [ inputs.agenix.nixosModule ] ++
       (systemEnableModule (import (inputs.nixpkgs + "/nixos/modules/profiles/qemu-guest.nix")) qemuPath) ++
       (systemEnableModuleConfig inputs.impermanence.nixosModule moduleFolder { path = impermanencePath; activate = enable; }) ++
       (systemEnableModuleConfig inputs.extra-container.nixosModule moduleFolder { path = extraContainerPath; activate = enable; });

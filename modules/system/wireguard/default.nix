@@ -77,6 +77,12 @@ let
       peerConfs = builtins.removeAttrs wireguardConf.peers [ name ];
     in
     {
+      age.secrets.wireguard_private_key = {
+        file = myConf.privateKeyAge;
+        path = myConf.privateKeyPath;
+        mode = "600";
+      };
+
       networking = {
         nat = {
           enable = true;
@@ -111,7 +117,7 @@ let
               listenPort = myConf.listenPort;
               postSetup = myConf.postSetup;
               postShutdown = myConf.postShutdown;
-              privateKeyFile = myConf.privateKeyFile;
+              privateKeyFile = myConf.privateKeyPath;
 
               peers = buildPeers myConf peerConfs;
             };
@@ -147,9 +153,14 @@ let
         description = "The base64 public key of the host";
       };
 
-      privateKeyFile = mkOption {
+      privateKeyPath = mkOption {
         type = types.str;
-        description = "The path to the private key file of the host";
+        description = "The path of where to symlink the decrypted age key";
+      };
+
+      privateKeyAge = mkOption {
+        type = types.path;
+        description = "The age encrypted private key file";
       };
 
       wgAddrV4 = mkOption {

@@ -1143,6 +1143,7 @@
         "neovim-flake": "neovim-flake",
         "nixpkgs": "nixpkgs_8",
         "nur": "nur",
+        "secrets": "secrets",
         "st-flake": "st-flake"
       }
     },
@@ -1160,6 +1161,22 @@
         "owner": "simrat39",
         "repo": "rust-tools.nvim",
         "type": "github"
+      }
+    },
+    "secrets": {
+      "locked": {
+        "lastModified": 1650941723,
+        "narHash": "sha256-4R/0ebsa0IvV+UC2/u6zZDfJLiXUs1GpmkgFnAuO58Y=",
+        "ref": "main",
+        "rev": "f1b702652e0a7091f9d6c4d647c3eecf4e4fbb91",
+        "revCount": 3,
+        "type": "git",
+        "url": "ssh://git@github.com/jordanisaacs/secrets.git"
+      },
+      "original": {
+        "ref": "main",
+        "type": "git",
+        "url": "ssh://git@github.com/jordanisaacs/secrets.git"
       }
     },
     "sqls-nvim": {

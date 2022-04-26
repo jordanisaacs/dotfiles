@@ -15,6 +15,7 @@
     ./graphical
     ./ssh
     ./wireguard
+    ./secrets
     ./android
     ./windows
     ./desktop

@@ -22,6 +22,8 @@ in
       # Password manager
       bitwarden
 
+      agenix-cli
+
       # Note taking
       obsidian #knowledge base
       xournalpp #drawing

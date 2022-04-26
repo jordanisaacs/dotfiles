@@ -1,6 +1,8 @@
 # Dotfiles
 
-My NixOS dotfile flake for both systems and users. Each system/user is built upon custom modules abstracting NixOS/home-manager. The modules are meant to be easily shareable and should *just work* by taking into account the systemwide configuration.
+My NixOS dotfile flake for both systems and users. Each system/user is built upon custom modules abstracting NixOS/home-manager. The modules are meant to be easily shareable and should *just work* by taking into account the systemwide configuration. There are modules tailored towards server, desktop, and laptop use.
+
+Note: One of my flake inputs points towards a private git repository of secrets. Thus you will not be able to clone and run this repo without some changes. See the notes on my secrets config below.
 
 ## Follow Along
 
@@ -8,9 +10,13 @@ Follow along with my NixOS evolution and things I learn along the way: [NixOS De
 
 ## Custom Flakes
 
+I use a variety of custom flakes, but these are the ones I have written myself!
+
 [jdpkgs](https://github.com/jordanisaacs/jdpkgs): A variety of programs that I have packaged and/or created useful wrappers for.
 
 [neovim-flake](https://github.com/jordanisaacs/neovim-flake): A configurable flake for noevim.
+
+[homeage]()
 
 ## Dotfile Gems
 
@@ -51,7 +57,7 @@ An example configuration that would be passed into every system (no changes nece
    peers = {
      "phone" = {
        wgAddrV4 = "10.55.1.1";
-       publicKey = "alkGf4EOzctjDL67HQxo/kGYuBGe+1S/2Rk0xcg+Dzs=";
+       publicKey = secrets.wireguard.phone.publicKey;
 
        tags = [{ name = "net"; }];
      };
@@ -61,8 +67,9 @@ An example configuration that would be passed into every system (no changes nece
        interfaceMask = 16;
        listenPort = 51820;
 
-       privateKeyFile = "/etc/wireguard/private_key";
-       publicKey = "ruxqBTX1+ReVUwQY3u5qwJIcm6d/ZnUJddP9OewNqjI=";
+       privateKeyPath = "/etc/wireguard/private_key";
+       privateKeyAge = secrets.wireguard.framework.secret.file;
+       publicKey = secrets.wireguard.framework.publicKey;
 
        tags = [{ name = "net"; } { name = "home"; ipAddr = "172.26.40.247"; }];
      };
@@ -74,8 +81,9 @@ An example configuration that would be passed into every system (no changes nece
 
        firewall.allowedTCPPorts = [ 8080 ];
 
-       privateKeyFile = "/etc/wireguard/private_key";
-       publicKey = "mgDg5mc/60FatP+/pUgHun1e6a7xaiw2wWVEPtjPfGo=";
+       privateKeyPath = "/etc/wireguard/private_key";
+       privateKeyAge = secrets.wireguard.desktop.secret.file;
+       publicKey = secrets.wireguard.desktop.publicKey;
 
        tags = [{ name = "home"; ipAddr = "172.26.26.90"; } { name = "net"; }];
      };
@@ -91,7 +99,7 @@ An example configuration that would be passed into every system (no changes nece
 }
 ```
 
-The name of the peer must match the hostname of the machine. Firewall ports for wireguard are automatically opened up using the configured network interfaces from another module (*./modules/system/networking*). Peer lists are automatically set up using the tags list.
+The name of the peer must match the hostname of the machine. Firewall ports for wireguard are automatically opened up using the configured network interfaces from another module (*./modules/system/networking*). Age encrypted secrets wireguard keys are automatically setup with `agenix` (see notes on secrets management below). Peer lists are automatically set up using the tags list.
 
 How peer tags work:
 
@@ -101,6 +109,117 @@ How peer tags work:
 See *./modules/system/wireguard*.
 
 Inspired by [xe's post](https://christine.website/blog/my-wireguard-setup-2021-02-06).
+
+### Secrets Management
+
+System secrets are managed using `agenix` and user secrets using `homeage`. They are set up in an external (private) repository called `secrets` and pulled in as a flake input. It consists of age encrypted files for things such as wireguard and ssh. This config is the output of the flake without any modifications. The `publicKeys` section of `secret` is used to transform the config into an `agenix` compatible `secrets.nix` file for use with the cli. See example config:
+
+User secrets integration is in progress.
+
+config.nix:
+
+```nix
+let
+  age = {
+    system = {
+      # The desktop public key used for decryption (manually installed)
+      desktop = {
+        publicKey = "....";
+        privateKeyPath = "....."; # for identity path config
+      };
+
+      # The server public key used for decryption (manually installed)
+      server = {
+        publicKey = "....";
+        privateKeyPath = ".....";
+      };
+    };
+  };
+in
+{
+  inherit age;
+
+  ssh = {
+    jd = {
+      publicKey = "";
+      secret = {
+        publicKeys = with (age.system); [ desktop.publicKey ];
+        file = ./ssh/jd_private_key;
+      };
+    };
+  };
+
+  wireguard = {
+    desktop = {
+      publicKey = "mgDg5mc/60FatP+/pUgHun1e6a7xaiw2wWVEPtjPfGo=";
+
+      secret = {
+        publicKeys = with (age.system); [ desktop.publicKey ];
+        file = ./wireguard/desktop_private_key;
+      };
+    };
+
+    server = {
+      publicKey = "";
+
+      secret = {
+        # Be able to edit it on desktop
+        publicKeys = with (age.system); [ desktop.publicKey server.publicKey ];
+        file = ./wireguard/chairlift_private_key;
+      };
+    };
+  };
+}
+```
+
+secrets.nix:
+
+```{nix}
+with builtins;
+
+let
+  config = import ./config.nix;
+
+  nameValuePair = name: value: { inherit name value; };
+
+  mapAttrs' = f: set:
+    listToAttrs (map (attr: f attr set.${attr}) (attrNames set));
+
+  filterAttrs = pred: set:
+    listToAttrs (concatMap (name: let v = set.${name}; in if pred name v then [ (nameValuePair name v) ] else [ ]) (attrNames set));
+
+  relPath = path: replaceStrings [ (toString ./.) ] [ "." ] (toString path);
+
+  secretToOutput = secret:
+    nameValuePair
+      (relPath secret.file)
+      ({
+        publicKeys = secret.publicKeys;
+      });
+
+  sshSecrets =
+    let
+      cfg = config.ssh;
+    in
+    mapAttrs'
+      (_: v: secretToOutput v.secret)
+      cfg;
+
+  wireguardSecrets =
+    let
+      cfg = config.wireguard;
+
+      filterWireguard = filterAttrs (n: v: v ? "secret") cfg;
+    in
+    mapAttrs'
+      (_: v: secretToOutput v.secret)
+      filterWireguard;
+in
+sshSecrets // wireguardSecrets
+```
+
+
+
 
 ## Credit
 

@@ -34,6 +34,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    secrets = {
+      url = "git+ssh://git@github.com/jordanisaacs/secrets.git?ref=main";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     neovim-flake.url = "github:jordanisaacs/neovim-flake";
 
     st-flake = {
@@ -55,7 +60,7 @@
     nur.url = "github:nix-community/NUR";
   };
 
-  outputs = { self, nixpkgs, jdpkgs, impermanence, deploy-rs, agenix, home-manager, nur, neovim-flake, st-flake, dwm-flake, dwl-flake, homeage, extra-container, ... }@inputs:
+  outputs = { self, nixpkgs, jdpkgs, impermanence, deploy-rs, agenix, secrets, home-manager, nur, neovim-flake, st-flake, dwm-flake, dwl-flake, homeage, extra-container, ... }@inputs:
     let
       inherit (nixpkgs) lib;
 
@@ -116,46 +121,60 @@
         enable = true;
         interface = "thevoid";
         peers = {
-          "intothevoid" = {
-            wgAddrV4 = "10.55.1.1";
-            publicKey = "alkGf4EOzctjDL67HQxo/kGYuBGe+1S/2Rk0xcg+Dzs=";
+          intothevoid =
+            let
+              wgsecret = secrets.wireguard.intothevoid;
+            in
+            {
+              wgAddrV4 = "10.55.1.1";
+              publicKey = wgsecret.publicKey;
 
-            tags = [{ name = "net"; }];
-          };
-
-          "framework" = {
-            wgAddrV4 = "10.55.1.2";
-            interfaceMask = 16;
-            listenPort = 51820;
-
-            privateKeyFile = "/etc/wireguard/private_key";
-            publicKey = "ruxqBTX1+ReVUwQY3u5qwJIcm6d/ZnUJddP9OewNqjI=";
-
-            tags = [{ name = "home"; ipAddr = "172.26.40.247"; } { name = "net"; }];
-          };
-
-          "desktop" = {
-            wgAddrV4 = "10.55.0.1";
-            interfaceMask = 16;
-            listenPort = 51820;
-
-            firewall = {
-              allowedTCPPorts = [ 8080 ];
+              tags = [{ name = "net"; }];
             };
 
-            postSetup = ''
-              ${pkgs.iptables}/bin/iptables -A FORWARD -i ${wireguardConf.interface} -o ${wireguardConf.interface} -j ACCEPT
-            '';
+          framework =
+            let
+              wgsecret = secrets.wireguard.framework;
+            in
+            {
+              wgAddrV4 = "10.55.1.2";
+              interfaceMask = 16;
+              listenPort = 51820;
 
-            postShutdown = ''
-              ${pkgs.iptables}/bin/iptables -D FORWARD -i ${wireguardConf.interface} -o ${wireguardConf.interface} -j ACCEPT
-            '';
+              privateKeyPath = "/etc/wireguard/private_key";
+              # privateKeyAge = wgsecret.secret.file;
+              publicKey = wgsecret.publicKey;
 
-            privateKeyFile = "/etc/wireguard/private_key";
-            publicKey = "mgDg5mc/60FatP+/pUgHun1e6a7xaiw2wWVEPtjPfGo=";
+              tags = [{ name = "home"; ipAddr = "172.26.40.247"; } { name = "net"; }];
+            };
 
-            tags = [{ name = "home"; ipAddr = "172.26.26.90"; } { name = "net"; }];
-          };
+          desktop =
+            let
+              wgsecret = secrets.wireguard.desktop;
+            in
+            {
+              wgAddrV4 = "10.55.0.1";
+              interfaceMask = 16;
+              listenPort = 51820;
+
+              firewall = {
+                allowedTCPPorts = [ 8080 ];
+              };
+
+              postSetup = ''
+                ${pkgs.iptables}/bin/iptables -A FORWARD -i ${wireguardConf.interface} -o ${wireguardConf.interface} -j ACCEPT
+              '';
+
+              postShutdown = ''
+                ${pkgs.iptables}/bin/iptables -D FORWARD -i ${wireguardConf.interface} -o ${wireguardConf.interface} -j ACCEPT
+              '';
+
+              privateKeyPath = "/etc/wireguard/private_key";
+              privateKeyAge = wgsecret.secret.file;
+              publicKey = wgsecret.publicKey;
+
+              tags = [{ name = "home"; ipAddr = "172.26.26.90"; } { name = "net"; }];
+            };
         };
       };
 
@@ -222,6 +241,7 @@
           desktop.enable = true;
           wireguard = wireguardConf;
           networking.interfaces = [ "enp6s0" "wlp5s0" ];
+          secrets.identityPaths = [ secrets.age.system.desktop.privateKeyPath ];
         }
       ];
 

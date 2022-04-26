@@ -82,7 +82,6 @@ in
 
         # secrets
         rage
-        agenix
 
         # Processors
         jq

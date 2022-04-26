@@ -65,7 +65,7 @@ in
           };
         };
 
-        agenix = agenix.defaultPackage."${system}";
+        agenix-cli = agenix.defaultPackage."${system}";
         deploy-rs = deploy-rs.packages."${system}".deploy-rs;
         jdpkgs = jdpkgs.packages."${system}";
         inherit homeage extra-container impermanence calibre;
