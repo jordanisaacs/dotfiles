@@ -54,6 +54,9 @@ in
       };
 
     environment = {
+      sessionVariables = {
+        EDITOR = "vim";
+      };
       etc = mapAttrs'
         (name: value: {
           name = "nix/inputs/${name}";
