@@ -179,7 +179,6 @@
       };
 
       defaultServerConfig = {
-        isQemuGuest = true;
         core.enable = true;
         boot = {
           type = "zfs";
@@ -200,7 +199,12 @@
 
       chairliftConfig = recursiveMerge [
         defaultServerConfig
-        { networking.interfaces = [ "enp1s0" ]; }
+        {
+          isQemuGuest = true;
+          secrets.identityPaths = [ secrets.age.system.chairlift.privateKeyPath ];
+          ssh.hostKeyAge = secrets.ssh.host.chairlift.secret.file;
+          networking.interfaces = [ "enp1s0" ];
+        }
       ];
 
       defaultClientConfig = {
@@ -249,6 +253,7 @@
         defaultClientConfig
         {
           laptop.enable = true;
+          secrets.identityPaths = [ "" ];
           networking.interfaces = [ "enp0s31f6" "wlp2s0" ];
         }
       ];
@@ -257,6 +262,7 @@
         defaultClientConfig
         {
           networking.interfaces = [ "wlp170s0" ];
+          secrets.identityPaths = [ "" ];
           framework = {
             enable = true;
             fprint = {

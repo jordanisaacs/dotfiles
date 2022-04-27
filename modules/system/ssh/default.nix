@@ -20,13 +20,22 @@ in
     authorizedKeys = mkOption {
       description = "Authorized ssh keys";
       type = types.listOf types.str;
-      default = [ "" ];
     };
 
     initrdKeys = mkOption {
       description = "SSH key for initrd";
-      default = null;
       type = types.listOf types.str;
+    };
+
+    hostKeyAge = mkOption {
+      type = types.path;
+      description = "Encrypted SSH host key file";
+    };
+
+    hostKeyPath = mkOption {
+      default = "/etc/ssh/host_private_key";
+      type = types.path;
+      description = "Path to decrypted SSH key";
     };
   };
 
@@ -40,6 +49,10 @@ in
           services.openssh = {
             enable = true;
             ports = [ 23 ];
+            hostKeys = [ ];
+            extraConfig = ''
+              HostKey ${cfg.hostKeyPath}
+            '';
           };
 
           # terminfo's for correct formatting of ssh terminal
@@ -47,10 +60,17 @@ in
             pkgs.foot.terminfo
           ];
 
+          age.secrets.wireguard_private_key = {
+            file = cfg.hostKeyAge;
+            path = cfg.hostKeyPath;
+            mode = "600";
+          };
+
           users.users.root = {
             openssh.authorizedKeys.keys = cfg.authorizedKeys;
           };
         })
+
         (mkIf (config.jd.boot.type == "zfs") {
           boot.initrd = {
             network = {

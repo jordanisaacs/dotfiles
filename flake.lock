@@ -459,11 +459,11 @@
         "nixpkgs": "nixpkgs_3"
       },
       "locked": {
-        "lastModified": 1650341427,
-        "narHash": "sha256-C7+JTsHrEeDUlspYNY1Akr/xvzVsubRhx8X9/QsOLFY=",
+        "lastModified": 1650916274,
+        "narHash": "sha256-TmA78JJqw4mhret5DFVZN+H8vR1eg6w/JxjGCuERZjs=",
         "owner": "jordanisaacs",
         "repo": "jdpkgs",
-        "rev": "c450ef1b6777ef0541ce2987ee83d45d8311a1c5",
+        "rev": "eb6d3e9fd75ef4cf9f3e11a015c26f579151eb10",
         "type": "github"
       },
       "original": {
@@ -1164,12 +1164,17 @@
       }
     },
     "secrets": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
       "locked": {
-        "lastModified": 1650941723,
-        "narHash": "sha256-4R/0ebsa0IvV+UC2/u6zZDfJLiXUs1GpmkgFnAuO58Y=",
+        "lastModified": 1651025932,
+        "narHash": "sha256-J1OA7stcfhVwC2SmWFWv34huhHjOwMlWsTAuQ/oDC5I=",
         "ref": "main",
-        "rev": "f1b702652e0a7091f9d6c4d647c3eecf4e4fbb91",
-        "revCount": 3,
+        "rev": "9b25fca4403fe932022ff06a1b4fb6a0574c0e88",
+        "revCount": 5,
         "type": "git",
         "url": "ssh://git@github.com/jordanisaacs/secrets.git"
       },

@@ -38,19 +38,14 @@ in
             "/etc/secrets/initrd"
           ];
         })
-        (mkIf (config.jd.ssh.enable) {
-          environment.persistence."/persist".directories = [
-            "/etc/ssh"
-          ];
-        })
         ({
           environment.persistence."/persist" = {
             hideMounts = true;
-            directories = [
-              # secret key directory
-              "/etc/age"
-            ];
+            files = config.jd.secrets.identityPaths;
           };
+
+          # Wait to acivate age decryption until mounted
+          system.activationScripts.agenixMountSecrets.deps = [ "specialfs" "persist-files" ];
         })
       ];
     in
