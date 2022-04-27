@@ -132,6 +132,22 @@
               tags = [{ name = "net"; }];
             };
 
+          chairlift =
+            let
+              wgsecret = secrets.wireguard.chairlift;
+            in
+            {
+              wgAddrV4 = "10.55.0.2";
+              interfaceMask = 16;
+              listenPort = 51820;
+
+              privateKeyPath = "/etc/wireguard/private_key";
+              privateKeyAge = wgsecret.secret.file;
+              publicKey = wgsecret.publicKey;
+
+              tags = [{ name = "net"; ipAddr = "5.161.103.90"; }];
+            };
+
           framework =
             let
               wgsecret = secrets.wireguard.framework;
@@ -142,7 +158,7 @@
               listenPort = 51820;
 
               privateKeyPath = "/etc/wireguard/private_key";
-              # privateKeyAge = wgsecret.secret.file;
+              privateKeyAge = wgsecret.secret.file;
               publicKey = wgsecret.publicKey;
 
               tags = [{ name = "home"; ipAddr = "172.26.40.247"; } { name = "net"; }];
@@ -201,6 +217,7 @@
         defaultServerConfig
         {
           isQemuGuest = true;
+          wireguard = wireguardConf;
           secrets.identityPaths = [ secrets.age.system.chairlift.privateKeyPath ];
           ssh.hostKeyAge = secrets.ssh.host.chairlift.secret.file;
           networking.interfaces = [ "enp1s0" ];
@@ -262,7 +279,6 @@
         defaultClientConfig
         {
           networking.interfaces = [ "wlp170s0" ];
-          secrets.identityPaths = [ "" ];
           framework = {
             enable = true;
             fprint = {
@@ -270,7 +286,7 @@
             };
           };
           wireguard = wireguardConf;
-
+          secrets.identityPaths = [ secrets.age.system.framework.privateKeyPath ];
           windows.enable = true;
         }
       ];

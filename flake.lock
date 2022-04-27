@@ -1170,11 +1170,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1651025932,
-        "narHash": "sha256-J1OA7stcfhVwC2SmWFWv34huhHjOwMlWsTAuQ/oDC5I=",
+        "lastModified": 1651073104,
+        "narHash": "sha256-ELLKNdRaHu6Agw8kyb+dbSFoDS7H/rT+QC9M4GL1ezE=",
         "ref": "main",
-        "rev": "9b25fca4403fe932022ff06a1b4fb6a0574c0e88",
-        "revCount": 5,
+        "rev": "f90220e5a22f7bb2ebe1e2d72aafe4b493568a77",
+        "revCount": 7,
         "type": "git",
         "url": "ssh://git@github.com/jordanisaacs/secrets.git"
       },

@@ -60,7 +60,7 @@ in
             pkgs.foot.terminfo
           ];
 
-          age.secrets.wireguard_private_key = {
+          age.secrets.ssh_host_private_key = {
             file = cfg.hostKeyAge;
             path = cfg.hostKeyPath;
             mode = "600";

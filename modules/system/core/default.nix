@@ -82,6 +82,7 @@ in
 
         # secrets
         rage
+        agenix-cli
 
         # Processors
         jq
