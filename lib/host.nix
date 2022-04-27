@@ -67,7 +67,7 @@ with utils;
             }
             (removeAttrByPath qemuPath systemConfig)));
 
-      systemEnableModule = enableModule systemConfigStripped;
+      systemEnableModule = enableModule systemConfig;
       systemEnableModuleConfig = enableModuleConfig systemConfigStripped;
 
       userCfg = {
