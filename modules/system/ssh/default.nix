@@ -27,6 +27,17 @@ in
       type = types.listOf types.str;
     };
 
+    ports = mkOption {
+      default = [ 23 ];
+      type = with types; listOf port;
+      description = "SSH ports";
+    };
+
+    firewall = mkOption {
+      type = types.enum [ "world" "wg" ];
+      description = "Open firewall to everyone or wireguard";
+    };
+
     hostKeyAge = mkOption {
       type = types.path;
       description = "Encrypted SSH host key file";
@@ -45,10 +56,25 @@ in
         programs.ssh.startAgent = true;
       })
       (mkIf (cfg.type == "server") (mkMerge [
+        (mkIf (cfg.firewall == "world") {
+          services.openssh.openFirewall = true;
+        })
+        (
+          let
+            wgconf = config.jd.wireguard;
+          in
+          mkIf
+            (cfg.firewall == "wg" && (assertMsg wgconf.enable "Wireguard must be enabled for wireguard ssh firewall"))
+            {
+              services.openssh.openFirewall = false;
+              networking.firewall.interfaces.${wgconf.interface}.allowedTCPPorts = cfg.ports;
+            }
+        )
+
         ({
           services.openssh = {
             enable = true;
-            ports = [ 23 ];
+            ports = cfg.ports;
             hostKeys = [ ];
             extraConfig = ''
               HostKey ${cfg.hostKeyPath}
@@ -97,7 +123,6 @@ in
             };
           };
         })
-
       ]))
     ];
 }

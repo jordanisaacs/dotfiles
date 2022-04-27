@@ -228,6 +228,7 @@ in
 
     interface = mkOption {
       type = types.str;
+      default = "wireguard";
       description = "The name of the wireguard interface";
     };
 

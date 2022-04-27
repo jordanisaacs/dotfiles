@@ -218,6 +218,7 @@
         {
           isQemuGuest = true;
           wireguard = wireguardConf;
+          ssh.firewall = "wg";
           secrets.identityPaths = [ secrets.age.system.chairlift.privateKeyPath ];
           ssh.hostKeyAge = secrets.ssh.host.chairlift.secret.file;
           networking.interfaces = [ "enp1s0" ];
@@ -418,7 +419,7 @@
       };
 
       deploy.nodes.chairlift = {
-        hostname = "5.161.103.90";
+        hostname = "10.55.0.2";
         sshOpts = [ "-p" "23" ];
         autoRollback = true;
         magicRollback = true;
