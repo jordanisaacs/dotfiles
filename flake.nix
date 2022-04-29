@@ -240,7 +240,10 @@
           printing.enable = true;
         };
         networking = {
-          firewall.enable = true;
+          firewall = {
+            enable = true;
+            allowKdeconnect = false;
+          };
           networkmanager.enable = true;
         };
         graphical = {
@@ -263,7 +266,9 @@
         {
           desktop.enable = true;
           wireguard = wireguardConf;
-          networking.interfaces = [ "enp6s0" "wlp5s0" ];
+          networking = {
+            interfaces = [ "enp6s0" "wlp5s0" ];
+          };
           secrets.identityPaths = [ secrets.age.system.desktop.privateKeyPath ];
         }
       ];
@@ -326,6 +331,7 @@
                 enable = true;
                 firefox.enable = true;
                 libreoffice.enable = true;
+                kdeconnect.enable = false;
               };
               wayland = {
                 enable = true;

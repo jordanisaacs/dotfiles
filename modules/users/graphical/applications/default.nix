@@ -6,5 +6,6 @@
     ./libreoffice.nix
     ./firefox.nix
     ./multimedia.nix
+    ./kdeconnect.nix
   ];
 }
