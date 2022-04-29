@@ -244,6 +244,7 @@
           networkmanager.enable = true;
         };
         graphical = {
+          enable = true;
           xorg.enable = false;
           wayland = {
             enable = true;

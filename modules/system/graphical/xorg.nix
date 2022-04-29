@@ -13,7 +13,7 @@ in
     };
   };
 
-  config = mkIf (cfg.enable) {
+  config = mkIf (config.jd.graphical.enable && cfg.enable) {
     services.xserver = {
       enable = true;
       libinput = {

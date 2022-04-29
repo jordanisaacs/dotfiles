@@ -5,7 +5,28 @@ let
   cfg = config.jd.graphical;
 in
 {
-  config = {
+  options.jd.graphical = {
+    enable = mkOption {
+      type = types.bool;
+      default = false;
+      description = "Enable wayland";
+    };
+  };
+  config = mkIf (cfg.enable) {
+    environment.systemPackages = with pkgs; [
+      # Graphics
+      libva-utils
+      vdpauinfo
+      glxinfo
+    ];
+
+    hardware.opengl = {
+      enable = true;
+      extraPackages = [
+        pkgs.mesa.drivers
+      ];
+    };
+
     environment.etc = {
       "profile.local".text = builtins.concatStringsSep "\n" ([
         ''

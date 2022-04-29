@@ -22,6 +22,18 @@ in
 
   config = mkIf (cfg.enable) (mkMerge [
     ({
+
+      boot.kernelParams = [ "mem_sleep_default=deep" ];
+      # See: https://01.org/linuxgraphics/downloads/firmware
+      boot.extraModprobeConfig = ''
+        options i915 enable_guc=3
+        options i915 enable_fbc=1
+      '';
+    })
+    (mkIf cfg.fprint.enable {
+      services.fprintd.enable = true;
+    })
+    (mkIf (config.jd.graphical.enable) {
       environment.defaultPackages = with pkgs; [ intel-gpu-tools ];
       hardware = {
         video.hidpi.enable = true;
@@ -34,15 +46,6 @@ in
         };
       };
 
-      boot.kernelParams = [ "mem_sleep_default=deep" ];
-      # See: https://01.org/linuxgraphics/downloads/firmware
-      boot.extraModprobeConfig = ''
-        options i915 enable_guc=3
-        options i915 enable_fbc=1
-      '';
-    })
-    (mkIf cfg.fprint.enable {
-      services.fprintd.enable = true;
     })
   ]);
 }
