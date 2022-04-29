@@ -49,5 +49,11 @@ Improvements:
 Blocked
     - jdpkgs follows current nixpkgs (waiting on rstudio as broken with current nixpkgs (jdpkgs pinned to old nixpkgs)
     - systemd boot & plymouth (waiting on systemd-stage-1 - not currently feature complete)
-    - wireguard dns (waiting on jdns - my recursive resolver project)
     - wayland compositor setting improvements (waiting on flurry - my wayland compositor project)
+
+Private Cloud Roadmap:
+    1. Set up microvm.nix with a mkMicrovm function. Provide a NixOS configuration and exposed ports and it automatically sets it up on the host system.
+    2. Finish writing jdns. The recursive resolver will support custom zone files & service records.
+    3. Write a STUN server to allow NAT hole punching. Now wireguard configuration does not require an endpoint.
+    4. Use `jdns` with service records for querying the IP;port (see: https://www.jordanwhited.com/posts/wireguard-endpoint-discovery-nat-traversal/ )
+    5. Orchestration of microvms?
