@@ -1,10 +1,12 @@
-{ pkgs, config, lib, ... }:
-with lib;
-
-let
-  cfg = config.jd.pijul;
-in
 {
+  pkgs,
+  config,
+  lib,
+  ...
+}:
+with lib; let
+  cfg = config.jd.pijul;
+in {
   options.jd.pijul = {
     enable = mkOption {
       description = "Enable pijul";

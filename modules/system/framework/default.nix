@@ -1,9 +1,12 @@
-{ pkgs, config, lib, ... }:
-with lib;
-let
-  cfg = config.jd.framework;
-in
 {
+  pkgs,
+  config,
+  lib,
+  ...
+}:
+with lib; let
+  cfg = config.jd.framework;
+in {
   options.jd.framework = {
     enable = mkOption {
       description = "Enable framework options";
@@ -21,20 +24,19 @@ in
   };
 
   config = mkIf (cfg.enable) (mkMerge [
-    ({
-
-      boot.kernelParams = [ "mem_sleep_default=deep" ];
+    {
+      boot.kernelParams = ["mem_sleep_default=deep"];
       # See: https://01.org/linuxgraphics/downloads/firmware
       boot.extraModprobeConfig = ''
         options i915 enable_guc=3
         options i915 enable_fbc=1
       '';
-    })
+    }
     (mkIf cfg.fprint.enable {
       services.fprintd.enable = true;
     })
     (mkIf (config.jd.graphical.enable) {
-      environment.defaultPackages = with pkgs; [ intel-gpu-tools ];
+      environment.defaultPackages = with pkgs; [intel-gpu-tools];
       hardware = {
         video.hidpi.enable = true;
         opengl = {
@@ -45,7 +47,6 @@ in
           ];
         };
       };
-
     })
   ]);
 }

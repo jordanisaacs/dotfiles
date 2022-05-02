@@ -1,10 +1,12 @@
-{ pkgs, config, lib, ... }:
-with lib;
-
-let
-  cfg = config.jd.spotify;
-in
 {
+  pkgs,
+  config,
+  lib,
+  ...
+}:
+with lib; let
+  cfg = config.jd.spotify;
+in {
   options.jd.spotify = {
     enable = mkOption {
       description = "Enable spotify";
@@ -27,12 +29,10 @@ in
         type = types.path;
         default = ./spotifydconfig.toml.age;
       };
-
     };
 
     config = mkIf (cfg.enable) {
-
-      xdg.configFile = { };
+      xdg.configFile = {};
 
       homeage.file = {
         "spotifydconfig" = {
@@ -44,4 +44,5 @@ in
         };
       };
     };
-  }
+  };
+}

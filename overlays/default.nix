@@ -1,13 +1,25 @@
-{ pkgs, nur, dwm-flake, deploy-rs, neovim-flake, st-flake, dwl-flake, scripts, homeage, system, lib, jdpkgs, extra-container, impermanence, agenix }:
-
-let
-  dwl-config = builtins.readFile ./dwl-config.c;
-
-in
 {
+  pkgs,
+  nur,
+  dwm-flake,
+  deploy-rs,
+  neovim-flake,
+  st-flake,
+  dwl-flake,
+  scripts,
+  homeage,
+  system,
+  lib,
+  jdpkgs,
+  extra-container,
+  impermanence,
+  agenix,
+}: let
+  dwl-config = builtins.readFile ./dwl-config.c;
+in {
   overlays = [
     nur.overlay
-    neovim-flake.overlay
+    neovim-flake.overlays.default
     dwl-flake.overlay."${system}"
     scripts.overlay
 
@@ -31,7 +43,7 @@ in
       dwmJD = dwm-flake.packages.${system}.dwmJD;
       stJD = st-flake.packages.${system}.stJD;
       weechatJD = prev.weechat.override {
-        configure = { availablePlugins, ... }: {
+        configure = {availablePlugins, ...}: {
           scripts = with prev.weechatScripts; [
             weechat-matrix
           ];

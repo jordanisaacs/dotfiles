@@ -1,10 +1,12 @@
-{ pkgs, config, lib, ... }:
-with lib;
-
-let
-  cfg = config.jd.zsh;
-in
 {
+  pkgs,
+  config,
+  lib,
+  ...
+}:
+with lib; let
+  cfg = config.jd.zsh;
+in {
   # Interesting configs:
   # https://vermaden.wordpress.com/2021/09/19/ghost-in-the-shell-part-7-zsh-setup/
 
@@ -20,8 +22,7 @@ in
     let
       # Remove home directory from xdg
       dotDir = builtins.substring ((builtins.stringLength config.home.homeDirectory) + 1) (builtins.stringLength config.xdg.configHome) config.xdg.configHome;
-    in
-    {
+    in {
       home.file."${config.xdg.configHome}/zsh/.p10k.zsh" = {
         source = ./p10k.zsh;
       };
@@ -95,12 +96,13 @@ in
 
           # Source powerlevel10k
           source ${config.xdg.configHome}/zsh/.p10k.zsh
-          ${""
-          # Source zsh-vi-mode
-          # source ${pkgs.myPkgs.zsh-vi-mode}/share/zsh-vi-mode/zsh-vi-mode.zsh
+          ${
+            ""
+            # Source zsh-vi-mode
+            # source ${pkgs.myPkgs.zsh-vi-mode}/share/zsh-vi-mode/zsh-vi-mode.zsh
           }
           source ${pkgs.zsh-powerlevel10k}/share/zsh-powerlevel10k/powerlevel10k.zsh-theme
-           
+
           # Disable less(1) history
           export LESSHISTSIZE=0
         ''; # addd to .zshrc
@@ -109,4 +111,3 @@ in
     }
   );
 }
-

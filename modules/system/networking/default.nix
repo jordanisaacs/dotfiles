@@ -1,10 +1,12 @@
-{ pkgs, config, lib, ... }:
-with lib;
-
-let
-  cfg = config.jd.networking;
-in
 {
+  pkgs,
+  config,
+  lib,
+  ...
+}:
+with lib; let
+  cfg = config.jd.networking;
+in {
   options.jd.networking = {
     interfaces = mkOption {
       type = with types; listOf str;
@@ -38,36 +40,40 @@ in
     };
   };
 
-  config =
-    let
-      networkCfg = listToAttrs
-        (map
-          (n: {
-            name = "${n}";
-            value = { useDHCP = true; };
-          })
-          cfg.interfaces);
-    in
-    {
-      networking.interfaces = networkCfg;
-      networking.networkmanager.enable = cfg.networkmanager.enable;
-      networking.wireless.enable = cfg.wifi.enable;
+  config = let
+    networkCfg =
+      listToAttrs
+      (map
+        (n: {
+          name = "${n}";
+          value = {useDHCP = true;};
+        })
+        cfg.interfaces);
+  in {
+    networking.interfaces = networkCfg;
+    networking.networkmanager.enable = cfg.networkmanager.enable;
+    networking.wireless.enable = cfg.wifi.enable;
 
-      networking.firewall = mkIf (cfg.firewall.enable) {
-        enable = true;
-        interfaces =
-          mkIf
-            (cfg.firewall.allowKdeconnect)
-            (listToAttrs
-              (map
-                (n: {
-                  name = n;
-                  value = rec {
-                    allowedTCPPortRanges = [{ from = 1714; to = 1764; }];
-                    allowedUDPPortRanges = allowedTCPPortRanges;
-                  };
-                })
-                cfg.interfaces));
-      };
+    networking.firewall = mkIf (cfg.firewall.enable) {
+      enable = true;
+      interfaces =
+        mkIf
+        (cfg.firewall.allowKdeconnect)
+        (listToAttrs
+          (map
+            (n: {
+              name = n;
+              value = rec {
+                allowedTCPPortRanges = [
+                  {
+                    from = 1714;
+                    to = 1764;
+                  }
+                ];
+                allowedUDPPortRanges = allowedTCPPortRanges;
+              };
+            })
+            cfg.interfaces));
     };
+  };
 }

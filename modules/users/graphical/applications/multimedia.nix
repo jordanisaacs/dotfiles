@@ -1,10 +1,12 @@
-{ pkgs, config, lib, ... }:
-with lib;
-
-let
-  cfg = config.jd.graphical.applications;
-in
 {
+  pkgs,
+  config,
+  lib,
+  ...
+}:
+with lib; let
+  cfg = config.jd.graphical.applications;
+in {
   config = {
     home.packages = with pkgs; [
       vimiv-qt

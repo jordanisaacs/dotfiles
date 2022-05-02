@@ -1,7 +1,10 @@
-{ pkgs, config, lib, ... }:
-with lib;
-
 {
+  pkgs,
+  config,
+  lib,
+  ...
+}:
+with lib; {
   config.jd.graphical = {
     wayland = {
       enable = mkDefault false;

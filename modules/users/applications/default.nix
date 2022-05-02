@@ -1,10 +1,12 @@
-{ pkgs, config, lib, ... }:
-with lib;
-
-let
-  cfg = config.jd.applications;
-in
 {
+  pkgs,
+  config,
+  lib,
+  ...
+}:
+with lib; let
+  cfg = config.jd.applications;
+in {
   options.jd.applications = {
     enable = mkOption {
       description = "Enable a set of common applications";
@@ -21,6 +23,7 @@ in
     home.packages = with pkgs; [
       # Password manager
       bitwarden
+      alejandra
 
       agenix-cli
 
@@ -58,7 +61,7 @@ in
       buku
 
       # Font
-      (nerdfonts.override { fonts = [ "JetBrainsMono" ]; })
+      (nerdfonts.override {fonts = ["JetBrainsMono"];})
 
       # Typing fonts
       carlito
@@ -76,7 +79,7 @@ in
 
     # Taskwarrior + timewarrior integration: https://timewarrior.net/docs/taskwarrior/
     home.activation = {
-      tasktime = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+      tasktime = lib.hm.dag.entryAfter ["writeBoundary"] ''
         $DRY_RUN_CMD mkdir -p ${config.xdg.dataHome}/task/hooks/
         $DRY_RUN_CMD rm -rf ${config.xdg.dataHome}/task/hooks/on-modify.timewarrior
         $DRY_RUN_CMD cp ${pkgs.timewarrior}/share/doc/timew/ext/on-modify.timewarrior ${config.xdg.dataHome}/task/hooks/
@@ -95,6 +98,5 @@ in
         ytdl-format = "ytdl-format=bestvideo[height<=?1920][fps<=?30][vcodec!=?vp9]+bestaudio/best";
       };
     };
-
   };
 }

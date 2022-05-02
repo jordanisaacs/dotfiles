@@ -1,11 +1,12 @@
-{ pkgs, config, lib, ... }:
-
-with lib;
-
-let
-  cfg = config.jd.desktop;
-in
 {
+  pkgs,
+  config,
+  lib,
+  ...
+}:
+with lib; let
+  cfg = config.jd.desktop;
+in {
   options.jd.desktop = {
     enable = mkOption {
       description = "Whether to enable desktop settings. Also tags as desktop for user settings";
@@ -14,5 +15,5 @@ in
     };
   };
 
-  config = mkIf (cfg.enable) { };
+  config = mkIf (cfg.enable) {};
 }

@@ -1,9 +1,12 @@
-{ pkgs, config, lib, ... }:
-with lib;
-let
-  cfg = config.jd.laptop;
-in
 {
+  pkgs,
+  config,
+  lib,
+  ...
+}:
+with lib; let
+  cfg = config.jd.laptop;
+in {
   options.jd.laptop = {
     enable = mkOption {
       description = "Whether to enable laptop settings. Also tags as laptop for user settings";
@@ -26,7 +29,6 @@ in
       cpuFreqGovernor = "powersave";
     };
 
-
     systemd = {
       # Replace suspend mode with hybrid-sleep. So can do hybrid-sleep then hibernate
       # hybrid-sleep broken on framework: https://community.frame.work/t/issues-with-sleep-states-on-linux/7363
@@ -39,7 +41,7 @@ in
 
     # https://man.archlinux.org/man/systemd-sleep.conf.5
     # https://www.kernel.org/doc/html/latest/admin-guide/pm/sleep-states.html
-    # Suspend mode -> Hybrid-Sleep. This enables hybrid-sleep then hibernate 
+    # Suspend mode -> Hybrid-Sleep. This enables hybrid-sleep then hibernate
     services = {
       # Hibernate on low battery. from: https://wiki.archlinux.org/title/laptop#Hibernate_on_low_battery_level
       udev.extraRules = ''
@@ -99,49 +101,54 @@ in
         # Nix source: https://github.com/NixOS/nixpkgs/blob/nixos-21.05/nixos/modules/services/hardware/tlp.nix
         # TLP settings: https://linrunner.de/tlp/settings/index.html
         enable = true;
-        settings = {
-          "SOUND_POWER_SAVE_ON_AC" = 0;
-          "SOUND_POWER_SAVE_ON_BAT" = 1;
-          "SOUND_POWER_SAVE_CONTROLLER" = "Y";
-          "START_CHARGE_THRESH_BAT0" = 0;
-          "STOP_CHARGE_THRESH_BAT0" = 0;
-          "START_CHARGE_THRESH_BAT1" = 0;
-          "STOP_CHARGE_THRESH_BAT1" = 0;
-          "DISK_APM_LEVEL_ON_AC" = "254 254";
-          "DISK_APM_LEVEL_ON_BAT" = "128 128";
-          "DISK_IOSCHED" = "mq-deadline mq-deadline";
-          "SATA_LINKPWR_ON_AC" = "med_power_with_dipm max_performance";
-          "SATA_LINKPWR_ON_BAT" = "min_power min_power";
-          "MAX_LOST_WORK_SECS_ON_AC" = 15;
-          "MAX_LOST_WORK_SECS_ON_BAT" = 60;
-          "NMI_WATCHDOG" = 0;
-          "WIFI_PWR_ON_AC" = "off";
-          "WIFI_PWR_ON_BAT" = "on";
-          "WOL_DISABLE" = "Y";
-          "CPU_SCALING_GOVERNOR_ON_AC" = "powersave";
-          "CPU_SCALING_GOVERNOR_ON_BAT" = "powersave";
-          "CPU_MIN_PERF_ON_AC" = 0;
-          "CPU_MAX_PERF_ON_AC" = 100;
-          "CPU_MIN_PERF_ON_BAT" = 0;
-          "CPU_MAX_PERF_ON_BAT" = 50;
-          "CPU_BOOST_ON_AC" = 1;
-          "CPU_BOOST_ON_BAT" = 1;
-          "SCHED_POWERSAVE_ON_AC" = 0;
-          "SCHED_POWERSAVE_ON_BAT" = 1;
-          "ENERGY_PERF_POLICY_ON_AC" = "performance";
-          "ENERGY_PERF_POLICY_ON_BAT" = "power";
-          "RESTORE_DEVICE_STATE_ON_STARTUP" = 0;
-          "RUNTIME_PM_ON_AC" = "on";
-          "RUNTIME_PM_ON_BAT" = "auto";
-          "PCIE_ASPM_ON_AC" = "default";
-          "PCIE_ASPM_ON_BAT" = "powersupersave";
-          "USB_AUTOSUSPEND" = 0;
-        } // (if config.jd.framework.enable == true then {
-          "CPU_ENERGY_PERF_POLICY_ON_AC" = "performance";
-          "CPU_ENERGY_PERF_POLICY_ON_BAT" = "power";
-        } else { });
+        settings =
+          {
+            "SOUND_POWER_SAVE_ON_AC" = 0;
+            "SOUND_POWER_SAVE_ON_BAT" = 1;
+            "SOUND_POWER_SAVE_CONTROLLER" = "Y";
+            "START_CHARGE_THRESH_BAT0" = 0;
+            "STOP_CHARGE_THRESH_BAT0" = 0;
+            "START_CHARGE_THRESH_BAT1" = 0;
+            "STOP_CHARGE_THRESH_BAT1" = 0;
+            "DISK_APM_LEVEL_ON_AC" = "254 254";
+            "DISK_APM_LEVEL_ON_BAT" = "128 128";
+            "DISK_IOSCHED" = "mq-deadline mq-deadline";
+            "SATA_LINKPWR_ON_AC" = "med_power_with_dipm max_performance";
+            "SATA_LINKPWR_ON_BAT" = "min_power min_power";
+            "MAX_LOST_WORK_SECS_ON_AC" = 15;
+            "MAX_LOST_WORK_SECS_ON_BAT" = 60;
+            "NMI_WATCHDOG" = 0;
+            "WIFI_PWR_ON_AC" = "off";
+            "WIFI_PWR_ON_BAT" = "on";
+            "WOL_DISABLE" = "Y";
+            "CPU_SCALING_GOVERNOR_ON_AC" = "powersave";
+            "CPU_SCALING_GOVERNOR_ON_BAT" = "powersave";
+            "CPU_MIN_PERF_ON_AC" = 0;
+            "CPU_MAX_PERF_ON_AC" = 100;
+            "CPU_MIN_PERF_ON_BAT" = 0;
+            "CPU_MAX_PERF_ON_BAT" = 50;
+            "CPU_BOOST_ON_AC" = 1;
+            "CPU_BOOST_ON_BAT" = 1;
+            "SCHED_POWERSAVE_ON_AC" = 0;
+            "SCHED_POWERSAVE_ON_BAT" = 1;
+            "ENERGY_PERF_POLICY_ON_AC" = "performance";
+            "ENERGY_PERF_POLICY_ON_BAT" = "power";
+            "RESTORE_DEVICE_STATE_ON_STARTUP" = 0;
+            "RUNTIME_PM_ON_AC" = "on";
+            "RUNTIME_PM_ON_BAT" = "auto";
+            "PCIE_ASPM_ON_AC" = "default";
+            "PCIE_ASPM_ON_BAT" = "powersupersave";
+            "USB_AUTOSUSPEND" = 0;
+          }
+          // (
+            if config.jd.framework.enable == true
+            then {
+              "CPU_ENERGY_PERF_POLICY_ON_AC" = "performance";
+              "CPU_ENERGY_PERF_POLICY_ON_BAT" = "power";
+            }
+            else {}
+          );
       };
     };
   };
 }
-

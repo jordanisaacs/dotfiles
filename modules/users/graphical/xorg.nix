@@ -1,11 +1,13 @@
-{ pkgs, config, lib, ... }:
-with lib;
-
-let
+{
+  pkgs,
+  config,
+  lib,
+  ...
+}:
+with lib; let
   cfg = config.jd.graphical.xorg;
   systemCfg = config.machineData.systemConfig;
-in
-{
+in {
   options.jd.graphical.xorg = {
     enable = mkOption {
       description = "Enable xorg";
@@ -15,7 +17,7 @@ in
 
     type = mkOption {
       description = ''What desktop/wm to use. Options: "dwm"'';
-      type = types.enum [ "dwm" ];
+      type = types.enum ["dwm"];
       default = null;
     };
 
@@ -59,8 +61,7 @@ in
   config = mkIf (cfg.enable) (
     let
       xStartCommand = "${pkgs.dwmJD}/bin/dwm";
-    in
-    {
+    in {
       assertions = [
         {
           assertion = systemCfg.graphical.xorg.enable;
@@ -92,10 +93,10 @@ in
             if [ -z "$DBUS_SESSION_BUS_ADDRESS" ]; then
               eval $(dbus-launch --exit-with-session --sh-syntax)
             fi
-            
+
             # Need to import XDG_SESSION_ID & PATH for xss-lock and xsecurelock respectively
             systemctl --user import-environment DISPLAY XAUTHORITY XDG_SESSION_ID PATH XDG_CONFIG_HOME
-            
+
             # https://bbs.archlinux.org/viewtopic.php?id=224652
             # Requires --systemd becuase of gnome-keyring error. Unsure how differs from systemctl --user import-environment
             if command -v dbus-update-activation-environment >/dev/null 2>&1; then
@@ -104,7 +105,11 @@ in
 
             systemctl --user start dwm-session.target
 
-            ${if config.machineData.name == "framework" then "xrandr --output eDP-1 --scale 1.5x1.5" else ""}
+            ${
+              if config.machineData.name == "framework"
+              then "xrandr --output eDP-1 --scale 1.5x1.5"
+              else ""
+            }
             xset s ${toString cfg.screenlock.timeout.time} ${toString cfg.screenlock.lock.time}
             ${pkgs.xbindkeys}/bin/xbindkeys
             ${pkgs.xwallpaper}/bin/xwallpaper --zoom ${config.xdg.configHome}/wallpapers/peacefulmtn.jpg
@@ -120,8 +125,6 @@ in
             done
           '';
         };
-
-
       };
 
       home.file.".xbindkeysrc" = mkIf (cfg.type == "dwm" && systemCfg.connectivity.sound.enable) {
@@ -145,17 +148,21 @@ in
         user.services = {
           xss-lock = {
             Install = {
-              WantedBy = [ "dwm-session.target" ];
+              WantedBy = ["dwm-session.target"];
             };
 
             Unit = {
               Description = "XSS Lock Daemon";
-              PartOf = [ "dwm-session.target" ];
-              After = [ "graphical-session.target" ];
+              PartOf = ["dwm-session.target"];
+              After = ["graphical-session.target"];
             };
 
             Service = {
-              ExecStart = "${pkgs.xss-lock}/bin/xss-lock -s \${XDG_SESSION_ID} ${if cfg.screenlock.timeout.script == null then "" else "-n ${cfg.screenlock.timeout.script}"} -l -- ${cfg.screenlock.lock.command}";
+              ExecStart = "${pkgs.xss-lock}/bin/xss-lock -s \${XDG_SESSION_ID} ${
+                if cfg.screenlock.timeout.script == null
+                then ""
+                else "-n ${cfg.screenlock.timeout.script}"
+              } -l -- ${cfg.screenlock.lock.command}";
             };
           };
         };
@@ -163,37 +170,35 @@ in
         user.targets.dwm-session = {
           Unit = {
             Description = "dwm compositor session";
-            Documentation = [ "man:systemd.special(7)" ];
-            BindsTo = [ "graphical-session.target" ];
-            Wants = [ "graphical-session-pre.target" ];
-            After = [ "graphical-session-pre.target" ];
+            Documentation = ["man:systemd.special(7)"];
+            BindsTo = ["graphical-session.target"];
+            Wants = ["graphical-session-pre.target"];
+            After = ["graphical-session-pre.target"];
           };
         };
 
-        user.services.picom =
-          let
-            configFile = pkgs.writeText "picom.conf" ''
-              backend = "glx";
-            '';
-          in
-          {
-            Unit = {
-              Description = "Picom X11 compositor";
-              After = [ "graphical-session-pre.target" ];
-              PartOf = [ "dwm-session.target" ];
-            };
-
-            Install = {
-              WantedBy = [ "dwm-session.target" ];
-            };
-
-            Service = {
-              ExecStart = "${pkgs.picom}/bin/picom --config ${configFile} --experimental-backends";
-              Restart = "always";
-              RestartSec = 3;
-              Environment = [ "allow_rgb10=configs=false" ];
-            };
+        user.services.picom = let
+          configFile = pkgs.writeText "picom.conf" ''
+            backend = "glx";
+          '';
+        in {
+          Unit = {
+            Description = "Picom X11 compositor";
+            After = ["graphical-session-pre.target"];
+            PartOf = ["dwm-session.target"];
           };
+
+          Install = {
+            WantedBy = ["dwm-session.target"];
+          };
+
+          Service = {
+            ExecStart = "${pkgs.picom}/bin/picom --config ${configFile} --experimental-backends";
+            Restart = "always";
+            RestartSec = 3;
+            Environment = ["allow_rgb10=configs=false"];
+          };
+        };
       };
     }
   );

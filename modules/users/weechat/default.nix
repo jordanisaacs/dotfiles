@@ -1,10 +1,12 @@
-{ pkgs, config, lib, ... }:
-with lib;
-
-let
-  cfg = config.jd.weechat;
-in
 {
+  pkgs,
+  config,
+  lib,
+  ...
+}:
+with lib; let
+  cfg = config.jd.weechat;
+in {
   options.jd.weechat = {
     enable = mkOption {
       description = "Enable git";
@@ -14,9 +16,9 @@ in
   };
 
   config = mkIf (cfg.enable) {
-    home.packages =
-      let
-        myScripts = with pkgs; stdenv.mkDerivation {
+    home.packages = let
+      myScripts = with pkgs;
+        stdenv.mkDerivation {
           pname = "weechat-scripts";
           version = "0.1";
 
@@ -25,7 +27,7 @@ in
             sha256 = "1kc5dpaprqlvmalwibb23l7xmhm6jxjccp88r1zfxd5impzq31hz";
           };
 
-          passthru.scripts = [ "autojoin.py" ];
+          passthru.scripts = ["autojoin.py"];
 
           dontBuild = true;
           doCheck = false;
@@ -35,19 +37,19 @@ in
           '';
         };
 
-        weechat = pkgs.weechat.override
-          {
-            configure = { availablePlugins, ... }: {
-              scripts = with pkgs.weechatScripts; [
-                weechat-autosort
-                multiline
-                myScripts
-              ];
-            };
+      weechat =
+        pkgs.weechat.override
+        {
+          configure = {availablePlugins, ...}: {
+            scripts = with pkgs.weechatScripts; [
+              weechat-autosort
+              multiline
+              myScripts
+            ];
           };
-      in
-      [
-        weechat
-      ];
+        };
+    in [
+      weechat
+    ];
   };
 }

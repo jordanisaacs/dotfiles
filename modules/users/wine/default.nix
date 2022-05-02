@@ -1,7 +1,10 @@
-{ pkgs, config, lib, ... }:
-with lib;
-
-let
+{
+  pkgs,
+  config,
+  lib,
+  ...
+}:
+with lib; let
   cfg = config.jd.wine;
 in {
   options.jd.wine = {
@@ -9,7 +12,6 @@ in {
       description = "enable wine";
       type = types.bool;
       default = false;
-
     };
 
     office365 = mkOption {
@@ -22,7 +24,7 @@ in {
   config = mkIf cfg.enable (
     let
       dotDir = builtins.substring ((builtins.stringLength config.home.homeDirectory) + 1) (builtins.stringLength config.xdg.configHome) config.xdg.configHome;
-      wineWrapper = import ./wrapper.nix { inherit pkgs; };
+      wineWrapper = import ./wrapper.nix {inherit pkgs;};
       config_dir = config.xdg.configHome;
     in
       mkMerge [
@@ -30,7 +32,7 @@ in {
           let
             executable = "${config.xdg.configHome}/wine/installers/office365install.exe";
             name = "office365";
-            tricks = [ "msxml6" "riched20" ];
+            tricks = ["msxml6" "riched20"];
             firstRunScript = ''
             '';
 
@@ -39,12 +41,13 @@ in {
               inherit executable name config_dir is64bits firstRunScript;
             };
           in {
-            home.packages = [ office365 ];
+            home.packages = [office365];
 
             home.file."${dotDir}/wine/installers/office365install.exe" = {
               source = ./OfficeSetup.exe;
             };
-          }))
-     ]
+          }
+        ))
+      ]
   );
 }

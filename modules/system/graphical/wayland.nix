@@ -1,10 +1,12 @@
-{ pkgs, config, lib, ... }:
-with lib;
-
-let
-  cfg = config.jd.graphical.wayland;
-in
 {
+  pkgs,
+  config,
+  lib,
+  ...
+}:
+with lib; let
+  cfg = config.jd.graphical.wayland;
+in {
   options.jd.graphical.wayland = {
     enable = mkOption {
       description = "Enable wayland";
@@ -31,6 +33,6 @@ in
       };
     };
 
-    security.pam.services.swaylock = mkIf (cfg.swaylock-pam) { };
+    security.pam.services.swaylock = mkIf (cfg.swaylock-pam) {};
   };
 }

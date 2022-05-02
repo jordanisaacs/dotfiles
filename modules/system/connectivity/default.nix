@@ -1,10 +1,12 @@
-{ pkgs, config, lib, ... }:
-with lib;
-
-let
-  cfg = config.jd.connectivity;
-in
 {
+  pkgs,
+  config,
+  lib,
+  ...
+}:
+with lib; let
+  cfg = config.jd.connectivity;
+in {
   options.jd.connectivity = {
     bluetooth.enable = mkOption {
       description = "Enable bluetooth with default options";
@@ -32,14 +34,24 @@ in
   };
 
   config = {
-    environment.systemPackages = with pkgs; [
-    ] ++ (if (cfg.bluetooth.enable) then [
-      scripts.bluetoothTools
-    ] else [ ]) ++ (if (cfg.sound.enable) then [
-      pulseaudio
-      scripts.soundTools
-    ] else [ ]);
-
+    environment.systemPackages = with pkgs;
+      [
+      ]
+      ++ (
+        if (cfg.bluetooth.enable)
+        then [
+          scripts.bluetoothTools
+        ]
+        else []
+      )
+      ++ (
+        if (cfg.sound.enable)
+        then [
+          pulseaudio
+          scripts.soundTools
+        ]
+        else []
+      );
 
     security.rtkit.enable = cfg.sound.enable;
     services.pipewire = {

@@ -1,10 +1,12 @@
-{ pkgs, config, lib, ... }:
-with lib;
-
-let
-  cfg = config.jd.windows;
-in
 {
+  pkgs,
+  config,
+  lib,
+  ...
+}:
+with lib; let
+  cfg = config.jd.windows;
+in {
   options.jd.windows.enable = mkOption {
     description = "Enable windows virtualisation";
     default = false;
@@ -23,7 +25,6 @@ in
       };
     };
     programs.dconf.enable = true;
-    environment.systemPackages = with pkgs; [ virt-manager swtpm ];
-
+    environment.systemPackages = with pkgs; [virt-manager swtpm];
   };
 }

@@ -1,11 +1,12 @@
-{ inputs }:
-{ pkgs, config, lib, ... }:
-with lib;
-
-let
+{inputs}: {
+  pkgs,
+  config,
+  lib,
+  ...
+}:
+with lib; let
   cfg = config.jd.core;
-in
-{
+in {
   options.jd.core = {
     enable = mkOption {
       description = "Enable core options";
@@ -23,50 +24,52 @@ in
     # Nix search paths/registries from:
     # https://github.com/gytis-ivaskevicius/flake-utils-plus/blob/166d6ebd9f0de03afc98060ac92cba9c71cfe550/lib/options.nix
     # Context thread: https://github.com/gytis-ivaskevicius/flake-utils-plus/blob/166d6ebd9f0de03afc98060ac92cba9c71cfe550/lib/options.nix
-    nix =
-      let
-        flakes = filterAttrs
-          (name: value: value ? outputs)
-          inputs;
-        flakesWithPkgs = filterAttrs
-          (name: value:
-            value.outputs ? legacyPackages || value.outputs ? packages)
-          flakes;
-        nixRegistry = builtins.mapAttrs (name: v: { flake = v; }) flakes;
-      in
-      {
-        registry = nixRegistry;
-        nixPath = mapAttrsToList
-          (name: _: "${name}=/etc/nix/inputs/${name}")
-          flakesWithPkgs;
-        package = pkgs.nixUnstable;
-        gc = {
-          persistent = true;
-          automatic = true;
-          dates = "weekly";
-          options = "--delete-older-than 14d";
-        };
-        extraOptions = ''
-          keep-outputs = true
-          keep-derivations = true
-          experimental-features = nix-command flakes
-        '';
+    nix = let
+      flakes =
+        filterAttrs
+        (name: value: value ? outputs)
+        inputs;
+      flakesWithPkgs =
+        filterAttrs
+        (name: value:
+          value.outputs ? legacyPackages || value.outputs ? packages)
+        flakes;
+      nixRegistry = builtins.mapAttrs (name: v: {flake = v;}) flakes;
+    in {
+      registry = nixRegistry;
+      nixPath =
+        mapAttrsToList
+        (name: _: "${name}=/etc/nix/inputs/${name}")
+        flakesWithPkgs;
+      package = pkgs.nixUnstable;
+      gc = {
+        persistent = true;
+        automatic = true;
+        dates = "weekly";
+        options = "--delete-older-than 14d";
       };
+      extraOptions = ''
+        keep-outputs = true
+        keep-derivations = true
+        experimental-features = nix-command flakes
+      '';
+    };
 
     environment = {
       sessionVariables = {
         EDITOR = "vim";
       };
-      etc = mapAttrs'
+      etc =
+        mapAttrs'
         (name: value: {
           name = "nix/inputs/${name}";
-          value = { source = value.outPath; };
+          value = {source = value.outPath;};
         })
         inputs;
 
-      shells = [ pkgs.zsh pkgs.bash ];
+      shells = [pkgs.zsh pkgs.bash];
       # ZSH completions
-      pathsToLink = [ "/share/zsh" ];
+      pathsToLink = ["/share/zsh"];
       systemPackages = with pkgs; [
         # Shells
         zsh
@@ -98,7 +101,6 @@ in
         htop
         acpi
         pstree
-
 
         # version ocntrol
         git

@@ -1,25 +1,29 @@
-{ pkgs, config, lib, ... }:
-with lib;
-
-let
+{
+  pkgs,
+  config,
+  lib,
+  ...
+}:
+with lib; let
   cfg = config.jd.graphical;
   systemCfg = config.machineData.systemConfig;
-in
-{
-  config = mkIf (cfg.xorg.enable == true || cfg.wayland.enable == true)
+in {
+  config =
+    mkIf (cfg.xorg.enable == true || cfg.wayland.enable == true)
     {
-      home.packages = with pkgs; mkIf (systemCfg.connectivity.sound.enable) [
-        calibre
-        pavucontrol
-        pasystray
-        jdpkgs.volantes-cursors
-        authy
-        spotify
+      home.packages = with pkgs;
+        mkIf (systemCfg.connectivity.sound.enable) [
+          calibre
+          pavucontrol
+          pasystray
+          jdpkgs.volantes-cursors
+          authy
+          spotify
 
-        # qt
-        libsForQt5.qtstyleplugin-kvantum
-        qt5ct
-      ];
+          # qt
+          libsForQt5.qtstyleplugin-kvantum
+          qt5ct
+        ];
 
       gtk = {
         enable = true;
@@ -76,7 +80,6 @@ in
             '';
           };
         };
-
 
         dataFile = {
           "icons/default/index.theme" = {
@@ -166,9 +169,3 @@ in
       };
     };
 }
-
-
-
-
-
-

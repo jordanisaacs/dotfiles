@@ -1,7 +1,10 @@
-{ pkgs, config, lib, ... }:
-with lib;
-
 {
+  pkgs,
+  config,
+  lib,
+  ...
+}:
+with lib; {
   options.jd.extraContainer = {
     enable = mkOption {
       description = "Enable extra-container";

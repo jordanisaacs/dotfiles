@@ -1,10 +1,12 @@
-{ pkgs, config, lib, ... }:
-with lib;
-
-let
-  cfg = config.jd.graphical.xorg;
-in
 {
+  pkgs,
+  config,
+  lib,
+  ...
+}:
+with lib; let
+  cfg = config.jd.graphical.xorg;
+in {
   options.jd.graphical.xorg = {
     enable = mkOption {
       description = "Enable xserver.";
