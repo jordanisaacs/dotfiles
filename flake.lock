@@ -681,11 +681,11 @@
         "which-key": "which-key"
       },
       "locked": {
-        "lastModified": 1651468630,
-        "narHash": "sha256-utSQZAzEI5PLgya8IT1AMBZZje5xd4++aiNFHevkLjM=",
+        "lastModified": 1651506713,
+        "narHash": "sha256-3aInLBiQZkQRiCLNxGepB8aG+bfDoKH9bZXvCMy9O3M=",
         "owner": "jordanisaacs",
         "repo": "neovim-flake",
-        "rev": "c24ac0692164b54857e58128140ed58e8f4c5ca5",
+        "rev": "6feef8905573695047a9f4305a22767322e74f20",
         "type": "github"
       },
       "original": {
