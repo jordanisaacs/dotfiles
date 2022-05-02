@@ -51,6 +51,13 @@ in {
           ];
         };
       };
+      dolphin = prev.dolphin.overrideAttrs (dold: {
+        # Remove the systemd option from dbus service file as not using KDE
+        postInstall = ''
+          head -n -1 $out/share/dbus-1/services/org.kde.dolphin.FileManager1.service > $out/temp.txt
+          mv $out/temp.txt $out/share/dbus-1/services/org.kde.dolphin.FileManager1.service
+        '';
+      });
 
       agenix-cli = agenix.defaultPackage."${system}";
       deploy-rs = deploy-rs.packages."${system}".deploy-rs;

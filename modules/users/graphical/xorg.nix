@@ -77,8 +77,6 @@ in {
         xwallpaper
       ]);
 
-      xdg.enable = true;
-
       home.file = {
         ".xinitrc" = {
           executable = true;

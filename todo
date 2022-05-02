@@ -22,7 +22,8 @@ Broken:
         - Currently jankily working around xdg-portal-gtk failing by force restart, figure out what is wrong
 
         Firefox:
-        - Doesn't respect mimeapps, no open in folder
+        - Doesn't respect mimeapps
+        - no open in folder [fixed!]
 
 Improvements:
     User:

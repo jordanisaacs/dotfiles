@@ -23,6 +23,8 @@ in {
           # qt
           libsForQt5.qtstyleplugin-kvantum
           qt5ct
+
+          xdg-utils
         ];
 
       gtk = {
@@ -148,9 +150,15 @@ in {
       };
 
       xdg = {
+        enable = true;
         mime.enable = true;
         mimeApps = {
           enable = true;
+          associations.added = {
+            "x-scheme-handler/terminal" = "foot.desktop";
+            "x-scheme-handler/file" = "org.kde.dolphin.desktop";
+            "x-directory/normal" = "org.kde.dolphin.desktop";
+          };
           defaultApplications = {
             "application/pdf" = "okularApplication_pdf.desktop";
             "application/x-shellscript" = "nvim.desktop";
@@ -164,6 +172,10 @@ in {
             "text/x-python" = "nvim.desktop";
             "text/x-tex" = "texstudio.desktop";
             "text/x-makefile" = "nvim.desktop";
+            "inode/directory" = "org.kde.dolphin.desktop";
+            "x-directory/normal" = "org.kde.dolphin.desktop";
+            "x-scheme-handler/file" = "org.kde.dolphin.desktop";
+            "x-scheme-handler/terminal" = "foot.desktop";
           };
         };
       };

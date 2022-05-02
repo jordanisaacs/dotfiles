@@ -42,10 +42,10 @@ with lib;
       ## https://bbs.archlinux.org/viewtopic.php?id=224652
       ## Requires --systemd becuase of gnome-keyring error. Unsure how differs from systemctl --user import-environment
       if command -v dbus-update-activation-environment >/dev/null 2>&1; then
-        dbus-update-activation-environment --systemd WAYLAND_DISPLAY DISPLAY XDG_CURRENT_DESKTOP SWAYSOCK
+        dbus-update-activation-environment --systemd --all
       fi
 
-      systemctl --user import-environment PATH
+      ## systemctl --user import-environment PATH
       systemctl --user restart xdg-desktop-portal-gtk.service
       systemctl --user start sway-session.target
     '';
@@ -211,6 +211,7 @@ with lib;
         bemenu
         wl-clipboard
         libappindicator-gtk3
+        mako
         (
           if cfg.background.enable
           then swaybg
@@ -261,7 +262,7 @@ with lib;
         "foot/foot.ini" = {
           text = ''
             pad = 2x2 center
-            font=JetBrainsMono Nerd Font Mono
+            font=JetBrainsMono Nerd Font Mono,Noto Color Emoji:style=Regular
           '';
         };
         "sway/config" = {
