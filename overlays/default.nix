@@ -1,6 +1,7 @@
 {
   pkgs,
   nur,
+  nixpkgs-emoji,
   dwm-flake,
   deploy-rs,
   neovim-flake,
@@ -25,6 +26,7 @@ in {
 
     (final: prev: {
       # Version of xss-lock that supports logind SetLockedHint
+      openmoji-color = nixpkgs-emoji.legacyPackages.${system}.openmoji-color;
       xss-lock = prev.xss-lock.overrideAttrs (old: {
         src = prev.fetchFromGitHub {
           owner = "xdbob";

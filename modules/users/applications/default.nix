@@ -60,8 +60,10 @@ in {
       # Bookmarks
       buku
 
-      # Font
+      # Fonts
       (nerdfonts.override {fonts = ["JetBrainsMono"];})
+      noto-fonts-emoji
+      #openmoji-color
 
       # Typing fonts
       carlito

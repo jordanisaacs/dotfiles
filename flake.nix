@@ -3,6 +3,8 @@
   inputs = {
     nixpkgs.url = "nixpkgs/nixos-unstable";
 
+    nixpkgs-emoji.url = "nixpkgs/nixos-21.11";
+
     home-manager = {
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -68,6 +70,7 @@
   outputs = {
     self,
     nixpkgs,
+    nixpkgs-emoji,
     jdpkgs,
     impermanence,
     deploy-rs,
@@ -112,6 +115,7 @@
           impermanence
           deploy-rs
           agenix
+          nixpkgs-emoji
           ;
       })
       overlays

@@ -757,6 +757,21 @@
         "type": "indirect"
       }
     },
+    "nixpkgs-emoji": {
+      "locked": {
+        "lastModified": 1651310835,
+        "narHash": "sha256-MLk/zsLlbPhwFucxL64Fr+oIrvQC2/76Ap2F7ekbPNI=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "fd3e33d696b81e76b30160dfad2efb7ac1f19879",
+        "type": "github"
+      },
+      "original": {
+        "id": "nixpkgs",
+        "ref": "nixos-21.11",
+        "type": "indirect"
+      }
+    },
     "nixpkgs_2": {
       "locked": {
         "lastModified": 1650161686,
@@ -1158,6 +1173,7 @@
         "microvm-nix": "microvm-nix",
         "neovim-flake": "neovim-flake",
         "nixpkgs": "nixpkgs_6",
+        "nixpkgs-emoji": "nixpkgs-emoji",
         "nur": "nur",
         "secrets": "secrets",
         "st-flake": "st-flake"
