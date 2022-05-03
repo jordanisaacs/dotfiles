@@ -659,6 +659,7 @@
         "nvim-code-action-menu": "nvim-code-action-menu",
         "nvim-compe": "nvim-compe",
         "nvim-cursorline": "nvim-cursorline",
+        "nvim-lightbulb": "nvim-lightbulb",
         "nvim-lspconfig": "nvim-lspconfig",
         "nvim-neoclip": "nvim-neoclip",
         "nvim-tree-lua": "nvim-tree-lua",
@@ -681,11 +682,11 @@
         "which-key": "which-key"
       },
       "locked": {
-        "lastModified": 1651506713,
-        "narHash": "sha256-3aInLBiQZkQRiCLNxGepB8aG+bfDoKH9bZXvCMy9O3M=",
+        "lastModified": 1651534446,
+        "narHash": "sha256-nya/LbzR7BPTiixEZ1XnR00JgJVX5gUnwCY3shNzlcc=",
         "owner": "jordanisaacs",
         "repo": "neovim-flake",
-        "rev": "6feef8905573695047a9f4305a22767322e74f20",
+        "rev": "10536c3de59856878d0e79e4c6166b8c6fe163ee",
         "type": "github"
       },
       "original": {
@@ -974,6 +975,22 @@
       "original": {
         "owner": "yamatsum",
         "repo": "nvim-cursorline",
+        "type": "github"
+      }
+    },
+    "nvim-lightbulb": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1645713830,
+        "narHash": "sha256-LxGA2LX9CASodJnZYXGZfGPOeW38MW7z54gYQSDmhRE=",
+        "owner": "kosayoda",
+        "repo": "nvim-lightbulb",
+        "rev": "29ca81408119ba809d1f922edc941868af97ee86",
+        "type": "github"
+      },
+      "original": {
+        "owner": "kosayoda",
+        "repo": "nvim-lightbulb",
         "type": "github"
       }
     },
