@@ -11,21 +11,27 @@ in {
   config =
     mkIf (cfg.xorg.enable == true || cfg.wayland.enable == true)
     {
-      home.packages = with pkgs;
-        mkIf (systemCfg.connectivity.sound.enable) [
-          calibre
-          pavucontrol
-          pasystray
-          jdpkgs.volantes-cursors
-          authy
-          spotify
+      home = {
+        sessionVariables = {
+          QT_QPA_PLATFORMTHEME = "qt5ct";
+        };
 
-          # qt
-          libsForQt5.qtstyleplugin-kvantum
-          qt5ct
+        packages = with pkgs;
+          mkIf (systemCfg.connectivity.sound.enable) [
+            calibre
+            pavucontrol
+            pasystray
+            jdpkgs.volantes-cursors
+            authy
+            spotify
 
-          xdg-utils
-        ];
+            # qt
+            libsForQt5.qtstyleplugin-kvantum
+            qt5ct
+
+            xdg-utils
+          ];
+      };
 
       gtk = {
         enable = true;
@@ -40,10 +46,6 @@ in {
           gtk-cursor-theme-name = "volantes_cursors";
           gtk-application-prefer-dark-theme = true;
         };
-      };
-
-      home.sessionVariables = {
-        QT_QPA_PLATFORMTHEME = "qt5ct";
       };
 
       xdg = {

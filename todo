@@ -2,7 +2,7 @@ Refactors:
     Move things out of flake.nix to make file smaller
     Refactor builder functions (IN PROGRESS)
     Switch to submodules to make nested options work better (IN PROGRESS)
-    
+
 Broken:
     System:
         Printer/wifi:
@@ -21,10 +21,6 @@ Broken:
         Systemd:
         - Currently jankily working around xdg-portal-gtk failing by force restart, figure out what is wrong
 
-        Firefox:
-        - Doesn't respect mimeapps
-        - no open in folder [fixed!]
-
 Improvements:
     User:
         Desktop:
@@ -35,9 +31,6 @@ Improvements:
 
             Widgets:
             - setup some eww widgets
-
-            Notification:
-            - Setup notifications (mako?)
 
             SSH-Agent:
             - Setup auto-login bitwarden-cli using gnome-keyring
