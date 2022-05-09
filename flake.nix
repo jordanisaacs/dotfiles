@@ -341,6 +341,7 @@
       defaultClientConfig
       {
         networking.interfaces = ["wlp170s0"];
+        laptop.enable = true;
         framework = {
           enable = true;
           fprint = {

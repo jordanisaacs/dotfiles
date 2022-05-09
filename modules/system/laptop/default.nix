@@ -25,10 +25,6 @@ in {
       light.enable = true;
     };
 
-    powerManagement = {
-      cpuFreqGovernor = "powersave";
-    };
-
     systemd = {
       # Replace suspend mode with hybrid-sleep. So can do hybrid-sleep then hibernate
       # hybrid-sleep broken on framework: https://community.frame.work/t/issues-with-sleep-states-on-linux/7363
@@ -106,10 +102,6 @@ in {
             "SOUND_POWER_SAVE_ON_AC" = 0;
             "SOUND_POWER_SAVE_ON_BAT" = 1;
             "SOUND_POWER_SAVE_CONTROLLER" = "Y";
-            "START_CHARGE_THRESH_BAT0" = 0;
-            "STOP_CHARGE_THRESH_BAT0" = 0;
-            "START_CHARGE_THRESH_BAT1" = 0;
-            "STOP_CHARGE_THRESH_BAT1" = 0;
             "DISK_APM_LEVEL_ON_AC" = "254 254";
             "DISK_APM_LEVEL_ON_BAT" = "128 128";
             "DISK_IOSCHED" = "mq-deadline mq-deadline";
@@ -131,8 +123,6 @@ in {
             "CPU_BOOST_ON_BAT" = 1;
             "SCHED_POWERSAVE_ON_AC" = 0;
             "SCHED_POWERSAVE_ON_BAT" = 1;
-            "ENERGY_PERF_POLICY_ON_AC" = "performance";
-            "ENERGY_PERF_POLICY_ON_BAT" = "power";
             "RESTORE_DEVICE_STATE_ON_STARTUP" = 0;
             "RUNTIME_PM_ON_AC" = "on";
             "RUNTIME_PM_ON_BAT" = "auto";
@@ -145,6 +135,16 @@ in {
             then {
               "CPU_ENERGY_PERF_POLICY_ON_AC" = "performance";
               "CPU_ENERGY_PERF_POLICY_ON_BAT" = "power";
+              "PLATFORM_PROFILE_ON_AC" = "power";
+              "PLATFORM_PROFILE_ON_BAT" = "performance";
+              "CPU_HWP_DYN_BOOST_ON_AC" = 1;
+              "CPU_HWP_DYN_BOOST_ON_BAT" = 0;
+              "INTEL_GPU_MIN_FREQ_ON_AC" = 0;
+              "INTEL_GPU_MAX_FREQ_ON_AC" = 0;
+              "INTEL_GPU_BOOST_FREQ_ON_AC" = 0;
+              "INTEL_GPU_MIN_FREQ_ON_BAT" = 0;
+              "INTEL_GPU_MAX_FREQ_ON_BAT" = 800;
+              "INTEL_GPU_BOOST_FREQ_ON_BAT" = 1000;
             }
             else {}
           );
