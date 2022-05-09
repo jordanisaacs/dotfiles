@@ -17,15 +17,13 @@ in {
 
   config = mkIf (cfg.enable) {
     home.sessionVariables = {
+      MANPAGER = "sh -c 'col -bx | bat -l man -p'";
       EDITOR = "vim";
     };
 
     home.packages = with pkgs; [
       # Password manager
       bitwarden
-      alejandra
-
-      agenix-cli
 
       # Note taking
       obsidian #knowledge base
@@ -37,13 +35,21 @@ in {
       # ssh mount
       sshfs
 
-      # Deployment
+      # Deployment tools
       deploy-rs
+      agenix-cli
 
-      # CLI apps
+      # CLI tools
+      bat
+      glow
       nnn # file manager
       grit # to-do
       timewarrior
+      buku # bookmarks
+      yt-dlp
+
+      # Dev tools
+      alejandra # nix formatting
 
       # Messaging
       slack
@@ -54,13 +60,7 @@ in {
       # Productivity Suite
       pdftk
 
-      # Video
-      youtube-dl
-
-      # Bookmarks
-      buku
-
-      # Fonts
+      # System Fonts
       (nerdfonts.override {fonts = ["JetBrainsMono"];})
       noto-fonts-emoji
       #openmoji-color

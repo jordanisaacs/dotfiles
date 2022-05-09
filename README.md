@@ -218,9 +218,6 @@ in
 sshSecrets // wireguardSecrets
 ```
 
-
-
-
 ## Credit
 
 A heavily evolved version of Wil Taylor's [dotfiles](https://github.com/wiltaylor/dotfiles). Would not have the setup I have today without his [youtube series](https://www.youtube.com/watch?v=QKoQ1gKJY5A&list=PL-saUBvIJzOkjAw_vOac75v-x6EzNzZq-) and repo as a guide when I was first starting out.
