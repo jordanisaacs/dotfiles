@@ -39,7 +39,7 @@ in {
           ''
         ]
         ++ (
-          if cfg.xorg.enable
+          if (cfg.xorg.enable && !config.jd.greetd.enable)
           then [
             ''
               if [ -z "$DISPLAY" ] && [ "''${XDG_VTNR}" -eq 1 ]; then
@@ -50,7 +50,7 @@ in {
           else []
         )
         ++ (
-          if cfg.wayland.enable
+          if (cfg.wayland.enable && !config.jd.greetd.enable)
           then [
             ''
               if [ -z "$DISPLAY" ] && [ "''${XDG_VTNR}" -eq 2 ]; then

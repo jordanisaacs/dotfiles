@@ -11,6 +11,7 @@
     ./connectivity
     ./boot
     (import ./core {inherit inputs;})
+    ./greetd
     ./gnome
     ./networking
     ./laptop

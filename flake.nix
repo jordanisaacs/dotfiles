@@ -342,6 +342,8 @@
       {
         networking.interfaces = ["wlp170s0"];
         laptop.enable = true;
+        core.time = "west";
+        greetd.enable = true;
         framework = {
           enable = true;
           fprint = {

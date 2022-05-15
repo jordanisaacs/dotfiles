@@ -13,11 +13,20 @@ in {
       type = types.bool;
       default = true;
     };
+
+    time = mkOption {
+      description = "Time zone";
+      type = types.enum ["west" "east"];
+      default = "east";
+    };
   };
 
   config = mkIf (cfg.enable) {
     i18n.defaultLocale = "en_US.UTF-8";
-    time.timeZone = "America/New_York";
+    time.timeZone =
+      if (cfg.time == "east")
+      then "US/Eastern"
+      else "US/Pacific";
 
     hardware.enableRedistributableFirmware = lib.mkDefault true;
 
