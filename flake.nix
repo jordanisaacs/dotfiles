@@ -380,6 +380,16 @@
     };
 
     homeManagerConfigurations = {
+      jisaacs = user.mkHMUser {
+        userConfig = {
+          zsh.enable = true;
+          graphical.applications.firefox.enable = true;
+          direnv.enable = true;
+          work.enable = true;
+        };
+        username = "jisaacs";
+      };
+
       jd = user.mkHMUser {
         userConfig = {
           graphical = {

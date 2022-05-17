@@ -17,7 +17,7 @@ in {
     };
   };
 
-  config = mkIf (isGraphical && cfg.enable && cfg.firefox.enable) {
+  config = mkIf cfg.firefox.enable {
     programs.firefox = {
       enable = true;
       extensions = with pkgs.nur.repos.rycee.firefox-addons; [
@@ -35,32 +35,32 @@ in {
           };
         })
         # bypass-paywalls third party
-        (buildFirefoxXpiAddon {
-          pname = "bypass-paywalls-firefox";
-          addonId = "bypasspaywalls@bypasspaywalls";
-          version = "1.7.9";
-          url = "https://github.com/iamadamdev/bypass-paywalls-chrome/releases/latest/download/bypass-paywalls-firefox.xpi";
-          sha256 = "Nk9ZKUPPSV+EFG9iO6W7Dv/iLX2c3Bh2GxV5nMTQ6q8=";
+        # (buildFirefoxXpiAddon {
+        #   pname = "bypass-paywalls-firefox";
+        #   addonId = "bypasspaywalls@bypasspaywalls";
+        #   version = "1.7.9";
+        #   url = "https://github.com/iamadamdev/bypass-paywalls-chrome/releases/latest/download/bypass-paywalls-firefox.xpi";
+        #   sha256 = "Nk9ZKUPPSV+EFG9iO6W7Dv/iLX2c3Bh2GxV5nMTQ6q8=";
 
-          meta = with lib; {
-            description = "Bypass paywalls for a variety of news sites";
-            license = pkgs.lib.licenses.mit;
-            platforms = pkgs.lib.platforms.all;
-          };
-        })
-        (buildFirefoxXpiAddon {
-          pname = "cookie-quick-manager";
-          addonId = "{60f82f00-9ad5-4de5-b31c-b16a47c51558}";
-          version = "0.5rc2";
-          url = "https://addons.mozilla.org/firefox/downloads/file/3343599/cookie_quick_manager-0.5rc2-an+fx.xpi";
-          sha256 = "uCbkQ0OMiAs5mOQuCZ0OGUn/UUiceItQGTuS74BCbG4=";
+        #   meta = with lib; {
+        #     description = "Bypass paywalls for a variety of news sites";
+        #     license = pkgs.lib.licenses.mit;
+        #     platforms = pkgs.lib.platforms.all;
+        #   };
+        # })
+        # (buildFirefoxXpiAddon {
+        #   pname = "cookie-quick-manager";
+        #   addonId = "{60f82f00-9ad5-4de5-b31c-b16a47c51558}";
+        #   version = "0.5rc2";
+        #   url = "https://addons.mozilla.org/firefox/downloads/file/3343599/cookie_quick_manager-0.5rc2-an+fx.xpi";
+        #   sha256 = "uCbkQ0OMiAs5mOQuCZ0OGUn/UUiceItQGTuS74BCbG4=";
 
-          meta = with lib; {
-            description = "Manage cookies better";
-            license = licenses.gpl3;
-            platforms = platforms.all;
-          };
-        })
+        #   meta = with lib; {
+        #     description = "Manage cookies better";
+        #     license = licenses.gpl3;
+        #     platforms = platforms.all;
+        #   };
+        # })
         (buildFirefoxXpiAddon {
           pname = "pinboard-extension";
           addonId = "pinboardff@pinboard.in";
