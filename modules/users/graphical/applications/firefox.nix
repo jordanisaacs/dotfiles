@@ -17,7 +17,7 @@ in {
     };
   };
 
-  config = mkIf (isGraphical && cfg.enable && cfg.firefox.enable) {
+  config = mkIf cfg.firefox.enable {
     programs.firefox = {
       enable = true;
       extensions = with pkgs.nur.repos.rycee.firefox-addons; [
@@ -40,7 +40,6 @@ in {
           version = "0.5rc2";
           url = "https://addons.mozilla.org/firefox/downloads/file/3343599/cookie_quick_manager-0.5rc2-an+fx.xpi";
           sha256 = "uCbkQ0OMiAs5mOQuCZ0OGUn/UUiceItQGTuS74BCbG4=";
-
           meta = with lib; {
             description = "Manage cookies better";
             license = licenses.gpl3;

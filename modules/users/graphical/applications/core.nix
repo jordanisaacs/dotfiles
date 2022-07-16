@@ -10,11 +10,12 @@ in {
   options.jd.graphical.applications = {
     enable = mkOption {
       type = types.bool;
+      default = false;
       description = "Enable graphical applications";
     };
   };
 
-  config = {
+  config = mkIf (cfg.applications.enable) {
     home.packages = with pkgs; [
       jdpkgs.dolphin # fixes dbus/firefox
       discord
