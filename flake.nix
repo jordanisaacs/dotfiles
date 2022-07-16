@@ -3,17 +3,19 @@
   inputs = {
     nixpkgs.url = "nixpkgs/nixos-unstable";
 
-    nixpkgs-emoji.url = "nixpkgs/nixos-21.11";
+    nur = {
+      url = "github:nix-community/NUR";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    flake-utils = {
+      url = "github:numtide/flake-utils";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
 
     home-manager = {
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    jdpkgs = {
-      url = "github:jordanisaacs/jdpkgs";
-      # Broken rstudio
-      # inputs.nixpkgs.follows = "nixpkgs";
     };
 
     impermanence = {
@@ -24,6 +26,7 @@
     deploy-rs = {
       url = "github:serokell/deploy-rs";
       inputs.nixpkgs.follows = "nixpkgs";
+      inputs.flake-utils.follows = "flake-utils";
     };
 
     agenix = {
@@ -34,10 +37,16 @@
     microvm-nix = {
       url = "github:astro/microvm.nix";
       inputs.nixpkgs.follows = "nixpkgs";
+      inputs.flake-utils.follows = "flake-utils";
     };
 
     homeage = {
       url = "github:jordanisaacs/homeage/activatecheck";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    jdpkgs = {
+      url = "github:jordanisaacs/jdpkgs";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -57,14 +66,6 @@
     dwm-flake.url = "github:jordanisaacs/dwm-flake";
 
     dwl-flake.url = "github:jordanisaacs/dwl-flake/updates";
-
-    extra-container = {
-      url = "github:erikarvstedt/extra-container";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    flake-utils.url = "github:numtide/flake-utils";
-    nur.url = "github:nix-community/NUR";
   };
 
   outputs = {
@@ -84,13 +85,12 @@
     dwm-flake,
     dwl-flake,
     homeage,
-    extra-container,
     ...
   } @ inputs: let
     inherit (nixpkgs) lib;
 
     util = import ./lib {
-      inherit system pkgs home-manager lib overlays inputs;
+      inherit system nixpkgs pkgs home-manager lib overlays inputs;
     };
 
     scripts = import ./scripts {
@@ -111,11 +111,9 @@
           scripts
           jdpkgs
           dwl-flake
-          extra-container
           impermanence
           deploy-rs
           agenix
-          nixpkgs-emoji
           ;
       })
       overlays
@@ -277,6 +275,11 @@
         secrets.identityPaths = [secrets.age.system.chairlift.privateKeyPath];
         ssh.hostKeyAge = secrets.ssh.host.chairlift.secret.file;
         networking.interfaces = ["enp1s0"];
+        miniflux = {
+          enable = true;
+          adminCredsFile = secrets.miniflux.adminCredentials.secret.file;
+          firewall = "wg";
+        };
       }
     ];
 
@@ -452,7 +455,7 @@
         kernelParams = [];
         kernelPatches = [];
         systemConfig = frameworkConfig;
-        users = defaultUsers;
+        users = [defaultDesktopUser];
         cpuCores = 8;
         stateVersion = "21.11";
       };
@@ -474,7 +477,7 @@
         name = "chairlift";
         initrdMods = ["sd_mod" "sr_mod" "ahci" "xhci_pci"];
         kernelMods = [];
-        kernelPackage = pkgs.linuxPackages_5_17;
+        kernelPackage = pkgs.linuxPackages_latest;
         kernelParams = ["nohibernate"];
         kernelPatches = [];
         systemConfig = chairliftConfig;

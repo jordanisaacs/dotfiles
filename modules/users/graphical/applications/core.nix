@@ -16,7 +16,7 @@ in {
 
   config = {
     home.packages = with pkgs; [
-      dolphin
+      jdpkgs.dolphin # fixes dbus/firefox
       discord
       okular
       wdisplays

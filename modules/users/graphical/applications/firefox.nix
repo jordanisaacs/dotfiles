@@ -34,20 +34,6 @@ in {
             platforms = pkgs.lib.platforms.all;
           };
         })
-        # bypass-paywalls third party
-        (buildFirefoxXpiAddon {
-          pname = "bypass-paywalls-firefox";
-          addonId = "bypasspaywalls@bypasspaywalls";
-          version = "1.7.9";
-          url = "https://github.com/iamadamdev/bypass-paywalls-chrome/releases/latest/download/bypass-paywalls-firefox.xpi";
-          sha256 = "Nk9ZKUPPSV+EFG9iO6W7Dv/iLX2c3Bh2GxV5nMTQ6q8=";
-
-          meta = with lib; {
-            description = "Bypass paywalls for a variety of news sites";
-            license = pkgs.lib.licenses.mit;
-            platforms = pkgs.lib.platforms.all;
-          };
-        })
         (buildFirefoxXpiAddon {
           pname = "cookie-quick-manager";
           addonId = "{60f82f00-9ad5-4de5-b31c-b16a47c51558}";
@@ -73,18 +59,9 @@ in {
             platforms = pkgs.lib.platforms.all;
           };
         })
-        (buildFirefoxXpiAddon {
-          pname = "redirector";
-          addonId = "redirector@einaregilsson.com";
-          version = "3.5.3";
-          url = "https://addons.mozilla.org/firefox/downloads/file/3535009/redirector-3.5.3-an+fx.xpi";
-          sha256 = "sha256-7dvT1ZROdI0L1uy22enPDgwC3O1vQtshqrZBkOccD3E=";
-
-          meta = with lib; {
-            description = "Redirect links";
-            platforms = pkgs.lib.platforms.all;
-          };
-        })
+        user-agent-string-switcher
+        bypass-paywalls-clean
+        redirector
         rust-search-extension
         bitwarden
         ublock-origin
@@ -92,7 +69,6 @@ in {
         multi-account-containers
         clearurls
         cookie-autodelete
-        metamask
       ];
       profiles = {
         personal = {
@@ -135,6 +111,7 @@ in {
 
             domPrivacy = {
               # clipboard events: https://superuser.com/questions/1595994/dont-let-websites-overwrite-clipboard-in-firefox-without-explicitly-giving-perm
+              # Breaks copy/paste on websites
               #"dom.event.clipboardevents.enabled" = false;
               "dom.battery.enabled" = false;
             };
@@ -151,6 +128,8 @@ in {
             };
 
             general_settings = {
+              "widget.use-xdg-desktop-portal.file-picker" = 2;
+              "widget.use-xdg-desktop-portal.mime-handler" = 2;
               "browser.aboutConfig.showWarning" = false;
               "browser.shell.checkDefaultBrowser" = false;
               "browser.toolbars.bookmarks.visibility" = "newtab";

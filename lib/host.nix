@@ -59,7 +59,6 @@ with utils; {
     sys_users = map (u: user.mkSystemUser u) users;
 
     enable = ["enable"];
-    extraContainerPath = ["extraContainer"];
     impermanencePath = ["impermanence"];
     qemuPath = ["isQemuGuest"];
     moduleFolder = "/modules/system/";
@@ -70,12 +69,7 @@ with utils; {
         path = impermanencePath;
         activate = enable;
       }
-      (removeModuleOptions
-        {
-          path = extraContainerPath;
-          activate = enable;
-        }
-        (removeAttrByPath qemuPath systemConfig));
+      (removeAttrByPath qemuPath systemConfig);
 
     systemEnableModule = enableModule systemConfig;
     systemEnableModuleConfig = enableModuleConfig systemConfigStripped;
@@ -98,7 +92,7 @@ with utils; {
               "hmsystemdata.json".text = toJSON userCfg;
             };
 
-            networking.hostName = "${name}";
+            networking.hostName = name;
             networking.wireless.interfaces = wifi;
             networking.useDHCP = lib.mkDefault false; # Disable any new interface added that is not in config
 
@@ -109,7 +103,7 @@ with utils; {
             boot.kernelPatches = kernelPatches;
 
             nixpkgs.pkgs = pkgs;
-            nix.maxJobs = lib.mkDefault cpuCores;
+            nix.settings.max-jobs = lib.mkDefault cpuCores;
 
             system.stateVersion = stateVersion;
           }
@@ -119,10 +113,6 @@ with utils; {
         ++ (systemEnableModule (import (inputs.nixpkgs + "/nixos/modules/profiles/qemu-guest.nix")) qemuPath)
         ++ (systemEnableModuleConfig inputs.impermanence.nixosModule moduleFolder {
           path = impermanencePath;
-          activate = enable;
-        })
-        ++ (systemEnableModuleConfig inputs.extra-container.nixosModule moduleFolder {
-          path = extraContainerPath;
           activate = enable;
         });
     };

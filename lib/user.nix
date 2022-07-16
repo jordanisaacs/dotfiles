@@ -10,44 +10,53 @@ with builtins; {
   mkHMUser = {
     userConfig,
     username,
-  }:
-    home-manager.lib.homeManagerConfiguration {
-      inherit system username pkgs;
-      stateVersion = "21.05";
-      configuration = let
-        trySettings = tryEval (fromJSON (readFile /etc/hmsystemdata.json));
-        machineData =
-          if trySettings.success
-          then trySettings.value
-          else {};
+  }: let
+    trySettings = tryEval (fromJSON (readFile /etc/hmsystemdata.json));
+    machineData =
+      if trySettings.success
+      then trySettings.value
+      else {};
 
-        machineModule = {
-          pkgs,
-          config,
-          lib,
-          ...
-        }: {
-          options.machineData = lib.mkOption {
-            default = {};
-            description = "Settings passed from nixos system configuration. If not present will be empty";
+    machineModule = {
+      pkgs,
+      config,
+      lib,
+      ...
+    }: {
+      options.machineData = lib.mkOption {
+        default = {};
+        description = "Settings passed from nixos system configuration. If not present will be empty";
+      };
+
+      config.machineData = machineData;
+    };
+  in
+    home-manager.lib.homeManagerConfiguration {
+      inherit pkgs;
+      modules = [
+        ../modules/users
+        machineModule
+        pkgs.homeage.homeManagerModules.homeage
+        {
+          jd = userConfig;
+          nixpkgs = {
+            overlays = overlays;
+            config = {
+              permittedInsecurePackages = [
+                "electron-9.4.4"
+              ];
+              allowUnfree = true;
+            };
           };
 
-          config.machineData = machineData;
-        };
-      in {
-        jd = userConfig;
-
-        nixpkgs.overlays = overlays;
-        nixpkgs.config.allowUnfree = true;
-
-        systemd.user.startServices = true;
-        home.stateVersion = "21.05";
-        home.username = username;
-        home.homeDirectory = "/home/${username}";
-
-        imports = [../modules/users machineModule pkgs.homeage.homeManagerModules.homeage];
-      };
-      homeDirectory = "/home/${username}";
+          home = {
+            inherit username;
+            stateVersion = "21.05";
+            homeDirectory = "/home/${username}";
+          };
+          systemd.user.startServices = true;
+        }
+      ];
     };
 
   mkSystemUser = {

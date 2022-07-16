@@ -1,7 +1,6 @@
 {
   pkgs,
   nur,
-  nixpkgs-emoji,
   dwm-flake,
   deploy-rs,
   neovim-flake,
@@ -12,7 +11,6 @@
   system,
   lib,
   jdpkgs,
-  extra-container,
   impermanence,
   agenix,
 }: let
@@ -26,7 +24,6 @@ in {
 
     (final: prev: {
       # Version of xss-lock that supports logind SetLockedHint
-      openmoji-color = nixpkgs-emoji.legacyPackages.${system}.openmoji-color;
       xss-lock = prev.xss-lock.overrideAttrs (old: {
         src = prev.fetchFromGitHub {
           owner = "xdbob";
@@ -51,18 +48,10 @@ in {
           ];
         };
       };
-      dolphin = prev.dolphin.overrideAttrs (dold: {
-        # Remove the systemd option from dbus service file as not using KDE
-        postInstall = ''
-          head -n -1 $out/share/dbus-1/services/org.kde.dolphin.FileManager1.service > $out/temp.txt
-          mv $out/temp.txt $out/share/dbus-1/services/org.kde.dolphin.FileManager1.service
-        '';
-      });
-
       agenix-cli = agenix.defaultPackage."${system}";
       deploy-rs = deploy-rs.packages."${system}".deploy-rs;
       jdpkgs = jdpkgs.packages."${system}";
-      inherit homeage extra-container impermanence;
+      inherit homeage impermanence;
     })
   ];
 }

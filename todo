@@ -39,11 +39,17 @@ Improvements:
     System:
         Login manager:
         - switch from agetty to greetd (tuigreet? https://github.com/apognu/tuigreet)
+            - Switched to greetd but issues with kernel logs
 
 Blocked
     - jdpkgs follows current nixpkgs (waiting on rstudio as broken with current nixpkgs (jdpkgs pinned to old nixpkgs)
     - systemd boot & plymouth (waiting on systemd-stage-1 - not currently feature complete)
     - wayland compositor setting improvements (waiting on flurry - my wayland compositor project)
+
+Private Cloud Services ([x] done, [-] in progress, [ ] todo):
+    [x] Miniflux
+    [-] Firefly iii
+    [ ] Linkding
 
 Private Cloud Roadmap:
     1. Set up microvm.nix with a mkMicrovm function. Provide a NixOS configuration and exposed ports and it automatically sets it up on the host system.

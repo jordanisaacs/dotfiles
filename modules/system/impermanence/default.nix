@@ -46,6 +46,11 @@ in {
           files = config.jd.secrets.identityPaths;
         };
 
+        environment.persistence."/persist/data" = mkIf (config.services.postgresql.enable) {
+          hideMounts = true;
+          directories = [config.services.postgresql.dataDir];
+        };
+
         # Wait to acivate age decryption until mounted
         system.activationScripts.agenixMountSecrets.deps = ["specialfs" "persist-files"];
       }

@@ -52,7 +52,9 @@ in {
   in {
     networking.interfaces = networkCfg;
     networking.networkmanager.enable = cfg.networkmanager.enable;
-    networking.wireless.enable = cfg.wifi.enable;
+    networking.wireless = mkIf (cfg.wifi.enable) {
+      enable = true;
+    };
 
     networking.firewall = mkIf (cfg.firewall.enable) {
       enable = true;

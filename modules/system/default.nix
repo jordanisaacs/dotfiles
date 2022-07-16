@@ -10,6 +10,7 @@
   imports = [
     ./connectivity
     ./boot
+    ./extraContainer
     (import ./core {inherit inputs;})
     ./greetd
     ./gnome
@@ -18,6 +19,7 @@
     ./framework
     ./graphical
     ./ssh
+    ./miniflux
     ./wireguard
     ./secrets
     ./android

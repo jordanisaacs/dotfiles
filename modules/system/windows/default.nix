@@ -16,15 +16,40 @@ in {
   config = mkIf (cfg.enable) {
     virtualisation.libvirtd = {
       enable = true;
+
+      onShutdown = "suspend";
+      onBoot = "ignore";
+
       qemu = {
+        package = pkgs.qemu;
+
         swtpm.enable = true;
         ovmf = {
           enable = true;
-          package = pkgs.OVMFFull;
+          packages = [pkgs.OVMFFull.fd];
+        };
+
+        runAsRoot = true;
+      };
+    };
+
+    environment = {
+      systemPackages = mkIf (config.jd.graphical.enable) [
+        pkgs.virt-manager
+        pkgs.swtpm
+      ];
+
+      etc = {
+        "ovmf/edk2-x86_64-secure-code.fd" = {
+          source = "${config.virtualisation.libvirtd.qemu.package}/share/qemu/edk2-x86_64-secure-code.fd";
+        };
+
+        "ovmf/edk2-i386-vars.fd" = {
+          source = "${config.virtualisation.libvirtd.qemu.package}/share/qemu/edk2-i386-vars.fd";
+          mode = "0644";
+          user = "libvirtd";
         };
       };
     };
-    programs.dconf.enable = true;
-    environment.systemPackages = with pkgs; [virt-manager swtpm];
   };
 }
