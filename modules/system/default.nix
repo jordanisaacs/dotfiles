@@ -19,7 +19,7 @@
     ./framework
     ./graphical
     ./ssh
-    ./miniflux
+    ./services
     ./wireguard
     ./secrets
     ./android

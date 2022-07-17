@@ -278,7 +278,11 @@
         miniflux = {
           enable = true;
           adminCredsFile = secrets.miniflux.adminCredentials.secret.file;
+        };
+        proxy = {
+          enable = true;
           firewall = "wg";
+          address = "10.55.0.2";
         };
       }
     ];
