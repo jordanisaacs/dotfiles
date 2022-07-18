@@ -22,6 +22,7 @@ in {
       okular
       wdisplays
 
+      thunderbird
       jdpkgs.rstudioWrapper
       jdpkgs.texstudioWrapper
       jdpkgs.microsoft-edge-stable
