@@ -86,6 +86,16 @@ with lib; let
         internalInterfaces = [wireguardConf.interface];
       };
 
+      nameservers =
+        builtins.filter
+        (v: !(builtins.isNull v))
+        (mapAttrsToList
+          (_: peerConf:
+            if (peerConf.hasDns)
+            then peerConf.wgAddrV4
+            else null)
+          peerConfs);
+
       firewall.interfaces = let
         # allow wireguard listen port on each system interface
         openWireguard =
@@ -175,6 +185,25 @@ with lib; let
       listenPort = mkOption {
         type = types.int;
         description = "The port the host will listen on";
+      };
+
+      # TODO: Automatically detect after switch to global config
+      hasDns = mkOption {
+        type = types.bool;
+        description = "Whether has DNS server for wireguard";
+        default = false;
+      };
+
+      useDns = mkOption {
+        type = types.bool;
+        description = "Use wireguard DNS servers";
+        default = false;
+      };
+
+      domainName = mkOption {
+        type = types.str;
+        description = "The private domain name of this peer (used by unbound).";
+        default = "${name}.wg";
       };
 
       firewall = {

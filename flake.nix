@@ -23,6 +23,12 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    simple-nixos-mailserver = {
+      url = "gitlab:simple-nixos-mailserver/nixos-mailserver";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.flake-utils.follows = "flake-utils";
+    };
+
     deploy-rs = {
       url = "github:serokell/deploy-rs";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -81,6 +87,7 @@
     home-manager,
     nur,
     neovim-flake,
+    simple-nixos-mailserver,
     st-flake,
     dwm-flake,
     dwl-flake,
@@ -121,6 +128,7 @@
 
     inherit (util) user;
     inherit (util) host;
+    inherit (util) utils;
 
     pkgs = import nixpkgs {
       inherit system overlays;
@@ -131,24 +139,6 @@
         allowUnfree = true;
       };
     };
-
-    # Recursively merge (semi-naive)
-    # https://stackoverflow.com/questions/54504685/nix-function-to-merge-attributes-records-recursively-and-concatenate-arrays
-    recursiveMerge = with lib;
-      attrList: let
-        f = attrPath:
-          zipAttrsWith (
-            n: values:
-              if tail values == []
-              then head values
-              else if all isList values
-              then unique (concatLists values)
-              else if all isAttrs values
-              then f (attrPath ++ [n]) values
-              else last values
-          );
-      in
-        f [] attrList;
 
     system = "x86_64-linux";
 
@@ -184,6 +174,7 @@
           privateKeyPath = "/etc/wireguard/private_key";
           privateKeyAge = wgsecret.secret.file;
           publicKey = wgsecret.publicKey;
+          hasDns = true;
 
           tags = [
             {
@@ -203,6 +194,7 @@
           privateKeyPath = "/etc/wireguard/private_key";
           privateKeyAge = wgsecret.secret.file;
           publicKey = wgsecret.publicKey;
+          useDns = true;
 
           tags = [
             {
@@ -266,7 +258,7 @@
       impermanence.enable = true;
     };
 
-    chairliftConfig = recursiveMerge [
+    chairliftConfig = utils.recursiveMerge [
       defaultServerConfig
       {
         isQemuGuest = true;
@@ -279,10 +271,28 @@
           enable = true;
           adminCredsFile = secrets.miniflux.adminCredentials.secret.file;
         };
+        acme.email = secrets.acme.email;
+        mailserver = {
+          enable = true;
+          fqdn = secrets.mailserver.fqdn;
+          domains = secrets.mailserver.domains;
+          loginAccounts =
+            builtins.mapAttrs (name: value: {
+              hashedPasswordFile = value.secret.file;
+              aliases = value.aliases;
+              sendOnly = lib.mkIf (value ? sendOnly) value.sendOnly;
+            })
+            secrets.mailserver.loginAccounts;
+        };
         proxy = {
           enable = true;
           firewall = "wg";
           address = "10.55.0.2";
+        };
+        unbound = {
+          enable = true;
+          access = "wg";
+          enableWGDomain = true;
         };
       }
     ];
@@ -323,7 +333,7 @@
       extraContainer.enable = true;
     };
 
-    desktopConfig = recursiveMerge [
+    desktopConfig = utils.recursiveMerge [
       defaultClientConfig
       {
         desktop.enable = true;
@@ -335,7 +345,7 @@
       }
     ];
 
-    laptopConfig = recursiveMerge [
+    laptopConfig = utils.recursiveMerge [
       defaultClientConfig
       {
         laptop.enable = true;
@@ -344,7 +354,7 @@
       }
     ];
 
-    frameworkConfig = recursiveMerge [
+    frameworkConfig = utils.recursiveMerge [
       defaultClientConfig
       {
         networking.interfaces = ["wlp170s0"];

@@ -48,7 +48,7 @@ in {
 
         environment.persistence."/persist/data" = mkIf (config.services.postgresql.enable) {
           hideMounts = true;
-          directories = [config.services.postgresql.dataDir];
+          directories = [config.services.postgresql.dataDir config.mailserver.mailDirectory];
         };
 
         # Wait to acivate age decryption until mounted

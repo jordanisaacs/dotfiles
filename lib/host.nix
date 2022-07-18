@@ -110,6 +110,7 @@ with utils; {
           passthru
         ]
         ++ [inputs.agenix.nixosModule]
+        ++ [inputs.simple-nixos-mailserver.nixosModule]
         ++ (systemEnableModule (import (inputs.nixpkgs + "/nixos/modules/profiles/qemu-guest.nix")) qemuPath)
         ++ (systemEnableModuleConfig inputs.impermanence.nixosModule moduleFolder {
           path = impermanencePath;

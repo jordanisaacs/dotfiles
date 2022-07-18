@@ -60,7 +60,7 @@ in {
             BASE_URL = let
               proxy = config.jd.proxy;
             in
-  mkIf (proxy.enable) "http://${proxy.address}:${builtins.toString proxy.port}/miniflux/";
+              mkIf (proxy.enable) "http://${proxy.address}:${builtins.toString proxy.port}/miniflux/";
           };
         };
       };

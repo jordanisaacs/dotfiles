@@ -58,4 +58,21 @@ with lib; rec {
     if (attrByPath (path ++ activate) false config)
     then config
     else removeAttrByPath path config;
+
+  # Recursively merge (semi-naive)
+  # https://stackoverflow.com/questions/54504685/nix-function-to-merge-attributes-records-recursively-and-concatenate-arrays
+  recursiveMerge = attrList: let
+    f = attrPath:
+      zipAttrsWith (
+        n: values:
+          if tail values == []
+          then head values
+          else if all isList values
+          then unique (concatLists values)
+          else if all isAttrs values
+          then f (attrPath ++ [n]) values
+          else last values
+      );
+  in
+    f [] attrList;
 }

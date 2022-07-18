@@ -20,6 +20,22 @@
         "type": "github"
       }
     },
+    "blobs": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1604995301,
+        "narHash": "sha256-wcLzgLec6SGJA8fx1OEN1yV/Py5b+U5iyYpksUY/yLw=",
+        "owner": "simple-nixos-mailserver",
+        "repo": "blobs",
+        "rev": "2cccdf1ca48316f2cfd1c9a0017e8de5a7156265",
+        "type": "gitlab"
+      },
+      "original": {
+        "owner": "simple-nixos-mailserver",
+        "repo": "blobs",
+        "type": "gitlab"
+      }
+    },
     "bufdelete-nvim": {
       "flake": false,
       "locked": {
@@ -729,6 +745,21 @@
         "type": "indirect"
       }
     },
+    "nixpkgs-22_05": {
+      "locked": {
+        "lastModified": 1654936503,
+        "narHash": "sha256-soKzdhI4jTHv/rSbh89RdlcJmrPgH8oMb/PLqiqIYVQ=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "dab6df51387c3878cdea09f43589a15729cae9f4",
+        "type": "github"
+      },
+      "original": {
+        "id": "nixpkgs",
+        "ref": "nixos-22.05",
+        "type": "indirect"
+      }
+    },
     "nixpkgs-emoji": {
       "locked": {
         "lastModified": 0,
@@ -1145,6 +1176,7 @@
         "nixpkgs-emoji": "nixpkgs-emoji",
         "nur": "nur",
         "secrets": "secrets",
+        "simple-nixos-mailserver": "simple-nixos-mailserver",
         "st-flake": "st-flake"
       }
     },
@@ -1171,11 +1203,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1657960438,
-        "narHash": "sha256-ZhHV62fos15lne/mj3JClbAFW3Xh6tYAr+CeKGrPVBI=",
+        "lastModified": 1658047582,
+        "narHash": "sha256-wloWiaoS2L5QTPD+4QCQqPvADL9I5xHMI8CtkAY2CII=",
         "ref": "main",
-        "rev": "b48fc44741fcab9dfc67cc4126e870580f7864a3",
-        "revCount": 8,
+        "rev": "a47d71c1945daaf0acd348051cbb3e11e860e6bb",
+        "revCount": 10,
         "type": "git",
         "url": "ssh://git@github.com/jordanisaacs/secrets.git"
       },
@@ -1183,6 +1215,29 @@
         "ref": "main",
         "type": "git",
         "url": "ssh://git@github.com/jordanisaacs/secrets.git"
+      }
+    },
+    "simple-nixos-mailserver": {
+      "inputs": {
+        "blobs": "blobs",
+        "nixpkgs": [
+          "nixpkgs"
+        ],
+        "nixpkgs-22_05": "nixpkgs-22_05",
+        "utils": "utils_4"
+      },
+      "locked": {
+        "lastModified": 1655930346,
+        "narHash": "sha256-ht56HHOzEhjeIgAv5ZNFjSVX/in1YlUs0HG9c1EUXTM=",
+        "owner": "simple-nixos-mailserver",
+        "repo": "nixos-mailserver",
+        "rev": "f535d8123c4761b2ed8138f3d202ea710a334a1d",
+        "type": "gitlab"
+      },
+      "original": {
+        "owner": "simple-nixos-mailserver",
+        "repo": "nixos-mailserver",
+        "type": "gitlab"
       }
     },
     "sqls-nvim": {
@@ -1341,6 +1396,21 @@
         "owner": "numtide",
         "repo": "flake-utils",
         "rev": "74f7e4319258e287b0f9cb95426c9853b282730b",
+        "type": "github"
+      },
+      "original": {
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "type": "github"
+      }
+    },
+    "utils_4": {
+      "locked": {
+        "lastModified": 1605370193,
+        "narHash": "sha256-YyMTf3URDL/otKdKgtoMChu4vfVL3vCMkRqpGifhUn0=",
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "rev": "5021eac20303a61fafe17224c087f5519baed54d",
         "type": "github"
       },
       "original": {

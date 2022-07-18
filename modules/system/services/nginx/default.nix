@@ -24,7 +24,6 @@ in {
       type = types.str;
       description = "Proxy address";
       default = "127.0.0.1";
-
     };
 
     port = mkOption {
@@ -41,11 +40,13 @@ in {
         recommendedProxySettings = true;
 
         virtualHosts."proxy" = {
-          listen = [{
-             addr = cfg.address;
-             port = cfg.port;
-          }];
-          
+          listen = [
+            {
+              addr = cfg.address;
+              port = cfg.port;
+            }
+          ];
+
           locations = mkMerge [
             (mkIf (config.jd.miniflux.enable) {
               "/miniflux/" = {
@@ -63,7 +64,6 @@ in {
               };
             }
           ];
-          
         };
       };
     }
