@@ -1,59 +1,53 @@
+[x] done, [-] in progress, [ ] todo
+
 Refactors:
-    Move things out of flake.nix to make file smaller
-    Refactor builder functions (IN PROGRESS)
-    Switch to submodules to make nested options work better (IN PROGRESS)
+    [-] flake.nix should only contain configuration.
+    [-] Switch to submodules to make nested options work better.
+    [ ] Refactor builder function to take global configuration
+        [ ] With the increased use of my private cloud need to reference other system configs.
+            Make every machine get passed into the module and have which machine config you want to build
+        [ ] Remove the builder function custom parameters and make them part of module system
 
-Broken:
-    System:
-        Printer/wifi:
-        - Find a good way to automatically set up
+Blocked:
+    [ ] systemd boot & plymouth (waiting on systemd-stage-1 - not currently feature complete)
+    [ ] wayland compositor just meh (switch back to dwl but need to update dwl-flake)
 
-        Waydroid:
-        - Get waydroid up and running
+Private Cloud Services:
+    [x] Public mailserver (simple-nixos-mailserver)
+    [x] Private recursing DNS with domains (unbound)
+    [-] Nginx reverse proxy
+        [-] Services
+            [x] Nginx Status Page
+            [x] RSS (Miniflux)
+            [-] Firefly iii
+            [ ] Monitoring? Program TBD
+            [ ] Bookmarking (linkding/linkace)
+            [ ] Tandoor recipes
+            [ ] Nocodb
+        [ ] Subdomains
+    [ ] Investigate using microvms for services
+    [ ] Dynamic IP that works with DNS (see natguard repo for progress)
 
-        Win10:
-        - Get qemu working
+System:
+    [ ] Get waydroid running
+    [ ] Get windows 10 QEMU working
+    [ ] Fix xorg settype patch to work on most recent xserver
+    [ ] Greetd/tuigreet
+        [ ] kernel logs and fprintd output make tuigreet go visually insane :(
+        [ ] fix session configurations
+    [ ] Systemd
+        [ ] Currently jankily working around xdg-portal-gtk failing by force restart, figure out what is wrong
+    [ ] Printer/wifi:
+        [ ] Find a good way to automatically set up. Use agenix?
 
-        xorg:
-        - settype patch needs to be update to work on most recent xserver
-
-    User:
-        Systemd:
-        - Currently jankily working around xdg-portal-gtk failing by force restart, figure out what is wrong
-
-Improvements:
-    User:
-        Desktop:
-            Theming:
-            - Waybar indicators, colors, etc
-            - foot coloring
-            - bemenu coloring & font size
-
-            Widgets:
-            - setup some eww widgets
-
-            SSH-Agent:
-            - Setup auto-login bitwarden-cli using gnome-keyring
-            - Bitwarden ssh-agent python script
-
-    System:
-        Login manager:
-        - switch from agetty to greetd (tuigreet? https://github.com/apognu/tuigreet)
-            - Switched to greetd but issues with kernel logs
-
-Blocked
-    - jdpkgs follows current nixpkgs (waiting on rstudio as broken with current nixpkgs (jdpkgs pinned to old nixpkgs)
-    - systemd boot & plymouth (waiting on systemd-stage-1 - not currently feature complete)
-    - wayland compositor setting improvements (waiting on flurry - my wayland compositor project)
-
-Private Cloud Services ([x] done, [-] in progress, [ ] todo):
-    [x] Miniflux
-    [-] Firefly iii
-    [ ] Linkding
-
-Private Cloud Roadmap:
-    1. Set up microvm.nix with a mkMicrovm function. Provide a NixOS configuration and exposed ports and it automatically sets it up on the host system.
-    2. Finish writing jdns. The recursive resolver will support custom zone files & service records.
-    3. Write a STUN server to allow NAT hole punching. Now wireguard configuration does not require an endpoint.
-    4. Use `jdns` with service records for querying the IP;port (see: https://www.jordanwhited.com/posts/wireguard-endpoint-discovery-nat-traversal/ )
-    5. Orchestration of microvms?
+User:
+    [ ] Desktop theming
+        [ ] Waybar indicators, colors, etc
+        [ ] foot coloring
+        [ ] bemenu coloring & font size
+    [ ] SSH-Agent
+        [ ] Setup auto-login bitwarden-cli using gnome-keyring
+        [ ] valid-before/after SSH signing file
+        [ ] Bitwarden ssh-agent python script
+    [ ] Eww widgets
+    [ ] Switch back to dwl (see dwl-flake, needs updates)
