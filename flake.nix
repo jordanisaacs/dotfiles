@@ -174,7 +174,7 @@
           privateKeyPath = "/etc/wireguard/private_key";
           privateKeyAge = wgsecret.secret.file;
           publicKey = wgsecret.publicKey;
-          hasDns = true;
+          dns = "server";
 
           tags = [
             {
@@ -194,7 +194,7 @@
           privateKeyPath = "/etc/wireguard/private_key";
           privateKeyAge = wgsecret.secret.file;
           publicKey = wgsecret.publicKey;
-          useDns = true;
+          dns = "client";
 
           tags = [
             {
@@ -211,18 +211,19 @@
           wgAddrV4 = "10.55.0.1";
           interfaceMask = 16;
           listenPort = 51820;
+          dns = "client";
 
           firewall = {
             allowedTCPPorts = [8080];
           };
 
-          postSetup = ''
-            ${pkgs.iptables}/bin/iptables -A FORWARD -i ${wireguardConf.interface} -o ${wireguardConf.interface} -j ACCEPT
-          '';
+          # ''
+          #   ${pkgs.iptables}/bin/iptables -A FORWARD -i ${wireguardConf.interface} -o ${wireguardConf.interface} -j ACCEPT
+          # '';
 
-          postShutdown = ''
-            ${pkgs.iptables}/bin/iptables -D FORWARD -i ${wireguardConf.interface} -o ${wireguardConf.interface} -j ACCEPT
-          '';
+          # ''
+          #  ${pkgs.iptables}/bin/iptables -D FORWARD -i ${wireguardConf.interface} -o ${wireguardConf.interface} -j ACCEPT
+          # '';
 
           privateKeyPath = "/etc/wireguard/private_key";
           privateKeyAge = wgsecret.secret.file;
@@ -337,10 +338,9 @@
       defaultClientConfig
       {
         desktop.enable = true;
+        greetd.enable = true;
+        networking.interfaces = ["enp6s0" "wlp5s0"];
         wireguard = wireguardConf;
-        networking = {
-          interfaces = ["enp6s0" "wlp5s0"];
-        };
         secrets.identityPaths = [secrets.age.system.desktop.privateKeyPath];
       }
     ];
@@ -492,7 +492,7 @@
         kernelParams = [];
         kernelPatches = [];
         systemConfig = desktopConfig;
-        users = defaultUsers;
+        users = [defaultDesktopUser];
         cpuCores = 12;
         stateVersion = "21.11";
       };

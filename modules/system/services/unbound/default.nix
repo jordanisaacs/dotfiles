@@ -40,6 +40,10 @@ in {
       wgIps;
 
     peerConfs = config.jd.wireguard.peers;
+    peerDomains =
+      attrsets.mapAttrsToList
+      (_: v: ''"${v.domainName}"'')
+      peerConfs;
     peerZone =
       attrsets.mapAttrsToList
       (_: v: ''"${v.domainName}" redirect'')
@@ -100,7 +104,7 @@ in {
                 if (cfg.access == "world")
                 then ["0.0.0.0"]
                 else
-                  ["127.0.0.0"]
+                  ["127.0.0.1"]
                   ++ (optionals
                     (cfg.access == "wg")
                     wgIpsStripped);
@@ -116,13 +120,14 @@ in {
                   ++ (optionals
                     (cfg.access == "wg")
                     wgIpsAccess);
+              domain-insecure = mkIf (cfg.enableWGDomain) peerDomains;
               local-zone = mkIf (cfg.enableWGDomain) peerZone;
               local-data = mkIf (cfg.enableWGDomain) peerData;
               local-data-ptr = mkIf (cfg.enableWGDomain) peerPtrs;
               private-address = ["10.0.0.0/8" "172.16.0.0/12" "192.168.0.0/16" "169.254.0.0/16" "fd00::/8" "fe80::/10"];
               root-hints = builtins.fetchurl {
                 url = "https://www.internic.net/domain/named.cache";
-                sha256 = "12knv0yy6p7v38xd74j226b0l6inq438zl8l5661k45rg1mjiqvi";
+                sha256 = "01l5pkdi7cb33ds5pw61lxd2ypdpadzjrgx68zjjqxwfc9gimz8d";
               };
             };
           };

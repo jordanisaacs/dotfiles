@@ -86,16 +86,6 @@ with lib; let
         internalInterfaces = [wireguardConf.interface];
       };
 
-      nameservers =
-        builtins.filter
-        (v: !(builtins.isNull v))
-        (mapAttrsToList
-          (_: peerConf:
-            if (peerConf.hasDns)
-            then peerConf.wgAddrV4
-            else null)
-          peerConfs);
-
       firewall.interfaces = let
         # allow wireguard listen port on each system interface
         openWireguard =
@@ -121,7 +111,37 @@ with lib; let
         interfaces."${wireguardConf.interface}" = {
           ips = ["${myConf.wgAddrV4}/${builtins.toString myConf.interfaceMask}"];
           listenPort = myConf.listenPort;
-          postSetup = myConf.postSetup;
+          # 
+          postSetup = if (myConf.dns == "client") then ''
+            resolvectl domain ${wireguardConf.interface} '~.'
+            resolvectl dnssec ${wireguardConf.interface} false
+            ${
+              concatStringsSep
+              "\n"
+              (builtins.filter
+                (v: !(builtins.isNull v))
+                (mapAttrsToList (_: peerConf:
+                  if (peerConf.dns == "server")
+                  then "resolvectl dns ${wireguardConf.interface} ${peerConf.wgAddrV4}"
+                  else null)
+                peerConfs))
+            }
+            ${myConf.postSetup}
+          '' else config.postSetup;
+          # postSetup = mkIf (myConf.useDns) (
+          #   builtins.filter (
+          #     builtins.concatStringsSep
+          #     " "
+          #     (v: !(builtins.isNull v))
+          #     (mapAttrsToList (_: peerConf:
+          #       if (peerConf.hasDns)
+          #       then peerConf.wgAddrV4
+          #       else null)
+          #     peerConfs)
+          #   )
+          # );
+          # ''
+
           postShutdown = myConf.postShutdown;
           privateKeyFile = myConf.privateKeyPath;
 
@@ -188,16 +208,10 @@ with lib; let
       };
 
       # TODO: Automatically detect after switch to global config
-      hasDns = mkOption {
-        type = types.bool;
-        description = "Whether has DNS server for wireguard";
-        default = false;
-      };
-
-      useDns = mkOption {
-        type = types.bool;
-        description = "Use wireguard DNS servers";
-        default = false;
+      dns = mkOption {
+        type = types.enum ["server" "client" "disabled"];
+        description = "Whether this wireguard interface has a dns server, should be a client of the dns servers, or nothing";
+        default = "disabled";
       };
 
       domainName = mkOption {
