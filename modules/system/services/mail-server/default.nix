@@ -47,6 +47,12 @@ in {
       type = types.str;
     };
 
+    sendingFqdn = mkOption {
+      description = "The fully qualified domain name of the mail server.";
+      default = cfg.fqdn;
+      type = types.str;
+    };
+
     domains = mkOption {
       description = "The domains that this mail server serves.";
       type = with types; listOf str;
@@ -55,13 +61,13 @@ in {
     mailDirectory = mkOption {
       description = "Where to store the mail";
       type = types.path;
-      default = "/var/vmail";
+      default = "/var/mailserver/mail";
     };
 
     indexDirectory = mkOption {
       description = "Base directory to store the search indices. Don't need to be backed up";
       type = types.path;
-      default = "/etc/mailserver/index";
+      default = "/var/mailserver/index";
     };
 
     decryptFolder = mkOption {
@@ -93,6 +99,11 @@ in {
       defaults.email = config.jd.acme.email;
     };
 
+    # https://serverfault.com/questions/1064046/how-do-i-prevent-the-spf-helo-none-warning-when-sending-from-postfix
+    services.postfix.config = {
+      smtp_helo_name = cfg.sendingFqdn;
+    };
+
     mailserver = {
       enable = true;
       fqdn = cfg.fqdn;
@@ -111,7 +122,7 @@ in {
 
       hierarchySeparator = "/";
       mailDirectory = cfg.mailDirectory;
-      indexDir = "${cfg.indexDirectory}/%u_%d/";
+      indexDir = cfg.indexDirectory;
 
       loginAccounts =
         builtins.mapAttrs
