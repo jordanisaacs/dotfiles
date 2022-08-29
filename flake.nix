@@ -273,17 +273,16 @@
           adminCredsFile = secrets.miniflux.adminCredentials.secret.file;
         };
         acme.email = secrets.acme.email;
-        mailserver = {
-          enable = true;
-          fqdn = secrets.mailserver.fqdn;
-          domains = secrets.mailserver.domains;
-          loginAccounts =
-            builtins.mapAttrs (name: value: {
-              hashedPasswordFile = value.secret.file;
-              aliases = value.aliases;
+        mailserver = with secrets.mailserver; {
+           enable = true;
+          inherit fqdn sendingFqdn domains;
+           loginAccounts =
+             builtins.mapAttrs (name: value: {
+               hashedPasswordFile = value.secret.file;
+               aliases = value.aliases;
               sendOnly = lib.mkIf (value ? sendOnly) value.sendOnly;
-            })
-            secrets.mailserver.loginAccounts;
+             })
+            loginAccounts;
         };
         proxy = {
           enable = true;
