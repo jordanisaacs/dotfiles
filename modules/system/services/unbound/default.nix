@@ -104,7 +104,7 @@ in {
                 if (cfg.access == "world")
                 then ["0.0.0.0"]
                 else
-                  ["127.0.0.1"]
+                  ["127.0.0.1" "::1"]
                   ++ (optionals
                     (cfg.access == "wg")
                     wgIpsStripped);
@@ -116,7 +116,7 @@ in {
                 if (cfg.access == "world")
                 then ["0.0.0.0/0 allow"]
                 else
-                  ["127.0.0.0/8 allow"]
+                  ["127.0.0.0/8 allow" "::1/128 allow"]
                   ++ (optionals
                     (cfg.access == "wg")
                     wgIpsAccess);

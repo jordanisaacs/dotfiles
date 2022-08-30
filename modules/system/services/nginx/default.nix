@@ -53,6 +53,11 @@ in {
                 proxyPass = "http://${config.jd.miniflux.address}:${builtins.toString config.jd.miniflux.port}/miniflux/";
               };
             })
+            (mkIf (config.jd.taskserver.enable) {
+              "/taskserver/" = {
+                proxyPass = "http://${config.jd.taskserver.address}:${builtins.toString config.jd.taskserver.port}/taskserver/";
+              };
+            })
             {
               "/status" = {
                 extraConfig = ''

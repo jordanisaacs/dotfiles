@@ -44,7 +44,6 @@ in {
       glow
       nnn # file manager
       grit # to-do
-      timewarrior
       buku # bookmarks
       yt-dlp
 
@@ -74,22 +73,6 @@ in {
     ];
 
     fonts.fontconfig.enable = true;
-
-    programs.taskwarrior = {
-      enable = true;
-    };
-
-    # Taskwarrior + timewarrior integration: https://timewarrior.net/docs/taskwarrior/
-    home.activation = {
-      tasktime = lib.hm.dag.entryAfter ["writeBoundary"] ''
-        $DRY_RUN_CMD mkdir -p ${config.xdg.dataHome}/task/hooks/
-        $DRY_RUN_CMD rm -rf ${config.xdg.dataHome}/task/hooks/on-modify.timewarrior
-        $DRY_RUN_CMD cp ${pkgs.timewarrior}/share/doc/timew/ext/on-modify.timewarrior ${config.xdg.dataHome}/task/hooks/
-        PYTHON3="#!${pkgs.python3}/bin/python3"
-        $DRY_RUN_CMD ${pkgs.gnused}/bin/sed -i "1s@.*@$PYTHON3@" ${config.xdg.dataHome}/task/hooks/on-modify.timewarrior
-        $DRY_RUN_CMD chmod +x ${config.xdg.dataHome}/task/hooks/on-modify.timewarrior
-      '';
-    };
 
     programs.mpv = {
       enable = true;

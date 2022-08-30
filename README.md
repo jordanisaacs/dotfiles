@@ -30,22 +30,16 @@ Some cool excerpts of my dotfiles
 
 [Erase your darlings - Graham Christensen](https://grahamc.com/blog/erase-your-darlings)
 
-### Conditional module imports
-
-* Small hack around the top level evaluation of modules to allow for seamless (no infinite recursion errors!) conditional importing of modules such as `impermanence` and `extra-containers`.
-* Checks to see if the module is enabled, if so import the module. Otherwise delete the attributes from the config before evaluation.
-* See *./lib/host.nix* and *./lib/utils.nix*
-
 ### Desktop Config
 
 * Working GTK/QT theming, icons, and cursors on wayland. See *./modules/users/graphical/shared.nix*.
 * Reproducible firefox with plugins. See *./modules/users/graphical/applications/firefox.nix*.
-* A working `x11` (using `startx` and patched `xserver` to support idle-action) and `wayland` setup on `tty1` and `tty2` respectively. See *./modules/users/graphical/*
+* Greetd login that starts up sway. See *./modules/users/graphical/wayland.nix*
 * Mounted on login onedrive filesystem using [onedriver](https://github.com/jstaf/onedriver) and a systemd-unit. See *./modules/users/office365/default.nix*
 
 ### Automagic Wireguard
 
-Automagic wireguard setup with tagging. Each peer provides a list of tags (and an optional endpoint address associated with the peer list).
+Automagic wireguard setup with tagging and DNS. Each peer provides a list of tags (and an optional endpoint address associated with the peer list).
 
 An example configuration that would be passed into every system (no changes necessary between systems):
 
@@ -55,7 +49,7 @@ An example configuration that would be passed into every system (no changes nece
    enable = true;
    interface = "thevoid";
    peers = {
-     "phone" = {
+     "server" = {
        wgAddrV4 = "10.55.1.1";
        publicKey = secrets.wireguard.phone.publicKey;
 
@@ -112,11 +106,59 @@ Inspired by [xe's post](https://christine.website/blog/my-wireguard-setup-2021-0
 
 ### Secrets Management
 
-System secrets are managed using `agenix` and user secrets using `homeage`. They are set up in an external (private) repository called `secrets` and pulled in as a flake input. It consists of age encrypted files for things such as wireguard and ssh. This config is the output of the flake without any modifications. The `publicKeys` section of `secret` is used to transform the config into an `agenix` compatible `secrets.nix` file for use with the cli. See example config:
+System secrets are managed using `agenix` and user secrets using `homeage`. They are set up in an external (private) repository called `secrets` and pulled in as a flake input. All secrets are age encrypted files. The encrypted files get put into the nix store and they are decrypted at runtime and are tracked by the git repository so they can be pulled in by the flake. The `secrets` repository has two `.nix` files, `config.nix` and `secrets.nix`. `config.nix` contains the configurations. All secrets are stored following attribute (must be named secret):
 
-User secrets integration is in progress.
+```nix
+secret = {
+    publicKeys = [ key1 key2 ... ];
+    file = ./example/secret;
+};
+```
 
-config.nix:
+It must be named `secret` so the `secrets.nix` file can extract and transform them to be agenix cli [compatible](https://github.com/ryantm/agenix#tutorial). The follow `secrets.nix` file does the conversion (can be copy/pasted):
+
+```nix
+with builtins; let
+  config = import ./config.nix;
+
+  nameValuePair = name: value: {inherit name value;};
+
+  filterAttrs = pred: set:
+    listToAttrs (concatMap (name: let
+      v = set.${name};
+    in
+      if pred name v
+      then [(nameValuePair name v)]
+      else []) (attrNames set));
+
+  collect = pred: attrs:
+    if pred attrs
+    then [attrs]
+    else if builtins.isAttrs attrs
+    then builtins.concatMap (collect pred) (builtins.attrValues attrs)
+    else [];
+
+  relPath = path: replaceStrings [(toString ./.)] ["."] (toString path);
+
+  secretToOutput = attr:
+    nameValuePair
+    (relPath attr.secret.file)
+    {
+      publicKeys = attr.secret.publicKeys;
+    };
+
+  collectSecrets =
+    builtins.listToAttrs
+    (builtins.map
+      secretToOutput
+      (collect
+        (x: x ? "secret")
+        config));
+in
+  collectSecrets
+```
+
+A more complete example `config.nix`:
 
 ```nix
 let
@@ -151,8 +193,7 @@ in
 
   wireguard = {
     desktop = {
-      publicKey = "mgDg5mc/60FatP+/pUgHun1e6a7xaiw2wWVEPtjPfGo=";
-
+      publicKey = "";
       secret = {
         publicKeys = with (age.system); [ desktop.publicKey ];
         file = ./wireguard/desktop_private_key;
@@ -161,7 +202,6 @@ in
 
     server = {
       publicKey = "";
-
       secret = {
         # Be able to edit it on desktop
         publicKeys = with (age.system); [ desktop.publicKey server.publicKey ];
@@ -170,52 +210,6 @@ in
     };
   };
 }
-```
-
-secrets.nix:
-
-```{nix}
-with builtins;
-
-let
-  config = import ./config.nix;
-
-  nameValuePair = name: value: { inherit name value; };
-
-  mapAttrs' = f: set:
-    listToAttrs (map (attr: f attr set.${attr}) (attrNames set));
-
-  filterAttrs = pred: set:
-    listToAttrs (concatMap (name: let v = set.${name}; in if pred name v then [ (nameValuePair name v) ] else [ ]) (attrNames set));
-
-  relPath = path: replaceStrings [ (toString ./.) ] [ "." ] (toString path);
-
-  secretToOutput = secret:
-    nameValuePair
-      (relPath secret.file)
-      ({
-        publicKeys = secret.publicKeys;
-      });
-
-  sshSecrets =
-    let
-      cfg = config.ssh;
-    in
-    mapAttrs'
-      (_: v: secretToOutput v.secret)
-      cfg;
-
-  wireguardSecrets =
-    let
-      cfg = config.wireguard;
-
-      filterWireguard = filterAttrs (n: v: v ? "secret") cfg;
-    in
-    mapAttrs'
-      (_: v: secretToOutput v.secret)
-      filterWireguard;
-in
-sshSecrets // wireguardSecrets
 ```
 
 ## Credit

@@ -127,7 +127,7 @@ with lib; let
                 peerConfs))
             }
             ${myConf.postSetup}
-          '' else config.postSetup;
+          '' else myConf.postSetup;
           # postSetup = mkIf (myConf.useDns) (
           #   builtins.filter (
           #     builtins.concatStringsSep
