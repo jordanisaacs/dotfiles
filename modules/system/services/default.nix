@@ -10,5 +10,6 @@
     ./mail-server
     ./nginx
     ./miniflux
+    ./taskserver
   ];
 }

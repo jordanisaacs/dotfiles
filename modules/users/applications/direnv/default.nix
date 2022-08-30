@@ -5,9 +5,9 @@
   ...
 }:
 with lib; let
-  cfg = config.jd.direnv;
+  cfg = config.jd.applications.direnv;
 in {
-  options.jd.direnv = {
+  options.jd.applications.direnv = {
     enable = mkOption {
       description = "Enable direnv";
       type = types.bool;
@@ -15,7 +15,7 @@ in {
     };
   };
 
-  config = mkIf (cfg.enable) {
+  config = mkIf (config.jd.applications && cfg.enable) {
     programs.direnv = {
       enable = true;
       nix-direnv.enable = true;

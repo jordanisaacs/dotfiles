@@ -285,6 +285,11 @@
             })
             secrets.mailserver.loginAccounts;
         };
+        taskserver = {
+          enable = true;
+          address = "10.55.0.2";
+          firewall = "wg";
+        };
         proxy = {
           enable = true;
           firewall = "wg";
@@ -400,16 +405,6 @@
     };
 
     homeManagerConfigurations = {
-      jisaacs = user.mkHMUser {
-        userConfig = {
-          zsh.enable = true;
-          graphical.applications.firefox.enable = true;
-          direnv.enable = true;
-          work.enable = true;
-        };
-        username = "jisaacs";
-      };
-
       jd = user.mkHMUser {
         userConfig = {
           graphical = {
@@ -501,7 +496,7 @@
         name = "chairlift";
         initrdMods = ["sd_mod" "sr_mod" "ahci" "xhci_pci"];
         kernelMods = [];
-        kernelPackage = pkgs.linuxPackages_latest;
+        kernelPackage = pkgs.linuxPackages_5_18;
         kernelParams = ["nohibernate"];
         kernelPatches = [];
         systemConfig = chairliftConfig;

@@ -65,7 +65,7 @@ in {
 
           "Kvantum/kvantum.kvconfig" = {
             text = ''
-              theme=ArcDark
+              theme=KvArcDark
             '';
           };
 

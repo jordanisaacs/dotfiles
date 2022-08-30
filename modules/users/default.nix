@@ -18,6 +18,5 @@
     ./homeage
     ./direnv
     ./weechat
-    ./work
   ];
 }
