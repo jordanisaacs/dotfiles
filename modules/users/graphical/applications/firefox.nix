@@ -123,7 +123,7 @@ in {
             graphics = {
               "media.ffmpeg.vaapi.enabled" = true;
               "media.rdd-ffmpeg.enabled" = true;
-              "media.navigator.medidataencoder_vpx_enabled" = true;
+              "media.navigator.mediadataencoder_vpx_enabled" = true;
             };
 
             general_settings = {
