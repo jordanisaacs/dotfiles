@@ -7,6 +7,11 @@
 with lib; let
   cfg = config.jd.applications;
 in {
+  imports = [
+    ./taskwarrior
+    ./direnv
+  ];
+
   options.jd.applications = {
     enable = mkOption {
       description = "Enable a set of common applications";

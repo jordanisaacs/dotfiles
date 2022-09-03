@@ -22,13 +22,18 @@ in {
 
     address = mkOption {
       type = types.str;
-      description = "Miniflux address";
+      description = "Taskserver address";
       default = "127.0.0.1";
+    };
+
+    fqdn = mkOption {
+      type = types.str;
+      description = "fqdn for certificates";
     };
 
     port = mkOption {
       type = types.int;
-      description = "Miniflux port";
+      description = "Taskserver port";
       default = 53589;
     };
 
@@ -44,7 +49,7 @@ in {
         taskserver = {
           enable = true;
           trust = "strict";
-          fqdn = "chairlift.wg";
+          fqdn = cfg.fqdn;
           listenHost = cfg.address;
           listenPort = cfg.port;
           dataDir = cfg.dataDir;

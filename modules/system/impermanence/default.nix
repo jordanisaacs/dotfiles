@@ -46,10 +46,20 @@ in {
           files = config.jd.secrets.identityPaths;
         };
 
-        environment.persistence."/persist/data" = mkIf (config.services.postgresql.enable) {
-          hideMounts = true;
-          directories = [config.services.postgresql.dataDir config.mailserver.mailDirectory config.services.taskserver.dataDir];
-        };
+        environment.persistence."/persist/data" = mkMerge [
+          {
+            hideMounts = true;
+          }
+          (mkIf (config.services.postgresql.enable) {
+            directories = [config.services.postgresql.dataDir];
+          })
+          (mkIf (config.mailserver.enable) {
+            directories = [config.mailserver.mailDirectory];
+          })
+          (mkIf (config.jd.taskserver.enable) {
+            directories = [config.jd.taskserver.dataDir];
+          })
+        ];
 
         # Wait to acivate age decryption until mounted
         system.activationScripts.agenixMountSecrets.deps = ["specialfs" "persist-files"];

@@ -15,7 +15,7 @@ in {
     };
   };
 
-  config = mkIf (config.jd.applications && cfg.enable) {
+  config = mkIf (config.jd.applications.enable && cfg.enable) {
     programs.direnv = {
       enable = true;
       nix-direnv.enable = true;

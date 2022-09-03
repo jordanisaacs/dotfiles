@@ -15,8 +15,7 @@
     ./wine
     ./keybase
     ./pijul
-    ./homeage
-    ./direnv
+    ./secrets
     ./weechat
   ];
 }

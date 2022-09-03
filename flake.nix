@@ -47,7 +47,7 @@
     };
 
     homeage = {
-      url = "github:jordanisaacs/homeage/activatecheck";
+      url = "github:jordanisaacs/homeage/decryption";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -274,19 +274,20 @@
         };
         acme.email = secrets.acme.email;
         mailserver = with secrets.mailserver; {
-           enable = true;
+          enable = true;
           inherit fqdn sendingFqdn domains;
-           loginAccounts =
-             builtins.mapAttrs (name: value: {
-               hashedPasswordFile = value.secret.file;
-               aliases = value.aliases;
+          loginAccounts =
+            builtins.mapAttrs (name: value: {
+              hashedPasswordFile = value.secret.file;
+              aliases = value.aliases;
               sendOnly = lib.mkIf (value ? sendOnly) value.sendOnly;
-             })
+            })
             loginAccounts;
         };
         taskserver = {
           enable = true;
           address = "10.55.0.2";
+          fqdn = "chairlift.wg";
           firewall = "wg";
         };
         proxy = {
@@ -363,7 +364,7 @@
       {
         networking.interfaces = ["wlp170s0"];
         laptop.enable = true;
-        core.time = "west";
+        core.time = "east";
         greetd.enable = true;
         framework = {
           enable = true;
@@ -426,7 +427,21 @@
               screenlock.enable = true;
             };
           };
-          applications.enable = true;
+          applications = {
+            enable = true;
+            direnv.enable = true;
+            taskwarrior = {
+              enable = true;
+              server = {
+                enable = true;
+                key = secrets.taskwarrior.client.key.secret.file;
+                ca = secrets.taskwarrior.client.ca.secret.file;
+                cert = secrets.taskwarrior.client.cert.secret.file;
+                credentials = secrets.taskwarrior.credentials;
+              };
+            };
+          };
+          secrets.identityPaths = [secrets.age.user.jd.privateKeyPath];
           gpg.enable = true;
           git = {
             enable = true;
@@ -434,7 +449,6 @@
           };
           zsh.enable = true;
           ssh.enable = true;
-          direnv.enable = true;
           weechat.enable = true;
           office365 = {
             enable = true;
