@@ -127,7 +127,7 @@ in {
               private-address = ["10.0.0.0/8" "172.16.0.0/12" "192.168.0.0/16" "169.254.0.0/16" "fd00::/8" "fe80::/10"];
               root-hints = builtins.fetchurl {
                 url = "https://www.internic.net/domain/named.cache";
-                sha256 = "01l5pkdi7cb33ds5pw61lxd2ypdpadzjrgx68zjjqxwfc9gimz8d";
+                sha256 = "sha256:0h3r82snlvnwn8sfif2rg2a54i4ypfs69d7dmc819b1aj8jr9hqi";
               };
             };
           };
