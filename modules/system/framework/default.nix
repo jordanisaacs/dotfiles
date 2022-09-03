@@ -25,17 +25,57 @@ in {
 
   config = mkIf (cfg.enable) (mkMerge [
     {
-      boot.kernelParams = ["mem_sleep_default=deep"];
-      # See: https://01.org/linuxgraphics/downloads/firmware
-      boot.extraModprobeConfig = ''
-        options i915 enable_guc=3
-        options i915 enable_fbc=1
-      '';
+      hardware.cpu.intel.updateMicrocode = true;
+
+      services = {
+        fstrim = {
+          enable = true;
+          interval = "weekly";
+        };
+
+        # https://community.frame.work/t/headphone-jack-intermittent-noise/5246/90
+        acpid = {
+          enable = true;
+          handlers = {
+            headphone-power-save-off = {
+              event = "jack/headphone HEADPHONE plug";
+              action = "echo 0 >/sys/module/snd_hda_intel/parameters/power_save";
+            };
+            headphone-power-save-on = {
+              event = "jack/headphone HEADPHONE unplug";
+              action = "echo 1 >/sys/module/snd_hda_intel/parameters/power_save";
+            };
+          };
+        };
+
+        thermald.enable = true;
+      };
+
+      boot = {
+        kernelParams = [
+          # Deep sleep
+          "mem_sleep_default=deep"
+          # https://community.frame.work/t/linux-battery-life-tuning/6665/156
+          "nvme.noacpi=1"
+        ];
+
+        # See: https://01.org/linuxgraphics/downloads/firmware
+        # Audio:
+        # 1. https://community.frame.work/t/headset-microphone-on-linux/12387
+        # 2. https://community.frame.work/t/some-notes-on-audio-in-linux/8815Aa
+        extraModprobeConfig = ''
+          options snd-hda-intel model=dell-headset-multi
+          options i915 enable_guc=3
+          options i915 enable_fbc=1
+        '';
+      };
     }
     (mkIf cfg.fprint.enable {
       services.fprintd.enable = true;
     })
     (mkIf (config.jd.graphical.enable) {
+      boot.initrd.kernelModules = ["i915"];
+
       environment.defaultPackages = with pkgs; [intel-gpu-tools];
       hardware = {
         video.hidpi.enable = true;
@@ -44,6 +84,7 @@ in {
           extraPackages = with pkgs; [
             intel-media-driver
             libvdpau-va-gl
+            vaapiIntel
           ];
         };
       };
