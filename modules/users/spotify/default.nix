@@ -34,15 +34,15 @@ in {
     config = mkIf (cfg.enable) {
       xdg.configFile = {};
 
-      homeage.file = {
-        "spotifydconfig" = {
-          source = cfg.secretKey;
-          decryptPath = "spotifyd/config.toml";
-          lnOnStartup = [
-            "${config.xdg.configHome}/pijul/secretkey.json"
-          ];
-        };
-      };
+      # homeage.file = {
+      #   "spotifydconfig" = {
+      #     source = cfg.secretKey;
+      #     decryptPath = "spotifyd/config.toml";
+      #     lnOnStartup = [
+      #       "${config.xdg.configHome}/pijul/secretkey.json"
+      #     ];
+      #   };
+      # };
     };
   };
 }
