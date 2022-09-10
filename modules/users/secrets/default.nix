@@ -16,7 +16,6 @@ in {
     homeage = {
       identityPaths = cfg.identityPaths;
       pkg = pkgs.rage;
-      isRage = true;
     };
   };
 }
