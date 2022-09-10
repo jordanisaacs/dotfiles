@@ -38,6 +38,8 @@ with lib; rec {
     then [module]
     else [{}];
 
+  optionIsTrue = config: path: (attrByPath path false config);
+
   # Enable a module if attribute exists and is activated, along with importing the respective config
   enableModuleConfig = config: module: folder: {
     path,

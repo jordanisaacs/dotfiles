@@ -88,6 +88,8 @@ with utils; {
 
             jd = systemConfigStripped;
 
+            services.qemuGuest.enable = lib.mkIf (optionIsTrue systemConfig qemuPath) true;
+
             environment.etc = {
               "hmsystemdata.json".text = toJSON userCfg;
             };
