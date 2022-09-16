@@ -347,6 +347,7 @@
         networking.interfaces = ["enp6s0" "wlp5s0"];
         wireguard = wireguardConf;
         secrets.identityPaths = [secrets.age.system.desktop.privateKeyPath];
+        waydroid.enable = true;
       }
     ];
 

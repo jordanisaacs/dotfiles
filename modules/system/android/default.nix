@@ -5,17 +5,19 @@
   ...
 }:
 with lib; let
-  cfg = config.jd.android;
+  cfg = config.jd.waydroid;
 in {
-  options.jd.android.enable = mkOption {
-    description = "Type of boot. Default encrypted-efi";
+  options.jd.waydroid.enable = mkOption {
+    description = "Enable waydroid, requires wayland for running gui";
     default = false;
     type = types.bool;
   };
 
   config = mkIf (cfg.enable) {
-    # https://wiki.archlinux.org/title/Waydroid#Using_binderfs
-    # https://nixos.wiki/wiki/Linux_kernel#Custom_configuration
+    # https://nixos.wiki/wiki/WayDroid
     virtualisation.waydroid.enable = true;
+    system.requiredKernelConfig = with config.lib.kernelConfig; [
+      (isEnabled "MEMFD")
+    ];
   };
 }
