@@ -62,6 +62,9 @@ in {
         keep-derivations = true
         experimental-features = nix-command flakes
       '';
+      settings = {
+        auto-optimise-store = true;
+      };
     };
 
     environment = {
@@ -80,17 +83,31 @@ in {
       # ZSH completions
       pathsToLink = ["/share/zsh"];
       systemPackages = with pkgs; [
+        # Misc.
+        neofetch
+        bat
+
         # Shells
         zsh
 
-        # Misc. Utilities
+        # Files
         exa
-        gping
+        unzip
+
+        # Benchmarking
+        hyperfine
+
+        # Hardware
         inxi
         usbutils
+
+        # Kernel
+        systeroid
+        strace
+
+        # Network
         dnsutils
-        neofetch
-        unzip
+        gping
 
         # secrets
         rage
@@ -98,6 +115,8 @@ in {
 
         # Processors
         jq
+        htmlq
+        ripgrep
         gawk
         gnused
 
@@ -113,15 +132,24 @@ in {
 
         # version ocntrol
         git
+        difftastic
 
         # Nix tools
         patchelf
         nix-index
         nix-tree
+        nix-diff
+        nix-prefetch
+        deploy-rs
         manix
+        comma
 
         # Text editor
         vim
+
+        # Calculator
+        bc
+        bitwise
 
         # Scripts
         scripts.sysTools

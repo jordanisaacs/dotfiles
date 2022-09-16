@@ -59,6 +59,7 @@ in {
       alsa.enable = cfg.sound.enable;
       alsa.support32Bit = cfg.sound.enable;
       pulse.enable = cfg.sound.enable;
+      jack.enable = cfg.sound.enable;
     };
 
     #hardware.pulseaudio.enable = cfg.sound.enable;
