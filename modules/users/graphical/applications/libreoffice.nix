@@ -13,6 +13,7 @@ in {
   options.jd.graphical.applications.libreoffice = {
     enable = mkOption {
       type = types.bool;
+      default = false;
       description = "Enable libreoffice with config [libreoffice]";
     };
   };

@@ -18,7 +18,6 @@ in {
   config = mkIf (cfg.applications.enable) {
     home.packages = with pkgs; [
       jdpkgs.dolphin # fixes dbus/firefox
-      discord
       okular
       wdisplays
 
@@ -29,6 +28,28 @@ in {
 
       flameshot
       libsixel
+
+      # Password manager
+      bitwarden
+      authy
+
+      # Messaging
+      slack
+      discord
+
+      # Reading
+      calibre
+
+      # Video conference
+      zoom-us
+
+      # Note taking
+      xournalpp
+      rnote
+
+      # Sound
+      pavucontrol
+      pasystray
     ];
 
     xdg.configFile = {

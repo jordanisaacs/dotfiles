@@ -18,12 +18,8 @@ in {
 
         packages = with pkgs;
           mkIf (systemCfg.connectivity.sound.enable) [
-            calibre
-            pavucontrol
-            pasystray
+            # Cursor
             jdpkgs.volantes-cursors
-            authy
-            spotify
 
             # qt
             libsForQt5.qtstyleplugin-kvantum

@@ -26,13 +26,9 @@ in {
       EDITOR = "vim";
     };
 
+    # TTY compatible CLI applications
     home.packages = with pkgs; [
-      # Password manager
-      bitwarden
-
-      # Note taking
-      obsidian #knowledge base
-      xournalpp #drawing
+      home-manager
 
       # Text editor
       neovimJD
@@ -40,27 +36,12 @@ in {
       # ssh mount
       sshfs
 
-      # Deployment tools
-      deploy-rs
-      agenix-cli
-
       # CLI tools
-      bat
       glow
       nnn # file manager
       grit # to-do
       buku # bookmarks
       yt-dlp
-
-      # Dev tools
-      alejandra # nix formatting
-
-      # Messaging
-      slack
-
-      # Video conference
-      zoom-us
-
       # Productivity Suite
       pdftk
 
@@ -72,9 +53,12 @@ in {
       # Typing fonts
       carlito
 
-      # Calculator
-      bc
-      bitwise
+      # terminal session recorder
+      asciinema
+
+      # terminal art
+      pipes-rs
+      cbonsai
     ];
 
     fonts.fontconfig.enable = true;

@@ -13,6 +13,7 @@ in {
   options.jd.graphical.applications.firefox = {
     enable = mkOption {
       type = types.bool;
+      default = false;
       description = "Enable firefox with config [firefox]";
     };
   };
