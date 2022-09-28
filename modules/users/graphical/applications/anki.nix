@@ -9,13 +9,6 @@ with lib; let
   isGraphical = let
     cfg = config.jd.graphical;
   in (cfg.xorg.enable == true || cfg.wayland.enable == true);
-
-  ankisyncd = pkgs.writeTextFile {
-    name = "ankisyncd-plugin";
-    text = ''
-    '';
-    destination = "__init__.py";
-  };
 in {
   options.jd.graphical.applications.anki = {
     enable = mkOption {
