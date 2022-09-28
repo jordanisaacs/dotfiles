@@ -30,49 +30,6 @@ in {
   config = let
     bootConfig = mkMerge [
       (mkIf (cfg.type == "encrypted-efi") {
-        boot.loader = {
-          efi = {
-            canTouchEfiVariables = true;
-            efiSysMountPoint = "/boot";
-          };
-
-          grub = {
-            enable = true;
-            devices = ["nodev"];
-            efiSupport = true;
-            useOSProber = true;
-            version = 2;
-            extraEntries = ''
-              menuentry "Reboot" {
-                reboot
-              }
-              menuentry "Power off" {
-                halt
-              }
-            '';
-            extraConfig =
-              if (config.jd.framework.enable)
-              then "i915.enable_psr=0"
-              else "";
-          };
-        };
-
-        boot.initrd.luks.devices = {
-          cryptkey = {
-            device = "/dev/disk/by-label/NIXKEY";
-          };
-
-          cryptroot = {
-            device = "/dev/disk/by-label/NIXROOT";
-            keyFile = "/dev/mapper/cryptkey";
-          };
-
-          cryptswap = {
-            device = "/dev/disk/by-label/NIXSWAP";
-            keyFile = "/dev/mapper/cryptkey";
-          };
-        };
-
         fileSystems."/" = {
           device = "/dev/disk/by-label/DECRYPTNIXROOT";
           fsType = "ext4";
@@ -86,6 +43,55 @@ in {
         swapDevices = [
           {device = "/dev/disk/by-label/DECRYPTNIXSWAP";}
         ];
+
+        boot = {
+          loader = {
+            efi = {
+              canTouchEfiVariables = true;
+              efiSysMountPoint = "/boot";
+            };
+
+            grub = {
+              enable = true;
+              devices = ["nodev"];
+              efiSupport = true;
+              useOSProber = true;
+              version = 2;
+              extraEntries = ''
+                menuentry "Reboot" {
+                  reboot
+                }
+                menuentry "Power off" {
+                  halt
+                }
+              '';
+              extraConfig =
+                if (config.jd.framework.enable)
+                then "i915.enable_psr=0"
+                else "";
+            };
+          };
+
+          # plymouth.enable = true;
+          initrd = {
+            # systemd.enable = true;
+            luks.devices = {
+              cryptkey = {
+                device = "/dev/disk/by-label/NIXKEY";
+              };
+
+              cryptroot = {
+                device = "/dev/disk/by-label/NIXROOT";
+                keyFile = "/dev/mapper/cryptkey";
+              };
+
+              cryptswap = {
+                device = "/dev/disk/by-label/NIXSWAP";
+                keyFile = "/dev/mapper/cryptkey";
+              };
+            };
+          };
+        };
       })
 
       # ZFS sources

@@ -54,12 +54,12 @@ in {
       );
 
     security.rtkit.enable = cfg.sound.enable;
-    services.pipewire = {
-      enable = cfg.sound.enable;
-      alsa.enable = cfg.sound.enable;
-      alsa.support32Bit = cfg.sound.enable;
-      pulse.enable = cfg.sound.enable;
-      jack.enable = cfg.sound.enable;
+    services.pipewire = mkIf (cfg.sound.enable) {
+      enable = true;
+      alsa.enable = true;
+      alsa.support32Bit = true;
+      pulse.enable = true;
+      jack.enable = true;
     };
 
     #hardware.pulseaudio.enable = cfg.sound.enable;
