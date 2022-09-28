@@ -1,4 +1,7 @@
-{inputs}: {
+{
+  inputs,
+  patchedPkgs,
+}: {
   pkgs,
   config,
   lib,
@@ -11,7 +14,7 @@
     ./connectivity
     ./boot
     ./extraContainer
-    (import ./core {inherit inputs;})
+    (import ./core {inherit inputs patchedPkgs;})
     ./greetd
     ./gnome
     ./networking

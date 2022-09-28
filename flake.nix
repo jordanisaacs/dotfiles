@@ -97,7 +97,7 @@
     inherit (nixpkgs) lib;
 
     util = import ./lib {
-      inherit system nixpkgs pkgs home-manager lib overlays inputs;
+      inherit system nixpkgs pkgs home-manager lib overlays inputs patchedPkgs;
     };
 
     scripts = import ./scripts {
@@ -130,7 +130,29 @@
     inherit (util) host;
     inherit (util) utils;
 
-    pkgs = import nixpkgs {
+    system = "x86_64-linux";
+
+    # How to patch nixpkgs, from https://github.com/NixOS/nix/issues/3920#issuecomment-681187597
+    remoteNixpkgsPatches = [];
+    localNixpkgsPatches = [
+      # nix-index evaluates all of nixpkgs. Thus, it evaluates a package
+      # that purposefully throws an error because mesos was removed.
+      # Patch nixpkgs to remove the override.
+      ./nixpkgs-patches/mesos.patch
+    ];
+    originPkgs = nixpkgs.legacyPackages.${system};
+    patchedPkgs = originPkgs.applyPatches {
+      name = "nixpkgs-patched";
+      src = nixpkgs;
+      patches = map originPkgs.fetchpatch remoteNixpkgsPatches ++ localNixpkgsPatches;
+      postPatch = ''
+        patch=$(printf '%s\n' ${builtins.concatStringsSep " "
+          (map (p: p.sha256) remoteNixpkgsPatches ++ localNixpkgsPatches)} |
+          sort | sha256sum | cut -c -7)
+        echo "+patch-$patch" >.version-suffix
+      '';
+    };
+    pkgs = import patchedPkgs {
       inherit system overlays;
       config = {
         permittedInsecurePackages = [
@@ -139,8 +161,6 @@
         allowUnfree = true;
       };
     };
-
-    system = "x86_64-linux";
 
     authorizedKeys = ''
       ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPKIspidvrzy1NFoUXMEs1A2Wpx3E8nxzCKGZfBXyezV mail@jdisaacs.com

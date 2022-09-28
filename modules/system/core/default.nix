@@ -1,4 +1,7 @@
-{inputs}: {
+{
+  inputs,
+  patchedPkgs,
+}: {
   pkgs,
   config,
   lib,
@@ -48,7 +51,10 @@ in {
       registry = nixRegistry;
       nixPath =
         mapAttrsToList
-        (name: _: "${name}=/etc/nix/inputs/${name}")
+        (name: _:
+          if name == "nixpkgs"
+          then "nixpkgs=/etc/nix/inputs/${patchedPkgs}"
+          else "${name}=/etc/nix/inputs/${name}")
         flakesWithPkgs;
       package = pkgs.nixUnstable;
       gc = {
@@ -75,7 +81,12 @@ in {
         mapAttrs'
         (name: value: {
           name = "nix/inputs/${name}";
-          value = {source = value.outPath;};
+          value = {
+            source =
+              if name == "nixpkgs"
+              then patchedPkgs.outPath
+              else value.outPath;
+          };
         })
         inputs;
 

@@ -4,6 +4,7 @@
   lib,
   user,
   inputs,
+  patchedPkgs,
   utils,
 }:
 with builtins;
@@ -84,7 +85,7 @@ with utils; {
       modules =
         [
           {
-            imports = [(import ../modules/system {inherit inputs;})] ++ sys_users;
+            imports = [(import ../modules/system {inherit inputs patchedPkgs;})] ++ sys_users;
 
             jd = systemConfigStripped;
 
