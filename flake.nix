@@ -406,7 +406,7 @@
       jd = user.mkHMUser {
         userConfig = {
           graphical = {
-            theme = "materia-dark";
+            theme = "arc-dark";
             applications = {
               enable = true;
               firefox.enable = true;
