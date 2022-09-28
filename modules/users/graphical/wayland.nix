@@ -166,9 +166,10 @@ with lib;
       };
 
       screenlock = {
+        # TODO: package waylock and switch from swaylock
         enable = mkOption {
           type = types.bool;
-          description = " Enable screen locking, must enable it on system as well for pamd (swaylock)";
+          description = "Enable screen locking, must enable it on system as well for pamd (swaylock)";
         };
 
         #timeout = {
@@ -225,7 +226,7 @@ with lib;
           then swaybg
           else null
         )
-        (assert systemCfg.graphical.wayland.swaylock-pam; (
+        (assert systemCfg.graphical.wayland.swaylockPam; (
           if cfg.screenlock.enable
           then swaylock
           else null

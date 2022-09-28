@@ -14,8 +14,8 @@ in {
       default = false;
     };
 
-    swaylock-pam = mkOption {
-      description = "Enable swaylock pam";
+    swaylockPam = mkOption {
+      description = "Enable waylock pam";
       type = types.bool;
       default = false;
     };
@@ -32,6 +32,6 @@ in {
       };
     };
 
-    security.pam.services.swaylock = mkIf (cfg.swaylock-pam) {};
+    security.pam.services.swaylock = mkIf (cfg.swaylockPam) {};
   };
 }
