@@ -24,7 +24,7 @@ in {
       thunderbird
       jdpkgs.rstudioWrapper
       jdpkgs.texstudioWrapper
-      jdpkgs.microsoft-edge-stable
+      microsoft-edge
 
       flameshot
       libsixel
