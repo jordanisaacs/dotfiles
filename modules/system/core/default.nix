@@ -165,6 +165,8 @@ in {
         # Scripts
         scripts.sysTools
 
+        # docs
+        tldr
         man-pages
         man-pages-posix
       ];
