@@ -59,6 +59,9 @@ in {
       # terminal art
       pipes-rs
       cbonsai
+
+      # Themes
+      theme-sh
     ];
 
     fonts.fontconfig.enable = true;

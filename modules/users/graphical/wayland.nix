@@ -157,6 +157,14 @@ with lib;
         };
       };
 
+      foot = {
+        theme = mkOption {
+          type = with types; enum ["tokyo-night" "dracula"];
+          description = "Theme for foot";
+          default = "tokyo-night";
+        };
+      };
+
       screenlock = {
         enable = mkOption {
           type = types.bool;
@@ -197,7 +205,7 @@ with lib;
       assertions = [
         {
           assertion = systemCfg.graphical.wayland.enable;
-          message = "To enable xorg for user, it must be enabled for system";
+          message = "To enable wayland for user, it must be enabled for system";
         }
       ];
 
@@ -260,10 +268,63 @@ with lib;
       };
 
       xdg.configFile = {
-        "foot/foot.ini" = {
+        "foot/foot.ini" = let
+          dracula = ''
+            alpha=1.0
+            foreground=f8f8f2
+            background=282a36
+            regular0=000000  # black
+            regular1=ff5555  # red
+            regular2=50fa7b  # green
+            regular3=f1fa8c  # yellow
+            regular4=bd93f9  # blue
+            regular5=ff79c6  # magenta
+            regular6=8be9fd  # cyan
+            regular7=bfbfbf  # white
+            bright0=4d4d4d   # bright black
+            bright1=ff6e67   # bright red
+            bright2=5af78e   # bright green
+            bright3=f4f99d   # bright yellow
+            bright4=caa9fa   # bright blue
+            bright5=ff92d0   # bright magenta
+            bright6=9aedfe   # bright cyan
+            bright7=e6e6e6   # bright white
+          '';
+
+          tokyoNight = ''
+            background=1a1b26
+            foreground=c0caf5
+            regular0=15161E
+            regular1=f7768e
+            regular2=9ece6a
+            regular3=e0af68
+            regular4=7aa2f7
+            regular5=bb9af7
+            regular6=7dcfff
+            regular7=a9b1d6
+            bright0=414868
+            bright1=f7768e
+            bright2=9ece6a
+            bright3=e0af68
+            bright4=7aa2f7
+            bright5=bb9af7
+            bright6=7dcfff
+            bright7=c0caf5
+          '';
+        in {
           text = ''
-            pad = 2x2 center
+            pad=2x2 center
             font=JetBrainsMono Nerd Font Mono,Noto Color Emoji:style=Regular
+
+            [cursor]
+            color=282a36 f8f8f2
+
+            [colors]
+            ${
+              if cfg.foot.theme == "tokyo-night"
+              then tokyoNight
+              else dracula
+            }
           '';
         };
         "sway/config" = {

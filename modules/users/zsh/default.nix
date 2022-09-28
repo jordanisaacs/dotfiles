@@ -30,6 +30,7 @@ in {
       programs.zsh = {
         enable = true;
         enableAutosuggestions = true;
+        historySubstringSearch.enable = true;
         enableSyntaxHighlighting = true;
         enableCompletion = true;
         completionInit = ''
@@ -60,10 +61,27 @@ in {
           share = true;
           path = "${config.xdg.dataHome}/zsh/zsh_history";
         };
-        initExtraFirst = ""; # add commands to top of .zshrc
-        initExtraBeforeCompInit = ''
-        ''; # add to .zshrc before compinit
+        initExtraFirst = "";
+        initExtraBeforeCompInit = "";
         initExtra = ''
+          # OSC-7 Escape Sequence
+          # https://codeberg.org/dnkl/foot/wiki#spawning-new-terminal-instances-in-the-current-working-directory
+          function osc7 {
+              local LC_ALL=C
+              export LC_ALL
+
+              setopt localoptions extendedglob
+              input=( ''${(s::)PWD} )
+              uri=''${(j::)input/(#b)([^A-Za-z0-9_.\!~*\'\(\)-\/])/%''${(l:2::0:)$(([##16]#match))}}
+              print -n "\e]7;file://''${HOSTNAME}''${uri}\e\\"
+          }
+          add-zsh-hook -Uz chpwd osc7
+
+          # OSC-133, jump between prompts
+          # https://codeberg.org/dnkl/foot/wiki#jumping-between-prompts
+          precmd() {
+              print -Pn "\e]133;A\e\\"
+          }
 
           # Edit line in vim with ctrl-e:
           autoload edit-command-line; zle -N edit-command-line
@@ -96,11 +114,6 @@ in {
 
           # Source powerlevel10k
           source ${config.xdg.configHome}/zsh/.p10k.zsh
-          ${
-            ""
-            # Source zsh-vi-mode
-            # source ${pkgs.myPkgs.zsh-vi-mode}/share/zsh-vi-mode/zsh-vi-mode.zsh
-          }
           source ${pkgs.zsh-powerlevel10k}/share/zsh-powerlevel10k/powerlevel10k.zsh-theme
 
           # Disable less(1) history
