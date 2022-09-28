@@ -78,16 +78,36 @@ in {
             platforms = pkgs.lib.platforms.all;
           };
         })
+        (buildFirefoxXpiAddon {
+          pname = "kagi-firefox";
+          addonId = "search@kagi.com";
+          version = "0.2";
+          url = "https://addons.mozilla.org/firefox/downloads/file/3942576/kagi_search_for_firefox-0.2.xpi";
+          sha256 = "04fk6j7iqsr4vsznn0a52n6630lj3jfhzpxy02y7dyij0fx4dl1z";
+
+          meta = with lib; {
+            description = ''
+              A simple helper extension for setting Kagi as a default search engine, and automatically logging in to Kagi in private browsing windows.
+            '';
+            license = licenses.mpl20;
+            platforms = platforms.all;
+          };
+        })
+
+        # Rycee NUR: https://nur.nix-community.org/repos/rycee/
         user-agent-string-switcher
         bypass-paywalls-clean
         redirector
         rust-search-extension
         bitwarden
         ublock-origin
-        sponsorblock
         multi-account-containers
         clearurls
         cookie-autodelete
+
+        # Youtube
+        sponsorblock
+        return-youtube-dislikes
       ];
       profiles = {
         personal = {
