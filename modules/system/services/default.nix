@@ -11,5 +11,6 @@
     ./nginx
     ./miniflux
     ./taskserver
+    ./ankisyncd
   ];
 }

@@ -217,14 +217,6 @@
             allowedTCPPorts = [8080];
           };
 
-          # ''
-          #   ${pkgs.iptables}/bin/iptables -A FORWARD -i ${wireguardConf.interface} -o ${wireguardConf.interface} -j ACCEPT
-          # '';
-
-          # ''
-          #  ${pkgs.iptables}/bin/iptables -D FORWARD -i ${wireguardConf.interface} -o ${wireguardConf.interface} -j ACCEPT
-          # '';
-
           privateKeyPath = "/etc/wireguard/private_key";
           privateKeyAge = wgsecret.secret.file;
           publicKey = wgsecret.publicKey;
@@ -288,6 +280,11 @@
           enable = true;
           address = "10.55.0.2";
           fqdn = "chairlift.wg";
+          firewall = "wg";
+        };
+        ankisyncd = {
+          enable = true;
+          address = "10.55.0.2";
           firewall = "wg";
         };
         proxy = {
@@ -409,10 +406,15 @@
       jd = user.mkHMUser {
         userConfig = {
           graphical = {
+            theme = "materia-dark";
             applications = {
               enable = true;
               firefox.enable = true;
               libreoffice.enable = true;
+              anki = {
+                enable = true;
+                sync = true;
+              };
               kdeconnect.enable = false;
             };
             wayland = {

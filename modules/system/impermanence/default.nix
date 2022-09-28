@@ -59,6 +59,16 @@ in {
           (mkIf (config.jd.taskserver.enable) {
             directories = [config.jd.taskserver.dataDir];
           })
+          (mkIf (config.jd.ankisyncd.enable) {
+            directories = [
+              {
+                directory = config.jd.ankisyncd.dataDir;
+                user = "ankisyncd";
+                group = "ankisyncd";
+                mode = "0700";
+              }
+            ];
+          })
         ];
 
         # Wait to acivate age decryption until mounted

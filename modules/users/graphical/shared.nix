@@ -8,7 +8,14 @@ with lib; let
   cfg = config.jd.graphical;
   systemCfg = config.machineData.systemConfig;
 in {
-  config =
+  options.jd.graphical.theme = mkOption {
+    type = with types; enum ["arc-dark" "materia-dark"];
+    description = "Enable wayland";
+    default = "arc-dark";
+  };
+
+  config = let
+  in
     mkIf (cfg.xorg.enable == true || cfg.wayland.enable == true)
     {
       home = {
@@ -31,10 +38,16 @@ in {
 
       gtk = {
         enable = true;
-        theme = {
-          package = with pkgs; arc-theme;
-          name = "Arc-Dark";
-        };
+        theme = mkMerge [
+          (mkIf (cfg.theme == "arc-dark") {
+            package = with pkgs; arc-theme;
+            name = "Arc-Dark";
+          })
+          (mkIf (cfg.theme == "materia-dark") {
+            package = with pkgs; materia-theme;
+            name = "Materia-dark";
+          })
+        ];
         iconTheme = {
           name = "la-capitaine-icon-theme";
         };
@@ -59,14 +72,21 @@ in {
             '';
           };
 
-          "Kvantum/kvantum.kvconfig" = {
-            text = ''
-              theme=KvArcDark
-            '';
-          };
+          "Kvantum/kvantum.kvconfig" = mkMerge [
+            (mkIf (cfg.theme == "arc-dark") {
+              text = "theme=KvArcDark";
+            })
+            (mkIf (cfg.theme == "materia-dark") {
+              text = "theme=MateriaDark";
+            })
+          ];
 
           "Kvantum/ArcDark" = {
             source = "${pkgs.arc-kde-theme}/share/Kvantum/ArcDark";
+          };
+
+          "Kvantum/MateriaDark" = {
+            source = "${pkgs.materia-kde-theme}/share/Kvantum/MateriaDark";
           };
 
           "wallpapers" = {
@@ -139,6 +159,8 @@ in {
         "org/gnome/desktop/interface" = {
           cursor-theme = "volantes_cursors";
           icon-theme = "la-capitaine-icon-theme";
+          # https://askubuntu.com/questions/1404764/how-to-use-hdystylemanagercolor-scheme
+          color-scheme = "prefer-dark";
           text-scaling-factor = 1.25;
         };
       };

@@ -21,20 +21,39 @@ in {
   config = mkIf cfg.firefox.enable {
     programs.firefox = {
       enable = true;
-      extensions = with pkgs.nur.repos.rycee.firefox-addons; [
-        (buildFirefoxXpiAddon {
-          pname = "arc-dark-theme-firefox";
-          addonId = "arc-dark-theme@afnankhan";
-          version = "2021.6.2";
-          url = "https://addons.mozilla.org/firefox/downloads/file/3786185/arc_dark_theme-2021.6.2-an+fx.xpi";
-          sha256 = "TRXQCboplZmxi3/HzU5HYs1xEIO0RRzCClliEu6MEEM=";
+      extensions = with pkgs.nur.repos.rycee.firefox-addons; let
+        firefoxTheme =
+          if (config.jd.graphical.theme == "arc-dark")
+          then
+            (buildFirefoxXpiAddon {
+              pname = "arc-dark-theme-firefox";
+              addonId = "arc-dark-theme@afnankhan";
+              version = "2021.6.2";
+              url = "https://addons.mozilla.org/firefox/downloads/file/3786185/arc_dark_theme-2021.6.2-an+fx.xpi";
+              sha256 = "TRXQCboplZmxi3/HzU5HYs1xEIO0RRzCClliEu6MEEM=";
 
-          meta = with lib; {
-            description = "Arc dark theme";
-            license = pkgs.lib.licenses.cc-by-30;
-            platforms = pkgs.lib.platforms.all;
-          };
-        })
+              meta = with lib; {
+                description = "Arc dark theme";
+                license = pkgs.lib.licenses.cc-by-30;
+                platforms = pkgs.lib.platforms.all;
+              };
+            })
+          else
+            (buildFirefoxXpiAddon {
+              pname = "materia-dark-gtk-theme-firefox";
+              addonId = "{6aff6b84-e31b-45c3-acfa-ef1b9351607d}";
+              version = "1.0";
+              url = "https://addons.mozilla.org/firefox/downloads/file/3860526/materia_gtk_dark-1.0.xpi";
+              sha256 = "mVcT7ssJmYjIHIgvtAkEahs5u4rsAFigYcPMaPbfhr0=";
+
+              meta = with lib; {
+                description = "Materia dark gtk theme";
+                license = pkgs.lib.licenses.cc-by-30;
+                platforms = pkgs.lib.platforms.all;
+              };
+            });
+      in [
+        firefoxTheme
         (buildFirefoxXpiAddon {
           pname = "cookie-quick-manager";
           addonId = "{60f82f00-9ad5-4de5-b31c-b16a47c51558}";
