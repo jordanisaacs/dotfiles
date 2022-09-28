@@ -50,13 +50,14 @@ in {
             '';
           };
 
+          # First session is used by default
           sessionDirs = builtins.concatStringsSep ":" (
-            [zshSession]
-            ++ (
+            (
               if (config.jd.graphical.enable && config.jd.graphical.wayland.enable)
               then [swaySession]
               else []
             )
+            ++ [zshSession]
             ++ (
               if (config.jd.graphical.enable && config.jd.graphical.xorg.enable)
               then [xorgSession]
@@ -64,7 +65,7 @@ in {
             )
           );
         in {
-          command = "${pkgs.greetd.tuigreet}/bin/tuigreet --time --sessions ${sessionDirs} --remember --remember-session";
+          command = "${pkgs.greetd.tuigreet}/bin/tuigreet --time --sessions ${sessionDirs} --remember --remember-user-session";
           user = "greeter";
         };
       };
