@@ -8,6 +8,9 @@ with lib; let
   cfg = config.jd.ankisyncd;
 
   name = "ankisyncd";
+  user = name;
+  group = name;
+  id = 326;
 in {
   options.jd.ankisyncd = {
     enable = mkOption {
@@ -43,22 +46,12 @@ in {
 
   config = mkIf (cfg.enable) (mkMerge [
     {
-      ids = {
-        uids = {
-          ${name} = 326;
-        };
-        gids = {
-          ${name} = 326;
-        };
-      };
       users = {
-        groups = {
-          ${name}.gid = config.ids.gids.ankisyncd;
-        };
-        users.${name} = {
-          uid = config.ids.uids.ankisyncd;
+        groups.${group} = {};
+        users.${user} = {
+          inherit group;
+          isSystemUser = true;
           description = "Ankisyncd user";
-          group = "ankisyncd";
         };
       };
 
@@ -72,8 +65,8 @@ in {
           # Use my version of ankisyncd because the nixpkgs version is not compatible with up to date clients
           ExecStart = "${pkgs.jdpkgs.ankisyncd}/bin/ankisyncd";
           Type = "simple";
-          User = name;
-          Group = name;
+          User = user;
+          Group = group;
           Restart = "always";
         };
 
