@@ -51,10 +51,7 @@ in {
       registry = nixRegistry;
       nixPath =
         mapAttrsToList
-        (name: _:
-          if name == "nixpkgs"
-          then "nixpkgs=/etc/nix/inputs/${patchedPkgs}"
-          else "${name}=/etc/nix/inputs/${name}")
+        (name: _: "${name}=/etc/nix/inputs/${name}")
         flakesWithPkgs;
       package = pkgs.nixUnstable;
       gc = {
