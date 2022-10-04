@@ -38,13 +38,20 @@ in {
       default = "/var/lib/${name}";
     };
 
-    appUrl =
-      mkOption {
-      };
+    appUrl = mkOption {
+      type = types.str;
+      description = "The root URL that you want to host Firefly III on. All URLS in Firefly III will be generated using this value.";
+      default = "http://chairlift.wg/miniflux";
+    };
 
-    hostname =
-      mkOption {
-      };
+    appKeyFile = mkOption {
+      type = types.path;
+      description = ''
+        A file containing the Laravel APP_KEY - a 32 character long,
+        base64 encoded key used for encryption where needed. Can be
+        generated with head -c 32 /dev/urandom | base64
+      '';
+    };
   };
 
   config = mkIf (cfg.enable) {
