@@ -5,10 +5,7 @@
   ...
 }: {
   imports = [
-    ./applications
-    ./wayland
-    ./xorg.nix
+    ./compositor.nix
     ./shared.nix
-    ./config.nix
   ];
 }
