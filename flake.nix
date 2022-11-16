@@ -43,6 +43,10 @@
       inputs.flake-utils.follows = "flake-utils";
     };
 
+    nixpkgs-wayland = {
+      url = "github:nix-community/nixpkgs-wayland";
+    };
+
     homeage = {
       url = "github:jordanisaacs/homeage";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -80,6 +84,7 @@
     deploy-rs,
     agenix,
     microvm-nix,
+    nixpkgs-wayland,
     secrets,
     home-manager,
     nur,
@@ -118,6 +123,7 @@
           impermanence
           deploy-rs
           agenix
+          nixpkgs-wayland
           ;
       })
       overlays
@@ -138,17 +144,18 @@
       ./nixpkgs-patches/mesos.patch
     ];
     originPkgs = nixpkgs.legacyPackages.${system};
-    patchedPkgs = originPkgs.applyPatches {
-      name = "nixpkgs-patched";
-      src = nixpkgs;
-      patches = map originPkgs.fetchpatch remoteNixpkgsPatches ++ localNixpkgsPatches;
-      postPatch = ''
-        patch=$(printf '%s\n' ${builtins.concatStringsSep " "
-          (map (p: p.sha256) remoteNixpkgsPatches ++ localNixpkgsPatches)} |
-          sort | sha256sum | cut -c -7)
-        echo "+patch-$patch" >.version-suffix
-      '';
-    };
+    patchedPkgs = nixpkgs;
+    # patchedPkgs = originPkgs.applyPatches {
+    #   name = "nixpkgs-patched";
+    #   src = nixpkgs;
+    #   patches = map originPkgs.fetchpatch remoteNixpkgsPatches ++ localNixpkgsPatches;
+    #   postPatch = ''
+    #     patch=$(printf '%s\n' ${builtins.concatStringsSep " "
+    #       (map (p: p.sha256) remoteNixpkgsPatches ++ localNixpkgsPatches)} |
+    #       sort | sha256sum | cut -c -7)
+    #     echo "+patch-$patch" >.version-suffix
+    #   '';
+    # };
     pkgs = import patchedPkgs {
       inherit system overlays;
       config = {
@@ -287,7 +294,7 @@
           inherit fqdn sendingFqdn domains;
           loginAccounts =
             builtins.mapAttrs (name: value: {
-              hashedPasswordFile = value.secret.file;
+              hashedPasswordFile = value.hashedPassword.secret.file;
               aliases = value.aliases;
               sendOnly = lib.mkIf (value ? sendOnly) value.sendOnly;
             })
