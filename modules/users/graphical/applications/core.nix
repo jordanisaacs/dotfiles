@@ -22,8 +22,8 @@ in {
       wdisplays
 
       thunderbird
-      jdpkgs.rstudioWrapper
-      jdpkgs.texstudioWrapper
+      # jdpkgs.rstudioWrapper
+      # jdpkgs.texstudioWrapper
       microsoft-edge
 
       flameshot
