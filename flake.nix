@@ -478,7 +478,7 @@
           ssh.enable = true;
           weechat.enable = true;
           office365 = {
-            enable = true;
+            enable = false;
             onedriver.enable = true; # pkg currently broken
           };
           wine = {
