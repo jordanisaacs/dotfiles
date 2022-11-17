@@ -6,6 +6,7 @@
 }:
 with lib; let
   cfg = config.jd.unbound;
+  hasMonitoring = config.jd.monitoring.enable;
 in {
   options.jd.unbound = {
     enable = mkOption {
@@ -59,80 +60,116 @@ in {
   in
     mkIf (cfg.enable) (mkMerge [
       {
-        services.unbound = let
-        in {
-          enable = true;
-          resolveLocalQueries = true;
-          settings = {
-            server = {
-              port = 53;
-              so-reuseport = "yes";
-              # use all CPUs
-              num-threads = 2;
+        services.unbound = mkMerge [
+          {
+            enable = true;
+            resolveLocalQueries = true;
+            settings = {
+              server = {
+                port = 53;
+                so-reuseport = "yes";
+                # use all CPUs
+                num-threads = 2;
 
-              # power of 2 close to num-threads
-              msg-cache-slabs = 4;
-              rrset-cache-slabs = 4;
-              infra-cache-slabs = 4;
-              key-cache-slabs = 4;
+                # For debugging
+                # log-servfail = "yes";
+                # verbosity = 5;
+                # val-log-level = 2;
 
-              # more cache memory, rrset=msg*2
-              msg-cache-size = "50m";
-              rrset-cache-size = "100m";
+                # power of 2 close to num-threads
+                msg-cache-slabs = 4;
+                rrset-cache-slabs = 4;
+                infra-cache-slabs = 4;
+                key-cache-slabs = 4;
 
-              # NixOS compiles with libevent
-              outgoing-range = 8192;
-              num-queries-per-thread = 4096;
+                # more cache memory, rrset=msg*2
+                msg-cache-size = "50m";
+                rrset-cache-size = "100m";
 
-              module-config = ''"validator iterator"'';
+                # NixOS compiles with libevent
+                outgoing-range = 8192;
+                num-queries-per-thread = 4096;
 
-              hide-identity = "yes";
-              hide-trustanchor = "yes";
-              harden-glue = "yes";
-              harden-dnssec-stripped = "yes";
-              harden-below-nxdomain = "yes";
-              use-caps-for-id = "yes";
-              qname-minimisation = "yes";
-              qname-minimisation-strict = "no";
-              unwanted-reply-threshold = 10000;
+                module-config = ''"validator iterator"'';
 
-              cache-min-ttl = 3600;
-              cache-max-ttl = 86400;
-              prefetch = "yes";
+                hide-identity = "yes";
+                hide-trustanchor = "yes";
+                harden-glue = "yes";
+                harden-dnssec-stripped = "yes";
+                harden-below-nxdomain = "yes";
+                use-caps-for-id = "yes";
+                qname-minimisation = "yes";
+                qname-minimisation-strict = "no";
+                unwanted-reply-threshold = 10000;
 
-              interface =
-                if (cfg.access == "world")
-                then ["0.0.0.0"]
-                else
-                  ["127.0.0.1" "::1"]
-                  ++ (optionals
-                    (cfg.access == "wg")
-                    wgIpsStripped);
-              do-ip4 = "yes";
-              do-ip6 = "yes";
-              do-udp = "yes";
-              do-tcp = "yes";
-              access-control =
-                if (cfg.access == "world")
-                then ["0.0.0.0/0 allow"]
-                else
-                  ["127.0.0.0/8 allow" "::1/128 allow"]
-                  ++ (optionals
-                    (cfg.access == "wg")
-                    wgIpsAccess);
-              domain-insecure = mkIf (cfg.enableWGDomain) peerDomains;
-              local-zone = mkIf (cfg.enableWGDomain) peerZone;
-              local-data = mkIf (cfg.enableWGDomain) peerData;
-              local-data-ptr = mkIf (cfg.enableWGDomain) peerPtrs;
-              private-address = ["10.0.0.0/8" "172.16.0.0/12" "192.168.0.0/16" "169.254.0.0/16" "fd00::/8" "fe80::/10"];
-              root-hints = builtins.fetchurl {
-                url = "https://www.internic.net/domain/named.cache";
-                sha256 = "sha256:1dqjj0axwdy165al7wbycwvjk3v1hnldqkd2i4hr1arnxxynsggn";
+                cache-min-ttl = 3600;
+                cache-max-ttl = 86400;
+                prefetch = "yes";
+
+                interface =
+                  if (cfg.access == "world")
+                  then ["0.0.0.0"]
+                  else
+                    ["127.0.0.1" "::1"]
+                    ++ (optionals
+                      (cfg.access == "wg")
+                      wgIpsStripped);
+
+                do-ip4 = "yes";
+                do-ip6 = "yes";
+                do-udp = "yes";
+                do-tcp = "yes";
+                access-control =
+                  if (cfg.access == "world")
+                  then ["0.0.0.0/0 allow"]
+                  else
+                    ["127.0.0.0/8 allow" "::1/128 allow"]
+                    ++ (optionals
+                      (cfg.access == "wg")
+                      wgIpsAccess);
+                domain-insecure = mkIf (cfg.enableWGDomain) peerDomains;
+                local-zone = mkIf (cfg.enableWGDomain) peerZone;
+                local-data = mkIf (cfg.enableWGDomain) peerData;
+                local-data-ptr = mkIf (cfg.enableWGDomain) peerPtrs;
+                private-address = [
+                  "10.0.0.0/8"
+                  "172.16.0.0/12"
+                  "192.168.0.0/16"
+                  "169.254.0.0/16"
+                  "fd00::/8"
+                  "fe80::/10"
+                ];
+                root-hints = builtins.fetchurl {
+                  url = "https://www.internic.net/domain/named.cache";
+                  sha256 = "sha256:1y35i9rrxn94g7ycynn2d0s0wpsvx1g7f01pl6jz255741jfbm0a";
+                };
               };
+            };
+          }
+        ];
+      }
+      (mkIf hasMonitoring {
+        services.unbound = {
+          package = pkgs.unbound.override {
+            withSystemd = true;
+            withDNSTAP = true;
+          };
+          settings = {
+            dnstap = {
+              dnstap-enable = "yes";
+              dnstap-socket-path = config.vectorCfg.sources.generate_unbound.socket_path;
+
+              dnstap-log-resolver-query-messages = "yes";
+              dnstap-log-resolver-response-messages = "yes";
+
+              dnstap-log-client-query-messages = "yes";
+              dnstap-log-client-response-messages = "yes";
             };
           };
         };
-      }
+
+        systemd.services.unbound.after = ["vector.service"];
+      })
       (mkIf (cfg.access == "world") {
         networking.firewall = {
           allowedTCPPorts = [unboundPort];

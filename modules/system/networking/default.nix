@@ -10,6 +10,7 @@ in {
   options.jd.networking = {
     interfaces = mkOption {
       type = with types; listOf str;
+      default = [];
       description = "List of network interface cards";
     };
 
@@ -21,6 +22,12 @@ in {
 
     wifi.enable = mkOption {
       description = "Enable wifi with default options";
+      type = types.bool;
+      default = false;
+    };
+
+    chairlift = mkOption {
+      description = "Enable chairlift networking.";
       type = types.bool;
       default = false;
     };
@@ -58,6 +65,7 @@ in {
           wireless = mkIf (cfg.wifi.enable) {
             enable = true;
           };
+          enableIPv6 = true;
         };
 
         networking.firewall = mkIf (cfg.firewall.enable) {
@@ -82,6 +90,20 @@ in {
                 cfg.interfaces));
         };
       }
+      (mkIf cfg.chairlift {
+        networking = {
+          interfaces.enp1s0.ipv6.addresses = [
+            {
+              address = "2a01:4ff:f0:865b::1";
+              prefixLength = 64;
+            }
+          ];
+          defaultGateway6 = {
+            address = "fe80::1";
+            interface = "enp1s0";
+          };
+        };
+      })
       # If unbound is enabled do not use systemd-resolved
       (mkIf (!config.jd.unbound.enable) {
         networking.resolvconf.enable = false;

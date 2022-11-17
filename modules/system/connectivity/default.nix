@@ -14,12 +14,6 @@ in {
       default = false;
     };
 
-    firewall.enable = mkOption {
-      description = "Enable firewall";
-      type = types.bool;
-      default = false;
-    };
-
     printing.enable = mkOption {
       description = "Enable printer";
       type = types.bool;
