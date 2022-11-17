@@ -10,6 +10,7 @@ in {
   imports = [
     ./taskwarrior
     ./direnv
+    ./syncthing
   ];
 
   options.jd.applications = {
