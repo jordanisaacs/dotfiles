@@ -5,6 +5,7 @@
   ...
 }: {
   imports = [
+    ./monitoring
     ./unbound
     ./acme
     ./mail-server
@@ -12,5 +13,7 @@
     ./miniflux
     ./taskserver
     ./ankisyncd
+    ./microbin
+    ./languagetool
   ];
 }

@@ -284,11 +284,11 @@
         secrets.identityPaths = [secrets.age.system.chairlift.privateKeyPath];
         ssh.hostKeyAge = secrets.ssh.host.chairlift.secret.file;
         networking.interfaces = ["enp1s0"];
-        miniflux = {
-          enable = true;
-          adminCredsFile = secrets.miniflux.adminCredentials.secret.file;
-        };
+        networking.chairlift = true;
         acme.email = secrets.acme.email;
+        monitoring.enable = false;
+        microbin.enable = true;
+        languagetool.enable = true;
         mailserver = with secrets.mailserver; {
           enable = true;
           inherit fqdn sendingFqdn domains;
@@ -299,6 +299,10 @@
               sendOnly = lib.mkIf (value ? sendOnly) value.sendOnly;
             })
             loginAccounts;
+        };
+        miniflux = {
+          enable = true;
+          adminCredsFile = secrets.miniflux.adminCredentials.secret.file;
         };
         taskserver = {
           enable = true;
@@ -357,7 +361,7 @@
         enable = true;
         type = "client";
       };
-      extraContainer.enable = true;
+      extraContainer.enable = false;
     };
 
     desktopConfig = utils.recursiveMerge [
@@ -457,6 +461,7 @@
           applications = {
             enable = true;
             direnv.enable = true;
+            syncthing.enable = true;
             taskwarrior = {
               enable = true;
               server = {

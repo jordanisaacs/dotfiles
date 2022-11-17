@@ -53,9 +53,17 @@ in {
                 proxyPass = "http://${config.jd.miniflux.address}:${builtins.toString config.jd.miniflux.port}/miniflux/";
               };
             })
-            (mkIf (config.jd.taskserver.enable) {
-              "/taskserver/" = {
-                proxyPass = "http://${config.jd.taskserver.address}:${builtins.toString config.jd.taskserver.port}/taskserver/";
+            (mkIf (config.jd.microbin.enable) {
+              "/microbin/" = {
+                proxyPass = "http://${config.jd.microbin.address}:${builtins.toString config.jd.microbin.port}/";
+              };
+            })
+            (mkIf (config.jd.languagetool.enable) {
+              "/languagetool/" = {
+                proxyPass = "http://127.0.0.1:${builtins.toString config.jd.languagetool.port}/";
+                extraConfig = ''
+                  add_header "Access-Control-Allow-Origin" *;
+                '';
               };
             })
             {
