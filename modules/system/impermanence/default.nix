@@ -69,10 +69,20 @@ in {
               }
             ];
           })
+          (mkIf (config.jd.microbin.enable) {
+            directories = [
+              {
+                directory = "/var/lib/microbin";
+                user = "microbin";
+                group = "microbin";
+                mode = "0700";
+              }
+            ];
+          })
         ];
 
         # Wait to acivate age decryption until mounted
-        system.activationScripts.agenixMountSecrets.deps = ["specialfs" "persist-files"];
+        system.activationScripts.agenixInstall.deps = ["specialfs" "persist-files"];
       }
     ];
   in
