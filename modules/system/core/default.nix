@@ -60,15 +60,6 @@ in {
         dates = "weekly";
         options = "--delete-older-than 14d";
       };
-      # For nixpkgs-wayland: https://github.com/nix-community/nixpkgs-wayland#flake-usage
-      binaryCachePublicKeys = [
-        "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
-        "nixpkgs-wayland.cachix.org-1:3lwxaILxMRkVhehr5StQprHdEo4IrE8sRho9R9HOLYA="
-      ];
-      binaryCaches = [
-        "https://cache.nixos.org"
-        "https://nixpkgs-wayland.cachix.org"
-      ];
       extraOptions = ''
         keep-outputs = true
         keep-derivations = true
@@ -76,6 +67,15 @@ in {
       '';
       settings = {
         auto-optimise-store = true;
+        # For nixpkgs-wayland: https://github.com/nix-community/nixpkgs-wayland#flake-usage
+        substituters = [
+          "https://cache.nixos.org"
+          "https://nixpkgs-wayland.cachix.org"
+        ];
+        trusted-public-keys = [
+          "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
+          "nixpkgs-wayland.cachix.org-1:3lwxaILxMRkVhehr5StQprHdEo4IrE8sRho9R9HOLYA="
+        ];
       };
     };
 
