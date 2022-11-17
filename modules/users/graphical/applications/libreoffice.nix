@@ -19,7 +19,7 @@ in {
   };
 
   config = mkIf (isGraphical && cfg.enable && cfg.libreoffice.enable) {
-    home.packages = with pkgs; [libreoffice languagetool];
+    home.packages = with pkgs; [libreoffice-fresh];
 
     # Setting up dictionary modified from:
     # https://www.thedroneely.com/posts/nixos-in-the-wild/#libreoffice-and-spell-checking
