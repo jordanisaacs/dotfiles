@@ -102,7 +102,6 @@ in {
         mkIf (cfg.type == "zfs") {
           boot = {
             loader = {
-              systemd-boot.enable = false;
               grub = {
                 enable = true;
                 version = 2;
@@ -115,9 +114,9 @@ in {
             zfs.requestEncryptionCredentials = true;
           };
 
-          # services.zfs.trim.enable = true;
-          # services.zfs.autoScrub.enable = true;
-          # services.zfs.autoScrub.pools = [ "rpool" ];
+          services.zfs.trim.enable = true;
+          services.zfs.autoScrub.enable = true;
+          services.zfs.autoScrub.pools = ["rpool"];
 
           networking.hostId = cfg.hostId;
 
@@ -146,6 +145,7 @@ in {
           fileSystems."/nix" = {
             device = "rpool/local/nix";
             fsType = "zfs";
+            neededForBoot = true;
           };
 
           fileSystems."/persist" = {
