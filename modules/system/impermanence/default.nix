@@ -99,12 +99,22 @@ in {
               }
             ];
           })
-          (mkIf config.jd.calibre.server.enable {
-            directoriess = [
+          (mkIf config.jd.syncthing.relay.enable {
+            directories = [
               {
-                directory = "/var/lib/calibre-server";
-                user = "calibre";
-                group = "calibre";
+                directory = "/var/strelaysv";
+                user = "syncthing-relay";
+                group = "syncthing-relay";
+                mode = "0700";
+              }
+            ];
+          })
+          (mkIf config.jd.syncthing.discovery.enable {
+            directories = [
+              {
+                directory = "/var/stdiscosrv";
+                user = "syncthing-discovery";
+                group = "syncthing-discovery";
                 mode = "0700";
               }
             ];

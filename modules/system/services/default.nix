@@ -5,6 +5,7 @@
   ...
 }: {
   imports = [
+    ./syncthing
     ./monitoring
     ./unbound
     ./acme

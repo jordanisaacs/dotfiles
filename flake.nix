@@ -289,6 +289,10 @@
         monitoring.enable = false;
         microbin.enable = true;
         calibre.web.enable = true;
+        syncthing = {
+          relay.enable = true;
+          discovery.enable = true;
+        };
         languagetool.enable = true;
         mailserver = with secrets.mailserver; {
           enable = true;
