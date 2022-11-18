@@ -288,6 +288,7 @@
         acme.email = secrets.acme.email;
         monitoring.enable = false;
         microbin.enable = true;
+        calibre.web.enable = true;
         languagetool.enable = true;
         mailserver = with secrets.mailserver; {
           enable = true;

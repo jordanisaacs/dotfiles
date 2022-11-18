@@ -79,8 +79,39 @@ in {
               }
             ];
           })
+          (mkIf (config.jd.calibre.web.enable || config.jd.calibre.server.enable) {
+            directories = [
+              {
+                directory = "/var/lib/calibre-lib";
+                user = "calibre";
+                group = "calibre";
+                mode = "0700";
+              }
+            ];
+          })
+          (mkIf config.jd.calibre.web.enable {
+            directories = [
+              {
+                directory = "/var/lib/calibre-web";
+                user = "calibre";
+                group = "calibre";
+                mode = "0700";
+              }
+            ];
+          })
+          (mkIf config.jd.calibre.server.enable {
+            directoriess = [
+              {
+                directory = "/var/lib/calibre-server";
+                user = "calibre";
+                group = "calibre";
+                mode = "0700";
+              }
+            ];
+          })
         ];
-
+      }
+      {
         # Wait to acivate age decryption until mounted
         system.activationScripts.agenixInstall.deps = ["specialfs" "persist-files"];
       }

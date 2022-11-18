@@ -15,5 +15,6 @@
     ./ankisyncd
     ./microbin
     ./languagetool
+    ./calibre
   ];
 }
