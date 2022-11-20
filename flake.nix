@@ -351,6 +351,7 @@
         firewall = {
           enable = true;
           allowKdeconnect = false;
+          allowDefaultSyncthing = true;
         };
         networkmanager.enable = true;
       };

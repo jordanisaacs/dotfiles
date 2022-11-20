@@ -44,6 +44,12 @@ in {
         type = types.bool;
         default = false;
       };
+
+      allowDefaultSyncthing = mkOption {
+        description = "Open ports in firewall to allow syncthing";
+        type = types.bool;
+        default = false;
+      };
     };
   };
 
@@ -71,13 +77,12 @@ in {
         networking.firewall = mkIf (cfg.firewall.enable) {
           enable = true;
           interfaces =
-            mkIf
-            (cfg.firewall.allowKdeconnect)
-            (listToAttrs
-              (map
-                (n: {
-                  name = n;
-                  value = rec {
+            listToAttrs
+            (map
+              (n: {
+                name = n;
+                value = mkMerge [
+                  (mkIf cfg.firewall.allowKdeconnect rec {
                     allowedTCPPortRanges = [
                       {
                         from = 1714;
@@ -85,9 +90,14 @@ in {
                       }
                     ];
                     allowedUDPPortRanges = allowedTCPPortRanges;
-                  };
-                })
-                cfg.interfaces));
+                  })
+                  (mkIf cfg.firewall.allowDefaultSyncthing {
+                    allowedTCPPorts = [2200];
+                    allowedUDPPorts = [21027 22000];
+                  })
+                ];
+              })
+              cfg.interfaces);
         };
       }
       (mkIf cfg.chairlift {
