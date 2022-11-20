@@ -50,6 +50,8 @@ in {
       # Sound
       pavucontrol
       pasystray
+
+      # kdeconnect
     ];
 
     xdg.configFile = {
