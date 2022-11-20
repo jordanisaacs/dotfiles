@@ -491,11 +491,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1664622802,
-        "narHash": "sha256-QXUe83VzxSaARrMOVAA+Wc2Oy4cHQE8dNoRCwfQSEgs=",
+        "lastModified": 1668898848,
+        "narHash": "sha256-/skyqTDWxtUnqo5vuabX9NEXnwRbBvcLrYeUduKFQnk=",
         "owner": "jordanisaacs",
         "repo": "jdpkgs",
-        "rev": "2d7727c51801cacefd29f13c71687d4fc68120f4",
+        "rev": "48af3a97017beede79ae31007de8d7be434f56bb",
         "type": "github"
       },
       "original": {

@@ -22,6 +22,7 @@ in {
   config = mkIf (config.jd.applications.enable && cfg.enable) {
     services.syncthing = {
       enable = true;
+      # TODO: fails on service starting during login. Restarting it sets it up correctly
       tray.enable = isGraphical;
     };
   };

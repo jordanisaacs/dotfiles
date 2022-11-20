@@ -48,13 +48,35 @@ in {
             name = "Materia-dark";
           })
         ];
+
         iconTheme = {
           name = "la-capitaine-icon-theme";
         };
+
         gtk3.extraConfig = {
           gtk-cursor-theme-name = "volantes_cursors";
           gtk-application-prefer-dark-theme = true;
         };
+      };
+
+      # https://github.com/nix-community/home-manager/issues/2064
+      systemd.user.targets.tray = {
+        Unit = {
+          Description = "Home manager system tray";
+          Requires = ["graphical-session-pre.target"];
+          After = ["xdg-desktop-portal-gtk.service"];
+        };
+      };
+
+      systemd.user.sessionVariables = {
+        # So graphical services are themed (eg trays)
+        QT_QPA_PLATFORMTHEME = "qt5ct";
+        PATH = builtins.concatStringsSep ":" [
+          "${pkgs.libsForQt5.qtstyleplugin-kvantum}/bin"
+          "${pkgs.qt5ct}/bin"
+          "${pkgs.xdg-utils}/bin"
+          "${pkgs.firefox}/bin"
+        ];
       };
 
       xdg = {

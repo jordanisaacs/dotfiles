@@ -9,15 +9,21 @@ with lib; let
 in {
   options.jd.graphical.wayland = {
     enable = mkOption {
-      description = "Enable wayland";
       type = types.bool;
       default = false;
+      description = "Enable wayland";
     };
 
     swaylockPam = mkOption {
-      description = "Enable waylock pam";
       type = types.bool;
       default = false;
+      description = "Enable swaylock pam";
+    };
+
+    waylockPam = mkOption {
+      type = types.bool;
+      default = false;
+      description = "Enable waylock pam";
     };
   };
 
@@ -33,5 +39,6 @@ in {
     };
 
     security.pam.services.swaylock = mkIf (cfg.swaylockPam) {};
+    security.pam.services.waylock = mkIf (cfg.waylockPam) {};
   };
 }

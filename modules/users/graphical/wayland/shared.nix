@@ -9,6 +9,11 @@ with lib; let
   systemCfg = config.machineData.systemConfig;
 in {
   options.jd.graphical.wayland = {
+    enable = mkOption {
+      type = types.bool;
+      description = "Enable wayland";
+    };
+
     background = {
       enable = mkOption {
         type = types.bool;
@@ -29,6 +34,48 @@ in {
         type = types.enum ["stretch" "fill" "fit" "center" "tile"];
         description = "Scaling mode for background";
       };
+    };
+
+    screenlock = {
+      enable = mkOption {
+        type = types.bool;
+        default = false;
+        description = "Enable screen locking, must enable it on system as well for pam.d (waylock)";
+      };
+
+      type = mkOption {
+        type = types.enum ["waylock" "swaylock"];
+        default = "waylock";
+        description = "Which screen locking software to use";
+      };
+
+      #timeout = {
+      #  script = mkOption {
+      #    description = "Script to run on timeout. Default null";
+      #    type = with types; nullOr package;
+      #    default = null;
+      #  };
+
+      #  time = mkOption {
+      #    description = "Time in seconds until run timeout script. Default 180.";
+      #    type = types.int;
+      #    default = 180;
+      #  };
+      #};
+
+      #lock = {
+      #  command = mkOption {
+      #    description = "Lock command. Default xsecurelock";
+      #    type = types.str;
+      #    default = "${pkgs.xsecurelock}/bin/xsecurelock";
+      #  };
+
+      #  time = mkOption {
+      #    description = "Time in seconds after timeout until lock. Default 180.";
+      #    type = types.int;
+      #    default = 180;
+      #  };
+      #};
     };
 
     statusbar = {
@@ -52,25 +99,15 @@ in {
     };
   };
 
-  config =
-    mkIf cfg.enable
+  config = mkIf cfg.enable (mkMerge [
     {
       home.packages = with pkgs; [
         foot
         bemenu
         wl-clipboard
+        wlr-randr
         libappindicator-gtk3
         mako
-        (
-          if cfg.background.enable
-          then swaybg
-          else null
-        )
-        (assert systemCfg.graphical.wayland.swaylockPam; (
-          if cfg.screenlock.enable
-          then swaylock
-          else null
-        ))
       ];
 
       xdg.configFile = {
@@ -126,19 +163,49 @@ in {
             color=282a36 f8f8f2
 
             [colors]
-            ${
-              if cfg.foot.theme == "tokyo-night"
-              then tokyoNight
-              else dracula
-            }
+            ${optionalString (cfg.foot.theme == "tokyo-night") tokyoNight}
+            ${optionalString (cfg.foot.theme == "dracula") dracula}
           '';
         };
       };
+
+      systemd.user.targets.wayland-session = {
+        Unit = {
+          Description = "wayland graphical session";
+          BindsTo = ["graphical-session.target"];
+          Wants = ["graphical-session-pre.target"];
+          After = ["graphical-session-pre.target"];
+        };
+      };
+    }
+    (mkIf cfg.screenlock.enable (let
+      isWaylock = cfg.screenlock.type == "waylock";
+      isSwaylock = cfg.screenlock.type == "swaylock";
+    in {
+      assertions = [
+        {
+          assertion = isWaylock -> (systemCfg.graphical.wayland.waylockPam && isWaylock);
+          message = "Waylock PAM must be enabled by the system to use waylock screen locking.";
+        }
+
+        {
+          assertion = isSwaylock -> (systemCfg.graphical.wayland.swaylockPam && isSwaylock);
+          message = "Swaylock PAM must be enabled by the system to use waylock screen locking.";
+        }
+      ];
+
+      home.packages = with pkgs;
+        (optional (cfg.screenlock.type == "waylock") jdpkgs.waylock)
+        ++ (optional (cfg.screenlock.type == "swaylock") jdpkgs.swaylock);
+    }))
+    (mkIf cfg.background.enable {
+      home.packages = [pkgs.swaybg];
+
       systemd.user.services.swaybg = mkIf cfg.background.enable {
         Unit = {
           Description = "swaybg background service";
           Documentation = ["man:swabyg(1)"];
-          BindsTo = ["wayland-session.target"];
+          PartOf = ["wayland-session.target"];
           After = ["wayland-session.target"];
           Before = mkIf (cfg.statusbar.enable) ["waybar.service"];
         };
@@ -151,8 +218,9 @@ in {
           WantedBy = ["wayland-session.target"];
         };
       };
-
-      programs.waybar = mkIf cfg.statusbar.enable {
+    })
+    (mkIf (cfg.statusbar.enable) {
+      programs.waybar = {
         enable = true;
         package = cfg.statusbar.pkg;
         settings = [
@@ -251,9 +319,10 @@ in {
       };
 
       systemd.user.services.waybar = mkIf cfg.statusbar.enable {
-        Unit.BindsTo = lib.mkForce ["wayland-session.target"];
-        Unit.After = lib.mkForce ["wayland-session.target" "xdg-desktop-portal-gtk.service"];
+        Unit.PartOf = lib.mkForce ["wayland-session.target"];
+        Unit.After = lib.mkForce ["wayland-session.target"];
         Install.WantedBy = lib.mkForce ["wayland-session.target"];
       };
-    };
+    })
+  ]);
 }

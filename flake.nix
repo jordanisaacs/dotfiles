@@ -359,7 +359,7 @@
         xorg.enable = false;
         wayland = {
           enable = true;
-          swaylockPam = true;
+          waylockPam = true;
         };
       };
       ssh = {
