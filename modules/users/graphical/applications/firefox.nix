@@ -67,18 +67,6 @@ in {
           };
         })
         (buildFirefoxXpiAddon {
-          pname = "pinboard-extension";
-          addonId = "pinboardff@pinboard.in";
-          version = "1.1.0";
-          url = "https://addons.mozilla.org/firefox/downloads/file/3722104/pinboard_extension-1.1.0-fx.xpi";
-          sha256 = "sha256-40bE1GJgoOn7HbO85XCzzfLeVWwuitXBXmWKTkrWGII=";
-
-          meta = with lib; {
-            description = "Quick pinboard adder";
-            platforms = pkgs.lib.platforms.all;
-          };
-        })
-        (buildFirefoxXpiAddon {
           pname = "kagi-firefox";
           addonId = "search@kagi.com";
           version = "0.2";
@@ -93,6 +81,20 @@ in {
             platforms = platforms.all;
           };
         })
+        (buildFirefoxXpiAddon {
+          pname = "languagetool-firefox";
+          version = "5.8.10";
+          addonId = "languagetool-webextension@languagetool.org";
+          url = "https://addons.mozilla.org/firefox/downloads/file/4026397/languagetool-5.8.10.xpi";
+          sha256 = "sha256-3OPw5oVD5kqX9mnxVOm5pEWSKNiqJVx8whh/bEuremE=";
+
+          meta = with lib; {
+            description = ''
+              Check your texts for spelling and grammar problems everywhere on the web
+            '';
+            platforms = platforms.all;
+          };
+        })
 
         # Rycee NUR: https://nur.nix-community.org/repos/rycee/
         user-agent-string-switcher
@@ -104,6 +106,10 @@ in {
         multi-account-containers
         clearurls
         cookie-autodelete
+        firefox-translations
+
+        # Netflix
+        netflix-1080p
 
         # Youtube
         sponsorblock
@@ -123,12 +129,19 @@ in {
               "${activityStream}.section.highlights.includePocket" = false;
               "${activityStream}.showSearch" = false;
               "${activityStream}.showSponsoredTopSites" = false;
-              "${activityStream}.showSponsorsed" = false;
+              "${activityStream}.showSponsored" = false;
             };
 
             searchBar = {
               "browser.urlbar.suggest.quicksuggest.sponsored" = false;
               "browser.urlbar.suggest.quicksuggest.nonsponsored" = false;
+              "browser.newtabpage.activity-stream.improvesearch.topSiteSearchShorcuts" = false;
+              "browser.urlbar.showSearchSuggestionsFirst" = false;
+            };
+
+            extensions = {
+              "extensions.update.autoUpdateDefault" = false;
+              "extensions.update.enabled" = false;
             };
 
             telemetry = {
@@ -145,6 +158,11 @@ in {
               "toolkit.telemetry.firstShutdownPing.enabled" = false;
               "datareporting.healthreport.uploadEnabled" = false;
               "datareporting.policy.dataSubmissionEnabled" = false;
+              "security.protectionspopup.recordEventTelemetry" = false;
+              "security.identitypopup.recordEventTelemetry" = false;
+              "security.certerrors.recordEventTelemetry" = false;
+              "security.app_menu.recordEventTelemetry" = false;
+              "toolkit.telemetry.pioneer-new-studies-available" = false;
               "app.shield.optoutstudies.enable" = false;
             };
 
@@ -156,8 +174,8 @@ in {
             };
 
             https = {
-              "dom.security.https_only_mode" = true;
-              "dom.security.https_only_mode_ever_enabled" = true;
+              "dom.security.https_only_mode" = false;
+              "dom.security.https_only_mode_ever_enabled" = false;
             };
 
             graphics = {
@@ -166,7 +184,7 @@ in {
               "media.navigator.mediadataencoder_vpx_enabled" = true;
             };
 
-            general_settings = {
+            generalSettings = {
               "widget.use-xdg-desktop-portal.file-picker" = 2;
               "widget.use-xdg-desktop-portal.mime-handler" = 2;
               "browser.aboutConfig.showWarning" = false;
@@ -177,6 +195,12 @@ in {
               "extensions.htmlaboutaddons.recommendations.enabled" = false;
               "extensions.pocket.enabled" = false;
               "browser.fullscreen.autohide" = false;
+              "browser.contentblocking.category" = "standard";
+            };
+
+            toolbars = {
+              "browser.download.autohideButton" = false;
+              "browser.toolbars.bookmarks.visibility" = "newtab";
             };
 
             passwords = {
@@ -184,13 +208,23 @@ in {
               "signon.autofillForms" = false;
               "signon.generation.enabled" = false;
               "signon.management.page.breach-alerts.enabled" = false;
+              "extensions.formautofill.addresses.enabled" = false;
+              "extensions.formautofill.creditCards.enabled" = false;
             };
 
             downloads = {
               "browser.download.useDownloadDir" = false;
             };
           in
-            general_settings // https // newTab // searchBar // domPrivacy // telemetry // graphics // downloads;
+            generalSettings
+            // https
+            // newTab
+            // searchBar
+            // domPrivacy
+            // telemetry
+            // graphics
+            // downloads
+            // toolbars;
         };
       };
     };

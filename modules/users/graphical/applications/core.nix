@@ -51,6 +51,9 @@ in {
       pavucontrol
       pasystray
 
+      # music
+      cider
+
       # kdeconnect
     ];
 
