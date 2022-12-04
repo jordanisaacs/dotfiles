@@ -112,19 +112,28 @@ in {
         unzip
 
         # Benchmarking
-        hyperfine
+        hyperfine # benchmark multiple runs of commands
 
         # Hardware
-        inxi
-        usbutils
+        inxi # system information tool
+        usbutils # tools for usb
 
         # Kernel
         systeroid
         strace
 
         # Network
+        gping # ping with graph
+        iftop # bandwith usage on interface
+        tcpdump # packet analyzer
+        nmap # scan remote ports/networks
+        hping # tcp/ip packet assembler & analyzer
+        traceroute # track route taken by packets
+        ipcalc # ip network calculator
+
+        # DNS
         dnsutils
-        gping
+        dnstop
 
         # secrets
         rage
