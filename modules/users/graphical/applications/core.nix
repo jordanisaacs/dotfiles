@@ -19,7 +19,7 @@ in {
     home.packages = with pkgs; [
       jdpkgs.dolphin # fixes dbus/firefox
       okular
-      wdisplays
+      xorg.xinput
 
       thunderbird
       # jdpkgs.rstudioWrapper

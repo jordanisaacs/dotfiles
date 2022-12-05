@@ -238,6 +238,7 @@ in {
         bemenu
         wl-clipboard
         wlr-randr
+        wdisplays
         libappindicator-gtk3
         mako
       ];
@@ -352,7 +353,12 @@ in {
       };
     })
     (mkIf (cfg.statusbar.enable) {
-      programs.waybar = {
+      programs.waybar = let
+        name =
+          if systemCfg.framework.enable
+          then "eDP-1"
+          else "DP-1";
+      in {
         enable = true;
         package = cfg.statusbar.pkg;
         settings = [
@@ -362,7 +368,7 @@ in {
             modules-left = ["custom/dwl"];
             modules-center = ["clock"];
             modules-right = ["cpu" "memory" "temperature" "battery" "backlight" "pulseaudio" "network" "tray"];
-            output = ["DP-1"];
+            output = [name];
 
             gtk-layer-shell = true;
             modules = {
@@ -434,8 +440,9 @@ in {
               tray = {
                 spacing = 10;
               };
-              "custom/dwl" = {
-                exec = "${dwlTags}/bin/dwl-waybar 'DP-1'";
+              "custom/dwl" = let
+              in {
+                exec = "${dwlTags}/bin/dwl-waybar '${name}'";
                 format = "{}";
                 return-type = "json";
               };

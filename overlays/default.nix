@@ -21,7 +21,7 @@ in {
     nur.overlay
     neovim-flake.overlays.default
     nixpkgs-wayland.overlays.default
-    dwl-flake.overlay."${system}"
+    dwl-flake.overlays.default
     scripts.overlay
 
     (final: prev: {

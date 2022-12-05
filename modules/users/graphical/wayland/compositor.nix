@@ -8,18 +8,23 @@ with lib; let
   cfg = config.jd.graphical.wayland;
   systemCfg = config.machineData.systemConfig;
   dwlJD = pkgs.dwlBuilder {
-    config.cmds = {
-      term = ["${pkgs.foot}/bin/foot"];
-      menu = [
-        "${pkgs.j4-dmenu-desktop}/bin/j4-dmenu-desktop"
-        "--dmenu='${bemenuCmd}'"
-        "--term='${pkgs.foot}/bin/foot'"
-        "--no-generic"
-      ];
-      quit = ["${wayExit}"];
-      audioup = ["${pkgs.scripts.soundTools}/bin/stools" "vol" "up" "5"];
-      audiodown = ["${pkgs.scripts.soundTools}/bin/stools" "vol" "down" "5"];
-      audiomut = ["${pkgs.scripts.soundTools}/bin/stools" "vol" "toggle"];
+    config = {
+      input = {
+        natscroll = systemCfg.laptop.enable;
+      };
+      cmds = {
+        term = ["${pkgs.foot}/bin/foot"];
+        menu = [
+          "${pkgs.j4-dmenu-desktop}/bin/j4-dmenu-desktop"
+          "--dmenu='${bemenuCmd}'"
+          "--term='${pkgs.foot}/bin/foot'"
+          "--no-generic"
+        ];
+        quit = ["${wayExit}"];
+        audioup = ["${pkgs.scripts.soundTools}/bin/stools" "vol" "up" "5"];
+        audiodown = ["${pkgs.scripts.soundTools}/bin/stools" "vol" "down" "5"];
+        audiomut = ["${pkgs.scripts.soundTools}/bin/stools" "vol" "toggle"];
+      };
     };
   };
 
