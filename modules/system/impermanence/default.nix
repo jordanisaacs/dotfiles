@@ -54,7 +54,13 @@ in {
             directories = [config.services.postgresql.dataDir];
           })
           (mkIf (config.mailserver.enable) {
-            directories = [config.mailserver.mailDirectory];
+            directories = [
+              config.mailserver.mailDirectory
+              config.mailserver.indexDir
+              config.mailserver.dkimKeyDirectory
+              config.mailserver.sieveDirectory
+              "/var/lib/acme"
+            ];
           })
           (mkIf (config.jd.taskserver.enable) {
             directories = [config.jd.taskserver.dataDir];
