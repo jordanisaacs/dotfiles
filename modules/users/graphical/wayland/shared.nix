@@ -7,6 +7,138 @@
 with lib; let
   cfg = config.jd.graphical.wayland;
   systemCfg = config.machineData.systemConfig;
+
+  dwlTags = pkgs.writeShellApplication {
+    name = "dwl-waybar";
+    runtimeInputs = with pkgs; [gnugrep inotify-tools coreutils gnused gawk];
+    text = ''
+      set -e
+      echo '{"text": "| 1!| 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 |"}'
+      fname="/tmp/dwltags";
+
+      monitor="''${1}"
+
+      while true
+      do
+          while [ ! -f $fname ]
+          do
+              inotifywait -qqe create "$(dirname $fname)"
+          done;
+
+          inotifywait -qqe modify $fname
+
+
+          output="$(grep  "''${monitor}" "''${fname}" | tail -n6)"
+          title="$(echo   "''${output}" | grep '^[[:graph:]]* title'  | cut -d ' ' -f 3-  | sed s/\"//g)" # Replace quotes - prevent waybar crash
+          layout="$(echo  "''${output}" | grep '^[[:graph:]]* layout' | cut -d ' ' -f 3- )"
+
+          # Get the tag bit mask as a decimal
+          activetags="$(echo "''${output}"   | grep '^[[:graph:]]* tags' | awk '{print $3}')"
+          selectedtags="$(echo "''${output}" | grep '^[[:graph:]]* tags' | awk '{print $4}')"
+          urgenttags="$(echo "''${output}"   | grep '^[[:graph:]]* tags' | awk '{print $6}')"
+
+          n=""
+          for i in {0..8};
+          do
+              mask=$((1<<i))
+              if (( "$selectedtags" & mask))
+              then
+                n="''${n}|*$((i+1))"
+              else
+                if (( "$activetags" & mask ));
+                then
+                    n="''${n}|+$((i+1))"
+                else
+                    n="''${n}| $((i+1))"
+                fi
+              fi
+              if (( "$urgenttags" & mask ));
+              then
+                  n="$n!"
+              else
+                  n="$n "
+              fi
+          done
+          printf -- '{"text": "%s| %s %s"}\n' "$n" "$layout" "$title"
+      done
+    '';
+  };
+
+  mkBar = name: {
+    modules-left = [
+      "custom/dwl_tag_${name}#0"
+      "custom/dwl_tag_${name}#1"
+      "custom/dwl_tag_${name}#2"
+      "custom/dwl_tag_${name}#3"
+      "custom/dwl_tag_${name}#4"
+      "custom/dwl_tag_${name}#5"
+      "custom/dwl_tag_${name}#6"
+      "custom/dwl_tag_${name}#7"
+      "custom/dwl_tag_${name}#8"
+      "custom/dwl_layout_${name}"
+      "custom/dwl_title_${name}"
+      "clock"
+    ];
+    output = name;
+    modules = {
+      "custom/dwl_tag_${name}#0" = {
+        "exec" = "${dwlTags} '${name}' 0";
+        "format" = "{}";
+        "return-type" = "json";
+      };
+      "custom/dwl_tag_${name}#1" = {
+        "exec" = "${dwlTags} '${name}' 1";
+        "format" = "{}";
+        "return-type" = "json";
+      };
+      "custom/dwl_tag_${name}#2" = {
+        "exec" = "${dwlTags} '${name}' 2";
+        "format" = "{}";
+        "return-type" = "json";
+      };
+      "custom/dwl_tag_${name}#3" = {
+        "exec" = "${dwlTags} '${name}' 3";
+        "format" = "{}";
+        "return-type" = "json";
+      };
+      "custom/dwl_tag_${name}#4" = {
+        "exec" = "${dwlTags} '${name}' 4";
+        "format" = "{}";
+        "return-type" = "json";
+      };
+      "custom/dwl_tag_${name}#5" = {
+        "exec" = "${dwlTags} '${name}' 5";
+        "format" = "{}";
+        "return-type" = "json";
+      };
+      "custom/dwl_tag_${name}#6" = {
+        "exec" = "${dwlTags} '${name}' 6";
+        "format" = "{}";
+        "return-type" = "json";
+      };
+      "custom/dwl_tag_${name}#7" = {
+        "exec" = "${dwlTags} '${name}' 7";
+        "format" = "{}";
+        "return-type" = "json";
+      };
+      "custom/dwl_tag_${name}#8" = {
+        "exec" = "${dwlTags} '${name}' 8";
+        "format" = "{}";
+        "return-type" = "json";
+      };
+      "custom/dwl_layout_${name}" = {
+        "exec" = "${dwlTags} '${name}' layout";
+        "format" = "{}";
+        "return-type" = "json";
+      };
+      "custom/dwl_title_${name}" = {
+        "exec" = "${dwlTags} '${name}' title";
+        "format" = "{}";
+        "escape" = true;
+        "return-type" = "json";
+      };
+    };
+  };
 in {
   options.jd.graphical.wayland = {
     enable = mkOption {
@@ -227,9 +359,10 @@ in {
           {
             layer = "bottom";
 
-            modules-left = [];
+            modules-left = ["custom/dwl"];
             modules-center = ["clock"];
             modules-right = ["cpu" "memory" "temperature" "battery" "backlight" "pulseaudio" "network" "tray"];
+            output = ["DP-1"];
 
             gtk-layer-shell = true;
             modules = {
@@ -301,8 +434,15 @@ in {
               tray = {
                 spacing = 10;
               };
+              "custom/dwl" = {
+                exec = "${dwlTags}/bin/dwl-waybar 'DP-1'";
+                format = "{}";
+                return-type = "json";
+              };
             };
           }
+          # (mkIf (cfg.type == "dwl") (mkBar "DP-1"))
+          # (mkIf (cfg.type == "dwl") (mkBar "HDMI-A-1"))
         ];
         style = ''
           * {

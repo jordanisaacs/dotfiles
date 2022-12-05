@@ -72,7 +72,7 @@
 
     dwm-flake.url = "github:jordanisaacs/dwm-flake";
 
-    dwl-flake.url = "github:jordanisaacs/dwl-flake/updates";
+    dwl-flake.url = "github:jordanisaacs/dwl-flake";
   };
 
   outputs = {
@@ -453,7 +453,7 @@
             };
             wayland = {
               enable = true;
-              type = "sway";
+              type = "dwl";
               background.enable = true;
               statusbar.enable = true;
               screenlock.enable = true;

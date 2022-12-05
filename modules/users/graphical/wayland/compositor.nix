@@ -10,14 +10,20 @@ with lib; let
   dwlJD = pkgs.dwlBuilder {
     config.cmds = {
       term = ["${pkgs.foot}/bin/foot"];
-      menu = ["${pkgs.bemenu}/bin/bemenu-run"];
+      menu = [
+        "${pkgs.j4-dmenu-desktop}/bin/j4-dmenu-desktop"
+        "--dmenu='${bemenuCmd}'"
+        "--term='${pkgs.foot}/bin/foot'"
+        "--no-generic"
+      ];
+      quit = ["${wayExit}"];
       audioup = ["${pkgs.scripts.soundTools}/bin/stools" "vol" "up" "5"];
       audiodown = ["${pkgs.scripts.soundTools}/bin/stools" "vol" "down" "5"];
       audiomut = ["${pkgs.scripts.soundTools}/bin/stools" "vol" "toggle"];
     };
   };
 
-  swayExit = pkgs.writeScript "swayexit" ''
+  wayExit = pkgs.writeScript "wayexit" ''
     systemctl --user stop graphical-session.target
     systemctl --user stop graphical-session-pre.target
 
@@ -27,7 +33,11 @@ with lib; let
       sleep 0.5
     done
 
-    swaymsg exit
+    ${optionalString (isSway || isSwayDbg) "swaymsg exit"}
+  '';
+
+  bemenuCmd = pkgs.writeShellScript "bemenu-wrapper" ''
+    BEMENU_SCALE=2 ${pkgs.bemenu}/bin/bemenu -i -l 8 --scrollbar autohide
   '';
 
   swayConfig = ''
@@ -47,7 +57,7 @@ with lib; let
     bindsym $mod+Shift+Return exec $term
     bindsym $mod+Shift+c kill
     bindsym $mod+p exec '$menu'
-    bindsym $mod+Shift+q exec swaynag -t warning -m 'Do you really want to exit?' -B 'Yes' ${swayExit}
+    bindsym $mod+Shift+q exec swaynag -t warning -m 'Do you really want to exit?' -B 'Yes' ${wayExit}
 
     bindsym $mod+g+$left focus left
     bindsym $mod+g+$down focus down
@@ -114,7 +124,12 @@ with lib; let
     # Need QT for syncthing tray
     # systemctl --user import-environment PATH XDG_RUNTIME_DIR WAYLAND_DISPLAY XDG_CURRENT_DESKTOP
     # systemctl --user restart xdg-desktop-portal.service
-    ${optionalString isDwl "systemctl --user start dwl-session.target"}
+    ${optionalString isDwl ''
+      wlr-randr --output "HDMI-A-1" --transform 90 --pos 0,0
+      wlr-randr --output "DP-1" --transform normal --pos 1440,400
+      systemctl --user start dwl-session.target
+      exec cp /dev/stdin /tmp/dwltags
+    ''}
     ${optionalString (isSway || isSwayDbg) "systemctl --user start sway-session.target"}
   '';
 
@@ -150,6 +165,7 @@ in {
             export MOZ_ENABLE_XINPUT2=1
             export XDG_CURRENT_DESKTOP=sway
             export TERMINAL=foot
+            export BEMENU_SCALE=2
 
             ${optionalString isDwl ''
               ${dwlJD}/bin/dwl -s "${compositorStartup}/bin/compositor-setup"
