@@ -36,6 +36,7 @@ in {
       # Messaging
       slack
       discord
+      element-desktop
 
       # Reading
       calibre
