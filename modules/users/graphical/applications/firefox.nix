@@ -188,8 +188,10 @@ in {
               "widget.use-xdg-desktop-portal.file-picker" = 2;
               "widget.use-xdg-desktop-portal.mime-handler" = 2;
               "browser.aboutConfig.showWarning" = false;
+              "browser.tabs.warnOnClose" = true;
+              "browser.tabs.warnOnCloseOtherTabs" = true;
+              "browser.warnOnQuit" = true;
               "browser.shell.checkDefaultBrowser" = false;
-              "browser.toolbars.bookmarks.visibility" = "newtab";
               "browser.urlbar.showSearchSuggestionsFirst" = false;
               "extensions.htmlaboutaddons.inline-options.enabled" = false;
               "extensions.htmlaboutaddons.recommendations.enabled" = false;
@@ -199,6 +201,7 @@ in {
             };
 
             toolbars = {
+              "browser.tabs.firefox-view" = false;
               "browser.download.autohideButton" = false;
               "browser.toolbars.bookmarks.visibility" = "newtab";
             };
@@ -208,8 +211,6 @@ in {
               "signon.autofillForms" = false;
               "signon.generation.enabled" = false;
               "signon.management.page.breach-alerts.enabled" = false;
-              "extensions.formautofill.addresses.enabled" = false;
-              "extensions.formautofill.creditCards.enabled" = false;
             };
 
             downloads = {
@@ -217,6 +218,8 @@ in {
             };
           in
             generalSettings
+            // passwords
+            // extensions
             // https
             // newTab
             // searchBar
