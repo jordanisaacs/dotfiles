@@ -355,7 +355,7 @@ in {
     (mkIf (cfg.statusbar.enable) {
       programs.waybar = let
         name =
-          if systemCfg.framework.enable
+          if (systemCfg ? framework && systemCfg.framework.enable)
           then "eDP-1"
           else "DP-1";
       in {
@@ -444,6 +444,7 @@ in {
               in {
                 exec = "${dwlTags}/bin/dwl-waybar '${name}'";
                 format = "{}";
+                escape = true;
                 return-type = "json";
               };
             };
