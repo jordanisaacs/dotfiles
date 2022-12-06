@@ -110,6 +110,7 @@ in {
         # Files
         exa
         unzip
+        lsof
 
         # Benchmarking
         hyperfine # benchmark multiple runs of commands
