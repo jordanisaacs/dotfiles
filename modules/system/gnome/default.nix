@@ -40,7 +40,7 @@ in {
         if cfg.keyring.enable
         then [
           libsecret
-          jdpkgs.lssecret
+          # jdpkgs.lssecret
         ]
         else []
       );

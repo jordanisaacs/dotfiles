@@ -31,12 +31,12 @@ in {
 
       # Password manager
       bitwarden
-      authy
+      jdpkgs.authy
 
       # Messaging
       slack
       discord
-      element-desktop
+      jdpkgs.element-desktop
 
       # Reading
       calibre
