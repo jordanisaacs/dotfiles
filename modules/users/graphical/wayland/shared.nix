@@ -64,6 +64,24 @@ with lib; let
       done
     '';
   };
+
+  screenNames =
+    if isLaptop
+    then ["eDP-1"]
+    else ["HDMI-A-1" "DP-1"];
+
+  # wlr-randr --on does not work for some reason on dwl. not using currently
+  poweroffScreen = pkgs.writeShellApplication {
+    name = "poweroff-screen";
+    runtimeInputs = with pkgs; [wlr-randr];
+    text = builtins.concatStringsSep "\n" (builtins.map screenNames (v: "wlr-randr --output ${v} --off"));
+  };
+
+  poweronScreen = pkgs.writeShellApplication {
+    name = "poweron-screen";
+    runtimeInputs = with pkgs; [wlr-randr];
+    text = builtins.concatStringsSep "\n" (builtins.map screenNames (v: "wlr-randr --output ${v} --on"));
+  };
 in {
   options.jd.graphical.wayland = {
     enable = mkOption {
@@ -106,33 +124,11 @@ in {
         description = "Which screen locking software to use";
       };
 
-      #timeout = {
-      #  script = mkOption {
-      #    description = "Script to run on timeout. Default null";
-      #    type = with types; nullOr package;
-      #    default = null;
-      #  };
-
-      #  time = mkOption {
-      #    description = "Time in seconds until run timeout script. Default 180.";
-      #    type = types.int;
-      #    default = 180;
-      #  };
-      #};
-
-      #lock = {
-      #  command = mkOption {
-      #    description = "Lock command. Default xsecurelock";
-      #    type = types.str;
-      #    default = "${pkgs.xsecurelock}/bin/xsecurelock";
-      #  };
-
-      #  time = mkOption {
-      #    description = "Time in seconds after timeout until lock. Default 180.";
-      #    type = types.int;
-      #    default = 180;
-      #  };
-      #};
+      timeout = mkOption {
+        type = types.int;
+        default = 180;
+        description = "Timeout for locking the screen";
+      };
     };
 
     statusbar = {
@@ -252,6 +248,29 @@ in {
         }
       ];
 
+      services.swayidle = let
+        lockCommand =
+          if cfg.screenlock.type == "waylock"
+          then "${pkgs.jdpkgs.waylock}/bin/waylock"
+          else "${pkgs.swaylock}/bin/swaylock -f";
+      in {
+        enable = true;
+        timeouts = [
+          {
+            timeout = cfg.screenlock.timeout;
+            command = lockCommand;
+          }
+        ];
+        events = [
+          {
+            event = "before-sleep";
+            command = lockCommand;
+          }
+        ];
+        systemdTarget = "wayland-session.target";
+        extraArgs = ["idlehint 300"];
+      };
+
       home.packages = with pkgs;
         (optional (cfg.screenlock.type == "waylock") jdpkgs.waylock)
         ++ (optional (cfg.screenlock.type == "swaylock") jdpkgs.swaylock);
@@ -301,7 +320,7 @@ in {
 
             modules-left = ["custom/dwl"];
             modules-center = ["clock"];
-            modules-right = ["cpu" "memory" "temperature" "battery" "backlight" "custom/media" "pulseaudio" "network" "tray"];
+            modules-right = ["cpu" "memory" "temperature" "battery" "backlight" "custom/media" "pulseaudio" "network" "idle_inhibitor" "tray"];
 
             gtk-layer-shell = true;
             modules = {
@@ -369,6 +388,13 @@ in {
                 format-disconnected = "Disconnected ⚠";
                 format-alt = "{ifname}: {ipaddr}/{cidr}";
                 tooltip = true;
+              };
+              idle_inhibitor = {
+                format = "{icon}";
+                format-icons = {
+                  activated = "";
+                  deactivated = "";
+                };
               };
               tray = {
                 spacing = 10;

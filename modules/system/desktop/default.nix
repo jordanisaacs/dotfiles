@@ -23,5 +23,20 @@ in {
     #   # TPM2TOOLS_TCTI and TPM2_PKCS11_TCTI env variables
     #   tctiEnvironment.enable = true;
     # };
+
+    systemd = {
+      sleep.extraConfig = ''
+        HibernateDelaySec=30min
+      '';
+    };
+
+    services = {
+      logind = {
+        extraConfig = ''
+          IdleAction=suspend-then-hibernate
+          IdleActionSec=1min
+        '';
+      };
+    };
   };
 }

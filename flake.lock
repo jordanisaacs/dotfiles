@@ -210,11 +210,11 @@
         "nixpkgs": "nixpkgs"
       },
       "locked": {
-        "lastModified": 1670205178,
-        "narHash": "sha256-LFdd1p7UGDzpc6Qh86kAvRSwbUxBMHg1pDHjkTKTv2I=",
+        "lastModified": 1670393854,
+        "narHash": "sha256-l1j9s3CuZoBOF7aNsidmPUsIdW7OiAeUas88pW8X3mI=",
         "owner": "jordanisaacs",
         "repo": "dwl-flake",
-        "rev": "7eff0c3ade22fc8c5154fdce26a15be42dfc2683",
+        "rev": "c78240352488164401680af721b0f25829ef5704",
         "type": "github"
       },
       "original": {
