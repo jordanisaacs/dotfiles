@@ -10,7 +10,7 @@ with lib; let
   dwlJD = pkgs.dwlBuilder {
     config = {
       input = {
-        natscroll = (systemCfg ? laptop && systemCfg.laptop.enable);
+        natscroll = systemCfg ? laptop && systemCfg.laptop.enable;
       };
       cmds = {
         term = ["${pkgs.foot}/bin/foot"];
