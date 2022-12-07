@@ -79,6 +79,21 @@ in {
         ];
       };
 
+      systemd.user.services = {
+        plasma-dolphin = {
+          Unit = {
+            Description = "Dolphin file manager";
+            PartOf = "graphical-session.target";
+          };
+
+          Service = {
+            ExecStart = "${pkgs.dolphin}/bin/dolphin --daemon";
+            BusName = "org.freedesktop.FileManager1";
+            Slice = "background.slice";
+          };
+        };
+      };
+
       xdg = {
         systemDirs.data = [
           "${pkgs.gtk3}/share/gsettings-schemas/${pkgs.gtk3.name}"

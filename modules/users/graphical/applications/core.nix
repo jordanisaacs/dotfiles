@@ -17,7 +17,7 @@ in {
 
   config = mkIf (cfg.applications.enable) {
     home.packages = with pkgs; [
-      jdpkgs.dolphin # fixes dbus/firefox
+      dolphin # fixes dbus/firefox
       okular
       xorg.xinput
 
