@@ -14,9 +14,7 @@
   impermanence,
   nixpkgs-wayland,
   agenix,
-}: let
-  dwl-config = builtins.readFile ./dwl-config.c;
-in {
+}: {
   overlays = [
     nur.overlay
     neovim-flake.overlays.default
