@@ -7,6 +7,7 @@
 with lib; let
   cfg = config.jd.graphical.wayland;
   systemCfg = config.machineData.systemConfig;
+  isLaptop = systemCfg ? framework && systemCfg.framework.enable;
 
   dwlTags = pkgs.writeShellApplication {
     name = "dwl-waybar";
@@ -62,82 +63,6 @@ with lib; let
           printf -- '{"text": "%s| %s %s"}\n' "$n" "$layout" "$title"
       done
     '';
-  };
-
-  mkBar = name: {
-    modules-left = [
-      "custom/dwl_tag_${name}#0"
-      "custom/dwl_tag_${name}#1"
-      "custom/dwl_tag_${name}#2"
-      "custom/dwl_tag_${name}#3"
-      "custom/dwl_tag_${name}#4"
-      "custom/dwl_tag_${name}#5"
-      "custom/dwl_tag_${name}#6"
-      "custom/dwl_tag_${name}#7"
-      "custom/dwl_tag_${name}#8"
-      "custom/dwl_layout_${name}"
-      "custom/dwl_title_${name}"
-      "clock"
-    ];
-    output = name;
-    modules = {
-      "custom/dwl_tag_${name}#0" = {
-        "exec" = "${dwlTags} '${name}' 0";
-        "format" = "{}";
-        "return-type" = "json";
-      };
-      "custom/dwl_tag_${name}#1" = {
-        "exec" = "${dwlTags} '${name}' 1";
-        "format" = "{}";
-        "return-type" = "json";
-      };
-      "custom/dwl_tag_${name}#2" = {
-        "exec" = "${dwlTags} '${name}' 2";
-        "format" = "{}";
-        "return-type" = "json";
-      };
-      "custom/dwl_tag_${name}#3" = {
-        "exec" = "${dwlTags} '${name}' 3";
-        "format" = "{}";
-        "return-type" = "json";
-      };
-      "custom/dwl_tag_${name}#4" = {
-        "exec" = "${dwlTags} '${name}' 4";
-        "format" = "{}";
-        "return-type" = "json";
-      };
-      "custom/dwl_tag_${name}#5" = {
-        "exec" = "${dwlTags} '${name}' 5";
-        "format" = "{}";
-        "return-type" = "json";
-      };
-      "custom/dwl_tag_${name}#6" = {
-        "exec" = "${dwlTags} '${name}' 6";
-        "format" = "{}";
-        "return-type" = "json";
-      };
-      "custom/dwl_tag_${name}#7" = {
-        "exec" = "${dwlTags} '${name}' 7";
-        "format" = "{}";
-        "return-type" = "json";
-      };
-      "custom/dwl_tag_${name}#8" = {
-        "exec" = "${dwlTags} '${name}' 8";
-        "format" = "{}";
-        "return-type" = "json";
-      };
-      "custom/dwl_layout_${name}" = {
-        "exec" = "${dwlTags} '${name}' layout";
-        "format" = "{}";
-        "return-type" = "json";
-      };
-      "custom/dwl_title_${name}" = {
-        "exec" = "${dwlTags} '${name}' title";
-        "format" = "{}";
-        "escape" = true;
-        "return-type" = "json";
-      };
-    };
   };
 in {
   options.jd.graphical.wayland = {
@@ -354,21 +279,29 @@ in {
     })
     (mkIf (cfg.statusbar.enable) {
       programs.waybar = let
-        name =
-          if (systemCfg ? framework && systemCfg.framework.enable)
+        primaryDisplay =
+          if isLaptop
           then "eDP-1"
           else "DP-1";
+
+        dwlModule = dispName: {
+          exec = "${dwlTags}/bin/dwl-waybar '${dispName}'";
+          format = "{}";
+          escape = true;
+          max-length = 70;
+          return-type = "json";
+        };
       in {
         enable = true;
         package = cfg.statusbar.pkg;
         settings = [
           {
             layer = "bottom";
+            output = [primaryDisplay];
 
             modules-left = ["custom/dwl"];
             modules-center = ["clock"];
-            modules-right = ["cpu" "memory" "temperature" "battery" "backlight" "pulseaudio" "network" "tray"];
-            output = [name];
+            modules-right = ["cpu" "memory" "temperature" "battery" "backlight" "custom/media" "pulseaudio" "network" "tray"];
 
             gtk-layer-shell = true;
             modules = {
@@ -440,17 +373,33 @@ in {
               tray = {
                 spacing = 10;
               };
-              "custom/dwl" = let
-              in {
-                exec = "${dwlTags}/bin/dwl-waybar '${name}'";
-                format = "{}";
-                escape = true;
+              "custom/dwl" = dwlModule primaryDisplay;
+              "custom/media" = {
+                format = "{icon}{}";
                 return-type = "json";
+                format-icons = {
+                  Playing = " ";
+                  Paused = " ";
+                };
+                max-length = 30;
+                exec = "${pkgs.playerctl}/bin/playerctl -a metadata --format '{\"text\": \"{{playerName}}: {{artist}} - {{markup_escape(title)}}\", \"tooltip\": \"{{playerName}} : {{markup_escape(title)}}\", \"alt\": \"{{status}}\", \"class\": \"{{status}}\"}' -F";
+                on-click = "${pkgs.playerctl}/bin/playerctl play-pause";
+                smooth-scrolling-threshold =
+                  if isLaptop
+                  then 10
+                  else 5;
+                on-scroll-up = "${pkgs.playerctl}/bin/playerctl next";
+                on-scroll-down = "${pkgs.playerctl}/bin/playerctl previous";
               };
             };
           }
-          # (mkIf (cfg.type == "dwl") (mkBar "DP-1"))
-          # (mkIf (cfg.type == "dwl") (mkBar "HDMI-A-1"))
+          (mkIf (cfg.type == "dwl" && !isLaptop) {
+            modules-left = ["custom/dwl"];
+            output = "HDMI-A-1";
+            modules = {
+              "custom/dwl" = dwlModule "HDMI-A-1";
+            };
+          })
         ];
         style = ''
           * {

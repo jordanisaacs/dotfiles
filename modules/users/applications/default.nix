@@ -63,6 +63,9 @@ in {
 
       # Themes
       theme-sh
+
+      # music
+      playerctl
     ];
 
     fonts.fontconfig.enable = true;
@@ -76,5 +79,7 @@ in {
         ytdl-format = "ytdl-format=bestvideo[height<=?1920][fps<=?30][vcodec!=?vp9]+bestaudio/best";
       };
     };
+
+    services.playerctld.enable = true;
   };
 }
