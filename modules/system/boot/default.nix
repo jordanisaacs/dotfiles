@@ -30,6 +30,7 @@ in {
   config = let
     bootConfig = mkMerge [
       (mkIf (cfg.type == "encrypted-efi") {
+        environment.systemPackages = with pkgs; [e2fsprogs];
         fileSystems."/" = {
           device = "/dev/disk/by-label/DECRYPTNIXROOT";
           fsType = "ext4";

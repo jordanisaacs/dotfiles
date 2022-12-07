@@ -33,6 +33,8 @@ in {
           interval = "weekly";
         };
 
+        fwupd. extraRemotes = ["lvfs-testing"];
+
         # https://community.frame.work/t/headphone-jack-intermittent-noise/5246/90
         acpid = {
           enable = true;

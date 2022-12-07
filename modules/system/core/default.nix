@@ -190,7 +190,9 @@ in {
 
     security.sudo.extraConfig = "Defaults env_reset,timestamp_timeout=5";
     security.sudo.execWheelOnly = true;
+
     services.udisks2.enable = true;
+    services.fwupd.enable = true;
 
     documentation = {
       enable = true;
