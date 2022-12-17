@@ -251,7 +251,7 @@ in {
       services.swayidle = let
         lockCommand =
           if cfg.screenlock.type == "waylock"
-          then "${pkgs.jdpkgs.waylock}/bin/waylock"
+          then "${pkgs.waylock}/bin/waylock -fork-on-lock"
           else "${pkgs.swaylock}/bin/swaylock -f";
       in {
         enable = true;
@@ -272,8 +272,8 @@ in {
       };
 
       home.packages = with pkgs;
-        (optional (cfg.screenlock.type == "waylock") jdpkgs.waylock)
-        ++ (optional (cfg.screenlock.type == "swaylock") jdpkgs.swaylock);
+        (optional (cfg.screenlock.type == "waylock") waylock)
+        ++ (optional (cfg.screenlock.type == "swaylock") swaylock);
     }))
     (mkIf cfg.background.enable {
       home.packages = [pkgs.swaybg];

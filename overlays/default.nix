@@ -18,11 +18,11 @@
   overlays = [
     nur.overlay
     neovim-flake.overlays.default
-    nixpkgs-wayland.overlays.default
     dwl-flake.overlays.default
     scripts.overlay
 
     (final: prev: {
+      waybar = nixpkgs-wayland.packages.${prev.system}.waybar;
       neovimWork = prev.neovimBuilder {
         config = {
           vim.lsp = {
@@ -96,6 +96,15 @@
           repo = "xss-lock";
           rev = "7b0b4dc83ff3716fd3051e6abf9709ddc434e985";
           sha256 = "TG/H2dGncXfdTDZkAY0XAbZ80R1wOgufeOmVL9yJpSk=";
+        };
+      });
+      waylock = prev.waylock.overrideAttrs (_: {
+        src = prev.fetchFromGitHub {
+          owner = "ifreund";
+          repo = "waylock";
+          rev = "d5b1692d9715df6499c6ce61bb01e8dd92750142";
+          sha256 = "sha256-+8moTO8gKc+RhJo8MNkUbtnuc+KzBxOllrvk0C89Kf4=";
+          fetchSubmodules = true;
         };
       });
       # Commented out because need to update the patch
