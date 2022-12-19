@@ -18,11 +18,11 @@
   overlays = [
     nur.overlay
     neovim-flake.overlays.default
-    nixpkgs-wayland.overlays.default
     dwl-flake.overlays.default
     scripts.overlay
 
     (final: prev: {
+      waybar = nixpkgs-wayland.packages.${prev.system}.waybar;
       neovimWork = prev.neovimBuilder {
         config = {
           vim.lsp = {
