@@ -8,6 +8,7 @@ with lib; let
   cfg = config.jd.graphical.wayland;
   systemCfg = config.machineData.systemConfig;
   isLaptop = systemCfg ? framework && systemCfg.framework.enable;
+  isDwl = config.jd.graphical.wayland.type == "dwl";
 
   dwlTags = pkgs.writeShellApplication {
     name = "dwl-waybar";
@@ -134,11 +135,16 @@ in {
     statusbar = {
       enable = mkOption {
         type = types.bool;
+        default = false;
         description = "Enable status bar [waybar]";
       };
 
       pkg = mkOption {
         type = types.package;
+        default =
+          if isDwl
+          then builtins.trace "override waybar" pkgs.waybar.override {swaySupport = false;}
+          else builtins.trace "standard waybar" pkgs.waybar;
         description = "Waybar package";
       };
     };
@@ -251,16 +257,23 @@ in {
       services.swayidle = let
         lockCommand =
           if cfg.screenlock.type == "waylock"
-          then "${pkgs.jdpkgs.waylock}/bin/waylock"
+          then "${pkgs.waylock}/bin/waylock -fork-on-lock"
           else "${pkgs.swaylock}/bin/swaylock -f";
       in {
         enable = true;
-        timeouts = [
-          {
-            timeout = cfg.screenlock.timeout;
-            command = lockCommand;
-          }
-        ];
+        timeouts =
+          [
+            {
+              timeout = cfg.screenlock.timeout;
+              command = lockCommand;
+            }
+          ]
+          ++ optional isLaptop {
+            timeout = 60;
+            command = "${pkgs.wlr-randr}/bin/wlr-randr --output eDP-1 --off";
+            resumeCommand = "${pkgs.wlr-randr}/bin/wlr-randr --output eDP-1 --on";
+          };
+
         events = [
           {
             event = "before-sleep";
@@ -268,12 +281,12 @@ in {
           }
         ];
         systemdTarget = "wayland-session.target";
-        extraArgs = ["idlehint 300"];
+        extraArgs = ["idlehint 600"];
       };
 
       home.packages = with pkgs;
-        (optional (cfg.screenlock.type == "waylock") jdpkgs.waylock)
-        ++ (optional (cfg.screenlock.type == "swaylock") jdpkgs.swaylock);
+        (optional (cfg.screenlock.type == "waylock") waylock)
+        ++ (optional (cfg.screenlock.type == "swaylock") swaylock);
     }))
     (mkIf cfg.background.enable {
       home.packages = [pkgs.swaybg];

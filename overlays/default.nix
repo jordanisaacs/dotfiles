@@ -98,6 +98,16 @@
           sha256 = "TG/H2dGncXfdTDZkAY0XAbZ80R1wOgufeOmVL9yJpSk=";
         };
       });
+      # For -fork-on-lock
+      waylock = prev.waylock.overrideAttrs (old: {
+        src = prev.fetchFromGitHub {
+          owner = "ifreund";
+          repo = "waylock";
+          rev = "814d8bb62e415e7e9eaeaf70a8a434a364858a9d";
+          sha256 = "sha256-rfVaoYcPPvofBrB5U+VikCKVW9aClckdlUAGV0qTOkw=";
+          fetchSubmodules = true;
+        };
+      });
       # Commented out because need to update the patch
       # xorg = prev.xorg // {
       #   # Override xorgserver with patch to set x11 type
