@@ -19,8 +19,14 @@ in {
 
     time = mkOption {
       description = "Time zone";
-      type = types.enum ["west" "east"];
+      type = types.enum ["west" "east" "asia"];
       default = "east";
+    };
+
+    ccache = mkOption {
+      description = "Enable ccache";
+      type = types.bool;
+      default = false;
     };
   };
 
@@ -29,7 +35,12 @@ in {
     time.timeZone =
       if (cfg.time == "east")
       then "US/Eastern"
-      else "US/Pacific";
+      else
+        (
+          if cfg.time == "west"
+          then "US/Pacific"
+          else "Asia/Bangkok"
+        );
 
     hardware.enableRedistributableFirmware = lib.mkDefault true;
 
@@ -193,6 +204,11 @@ in {
 
     services.udisks2.enable = true;
     services.fwupd.enable = true;
+
+    # TODO: Remove when systemd is updated to 253. Fixes suspend regressions
+    systemd.package = pkgs.systemd_251;
+
+    programs.ccache.enable = cfg.ccache;
 
     documentation = {
       enable = true;
