@@ -52,8 +52,6 @@ in {
         extraConfig = ''
           HandleLidSwitch=suspend-then-hibernate
           HandlePowerKey=suspend-then-hibernate
-          HandleSuspendKey=ignore
-          HandleHibernateKey=ignore
           HandleLidSwitchDocked=ignore
           IdleAction=suspend-then-hibernate
           IdleActionSec=5min
@@ -135,14 +133,14 @@ in {
             then {
               "CPU_ENERGY_PERF_POLICY_ON_AC" = "performance";
               "CPU_ENERGY_PERF_POLICY_ON_BAT" = "power";
-              "PLATFORM_PROFILE_ON_AC" = "power";
-              "PLATFORM_PROFILE_ON_BAT" = "performance";
+              "PLATFORM_PROFILE_ON_AC" = "performance";
+              "PLATFORM_PROFILE_ON_BAT" = "power";
               "CPU_HWP_DYN_BOOST_ON_AC" = 1;
               "CPU_HWP_DYN_BOOST_ON_BAT" = 0;
-              "INTEL_GPU_MIN_FREQ_ON_AC" = 0;
-              "INTEL_GPU_MAX_FREQ_ON_AC" = 0;
-              "INTEL_GPU_BOOST_FREQ_ON_AC" = 0;
-              "INTEL_GPU_MIN_FREQ_ON_BAT" = 0;
+              "INTEL_GPU_MIN_FREQ_ON_AC" = 100;
+              "INTEL_GPU_MAX_FREQ_ON_AC" = 1300;
+              "INTEL_GPU_BOOST_FREQ_ON_AC" = 1300;
+              "INTEL_GPU_MIN_FREQ_ON_BAT" = 100;
               "INTEL_GPU_MAX_FREQ_ON_BAT" = 800;
               "INTEL_GPU_BOOST_FREQ_ON_BAT" = 1000;
             }
