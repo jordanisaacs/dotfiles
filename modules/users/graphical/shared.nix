@@ -6,7 +6,6 @@
 }:
 with lib; let
   cfg = config.jd.graphical;
-  systemCfg = config.machineData.systemConfig;
 in {
   options.jd.graphical.theme = mkOption {
     type = with types; enum ["arc-dark" "materia-dark"];
@@ -14,8 +13,7 @@ in {
     default = "arc-dark";
   };
 
-  config = let
-  in
+  config =
     mkIf (cfg.xorg.enable == true || cfg.wayland.enable == true)
     {
       home = {
@@ -23,17 +21,22 @@ in {
           QT_QPA_PLATFORMTHEME = "qt5ct";
         };
 
-        packages = with pkgs;
-          mkIf (systemCfg.connectivity.sound.enable) [
-            # Cursor
-            jdpkgs.volantes-cursors
+        packages = with pkgs; [
+          # qt
+          libsForQt5.qtstyleplugin-kvantum
+          qt5ct
 
-            # qt
-            libsForQt5.qtstyleplugin-kvantum
-            qt5ct
+          xdg-utils
+        ];
+      };
 
-            xdg-utils
-          ];
+      home.pointerCursor = {
+        # installed in profile earlier
+        package = pkgs.volantes-cursors;
+        name = "volantes_cursors";
+        # Pass through config to gtk
+        # https://github.com/nix-community/home-manager/blob/693d76eeb84124cc3110793ff127aeab3832f95c/modules/config/home-cursor.nix#L152
+        gtk.enable = true;
       };
 
       gtk = {
@@ -50,12 +53,15 @@ in {
         ];
 
         iconTheme = {
+          package = null;
           name = "la-capitaine-icon-theme";
         };
 
-        gtk3.extraConfig = {
-          gtk-cursor-theme-name = "volantes_cursors";
-          gtk-application-prefer-dark-theme = true;
+        font = {
+          # already installed in profile
+          package = null;
+          name = "Berkeley Mono Variable";
+          size = 10;
         };
       };
 
@@ -75,7 +81,7 @@ in {
           "${pkgs.libsForQt5.qtstyleplugin-kvantum}/bin"
           "${pkgs.qt5ct}/bin"
           "${pkgs.xdg-utils}/bin"
-          "${pkgs.firefox}/bin"
+          # "${pkgs.dolphin}/bin"
         ];
       };
 
@@ -138,64 +144,27 @@ in {
           };
         };
 
-        dataFile = {
-          "icons/default/index.theme" = {
-            text = ''
-              [icon theme]
-              Inherits=volantes_cursors
-            '';
-          };
-
-          "icons/volantes_cursors" = {
-            source = "${pkgs.jdpkgs.volantes-cursors}/usr/share/icons/volantes_cursors";
-          };
-
-          "icons/la-capitaine-icon-theme" = {
-            source = "${pkgs.jdpkgs.la-capitaine-icon-theme}/share/icons/la-capitaine-icon-theme";
-          };
-
-          "icons/breeze" = {
-            source = "${pkgs.breeze-icons}/share/icons/breeze";
-          };
-
-          "icons/breeze-dark" = {
-            source = "${pkgs.breeze-icons}/share/icons/breeze-dark";
-          };
-
-          "icons/elementary" = {
-            source = "${pkgs.pantheon.elementary-icon-theme}/share/icons/elementary";
-          };
-
-          "icons/gnome" = {
-            source = "${pkgs.gnome-icon-theme}/share/icons/gnome";
-          };
-
-          "icons/hicolor" = {
-            source = "${pkgs.hicolor-icon-theme}/share/icons/hicolor";
-          };
-
-          # https://wiki.archlinux.org/title/XDG_MIME_Applications#New_MIME_types
-          # https://specifications.freedesktop.org/shared-mime-info-spec/shared-mime-info-spec-latest.html#idm46292897757504
-          # "mime/text/x-r-markdown.xml" = {
-          #   text = ''
-          #     <?xml version="1.0" encoding="UTF-8"?>
-          #     <mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
-          #       <mime-type type="text/x-r-markdown">
-          #         <comment>RMarkdown file</comment>
-          #         <icon name="text-x-r-markdown"/>
-          #         <glob pattern="*.Rmd"/>
-          #         <glob pattern="*.Rmarkdown"/>
-          #       </mime-type>
-          #     </mime-info>
-          #   '';
-          # };
-        };
+        #   # https://wiki.archlinux.org/title/XDG_MIME_Applications#New_MIME_types
+        #   # https://specifications.freedesktop.org/shared-mime-info-spec/shared-mime-info-spec-latest.html#idm46292897757504
+        #   # "mime/text/x-r-markdown.xml" = {
+        #   #   text = ''
+        #   #     <?xml version="1.0" encoding="UTF-8"?>
+        #   #     <mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
+        #   #       <mime-type type="text/x-r-markdown">
+        #   #         <comment>RMarkdown file</comment>
+        #   #         <icon name="text-x-r-markdown"/>
+        #   #         <glob pattern="*.Rmd"/>
+        #   #         <glob pattern="*.Rmarkdown"/>
+        #   #       </mime-type>
+        #   #     </mime-info>
+        #   #   '';
+        #   # };
+        # };
       };
 
+      # dconf settings set by gtk settings: https://github.com/nix-community/home-manager/blob/693d76eeb84124cc3110793ff127aeab3832f95c/modules/misc/gtk.nix#L227
       dconf.settings = {
         "org/gnome/desktop/interface" = {
-          cursor-theme = "volantes_cursors";
-          icon-theme = "la-capitaine-icon-theme";
           # https://askubuntu.com/questions/1404764/how-to-use-hdystylemanagercolor-scheme
           color-scheme = "prefer-dark";
           text-scaling-factor = 1.25;
@@ -211,6 +180,7 @@ in {
         mime.enable = true;
         mimeApps = {
           enable = true;
+          # TODO: Create a function for generating these better
           associations.added = {
             "x-scheme-handler/terminal" = "foot.desktop";
             "x-scheme-handler/file" = "org.kde.dolphin.desktop";
@@ -233,6 +203,15 @@ in {
             "x-directory/normal" = "org.kde.dolphin.desktop";
             "x-scheme-handler/file" = "org.kde.dolphin.desktop";
             "x-scheme-handler/terminal" = "foot.desktop";
+            "image/bmp" = "vimiv.desktop";
+            "image/gif" = "vimiv.desktop";
+            "image/jpeg" = "vimiv.desktop";
+            "image/jp2" = "vimiv.desktop";
+            "image/jpeg2000" = "vimiv.desktop";
+            "image/jpx" = "vimiv.desktop";
+            "image/png" = "vimiv.desktop";
+            "image/svg" = "vimiv.desktop";
+            "image/tiff" = "vimiv.desktop";
           };
         };
       };

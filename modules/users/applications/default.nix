@@ -27,6 +27,8 @@ in {
       EDITOR = "vim";
     };
 
+    xdg.enable = true;
+
     # TTY compatible CLI applications
     home.packages = with pkgs; [
       home-manager
@@ -46,13 +48,8 @@ in {
       # Productivity Suite
       pdftk
 
-      # System Fonts
-      (nerdfonts.override {fonts = ["JetBrainsMono"];})
-      noto-fonts-emoji
-      #openmoji-color
-
-      # Typing fonts
-      carlito
+      # nixpkgs
+      nixpkgs-review
 
       # terminal session recorder
       asciinema
