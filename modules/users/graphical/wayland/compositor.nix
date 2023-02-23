@@ -171,6 +171,8 @@ in {
             export XDG_CURRENT_DESKTOP=sway
             export TERMINAL=foot
             export BEMENU_SCALE=2
+            export CLUTTER_BACKEND=wayland
+            export SDL_VIDEODRIVER=wayland
 
             ${optionalString isDwl ''
               ${dwlJD}/bin/dwl -s "${compositorStartup}/bin/compositor-setup"

@@ -217,7 +217,7 @@ in {
         in {
           text = ''
             pad=2x2 center
-            font=JetBrainsMono Nerd Font Mono,Noto Color Emoji:style=Regular
+            font=Berkeley Mono,Noto Color Emoji:style=Regular
 
             [cursor]
             color=282a36 f8f8f2
@@ -261,18 +261,18 @@ in {
           else "${pkgs.swaylock}/bin/swaylock -f";
       in {
         enable = true;
-        timeouts =
-          [
-            {
-              timeout = cfg.screenlock.timeout;
-              command = lockCommand;
-            }
-          ]
-          ++ optional isLaptop {
-            timeout = 60;
-            command = "${pkgs.wlr-randr}/bin/wlr-randr --output eDP-1 --off";
-            resumeCommand = "${pkgs.wlr-randr}/bin/wlr-randr --output eDP-1 --on";
-          };
+        timeouts = [
+          {
+            timeout = cfg.screenlock.timeout;
+            command = lockCommand;
+          }
+        ];
+        # Soemtimes wlr-randr fails to turn screen back on, comment out for now
+        # ++ optional isLaptop {
+        #   timeout = 60;
+        #   command = "${pkgs.wlr-randr}/bin/wlr-randr --output eDP-1 --off";
+        #   resumeCommand = "${pkgs.wlr-randr}/bin/wlr-randr --output eDP-1 --on";
+        # };
 
         events = [
           {
