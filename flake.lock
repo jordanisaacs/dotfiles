@@ -210,11 +210,11 @@
         "nixpkgs": "nixpkgs"
       },
       "locked": {
-        "lastModified": 1670393854,
-        "narHash": "sha256-l1j9s3CuZoBOF7aNsidmPUsIdW7OiAeUas88pW8X3mI=",
+        "lastModified": 1673404698,
+        "narHash": "sha256-Mz1cOcd31MzrB2TOwKkeSx2uy3nFKJN0Ghyd2IW4r3E=",
         "owner": "jordanisaacs",
         "repo": "dwl-flake",
-        "rev": "c78240352488164401680af721b0f25829ef5704",
+        "rev": "37673e941861e9a4ab0ce47d53a94076a7e29f23",
         "type": "github"
       },
       "original": {
@@ -405,11 +405,11 @@
         "utils": "utils"
       },
       "locked": {
-        "lastModified": 1668332334,
-        "narHash": "sha256-YT1qcE/MCqBO1Bi/Yr6GcFpNKsvmzrBKh8juyXDbxQc=",
+        "lastModified": 1671335968,
+        "narHash": "sha256-V7mjlh7brp70elokmml6XzHinpTilkQJjiYIGjEmSGs=",
         "owner": "nix-community",
         "repo": "home-manager",
-        "rev": "bc90de24d898655542589237cc0a6ada7564cb6c",
+        "rev": "37713c6b04b963d41664e03576f73a18c9b0d224",
         "type": "github"
       },
       "original": {
@@ -477,11 +477,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1670286331,
-        "narHash": "sha256-fURNCuPBPvSR5Zws6uEdS8aDjMu81FSPpKqlFrrRrlo=",
+        "lastModified": 1671848746,
+        "narHash": "sha256-eq9FqorGj335+q1CP8yRR2pR5fEhX6cr0kKwuQCoYVU=",
         "owner": "jordanisaacs",
         "repo": "jdpkgs",
-        "rev": "d5c4af7587c36eb73d695a822ab9fbc71bc413f9",
+        "rev": "b4eba53d39d7989960381b0e1d17278deacaff74",
         "type": "github"
       },
       "original": {
@@ -800,18 +800,6 @@
         "type": "indirect"
       }
     },
-    "nixpkgs-emoji": {
-      "locked": {
-        "lastModified": 0,
-        "narHash": "sha256-MLk/zsLlbPhwFucxL64Fr+oIrvQC2/76Ap2F7ekbPNI=",
-        "path": "/nix/store/fj0r6l3gglr0k0b4dxn3hm8drcwclm36-source",
-        "type": "path"
-      },
-      "original": {
-        "id": "nixpkgs-emoji",
-        "type": "indirect"
-      }
-    },
     "nixpkgs-lib": {
       "locked": {
         "lastModified": 1670114968,
@@ -825,6 +813,21 @@
         "owner": "nix-community",
         "repo": "nixpkgs.lib",
         "type": "github"
+      }
+    },
+    "nixpkgs-stable": {
+      "locked": {
+        "lastModified": 1671752829,
+        "narHash": "sha256-oFeJzAq0iRL6md9Si8Tx9bltjwjLmldvgUmAteMhYW4=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "9898811c658d39b2692d0ab744377e02fd85d08b",
+        "type": "github"
+      },
+      "original": {
+        "id": "nixpkgs",
+        "ref": "nixos-22.11",
+        "type": "indirect"
       }
     },
     "nixpkgs-wayland": {
@@ -913,11 +916,11 @@
     },
     "nixpkgs_6": {
       "locked": {
-        "lastModified": 1671271357,
-        "narHash": "sha256-xRJdLbWK4v2SewmSStYrcLa0YGJpleufl44A19XSW8k=",
+        "lastModified": 1676973346,
+        "narHash": "sha256-rft8oGMocTAhUVqG3LW6I8K/Fo9ICGmNjRqaWTJwav0=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "40f79f003b6377bd2f4ed4027dde1f8f922995dd",
+        "rev": "d0d55259081f0b97c828f38559cad899d351cad1",
         "type": "github"
       },
       "original": {
@@ -1280,7 +1283,7 @@
         "microvm-nix": "microvm-nix",
         "neovim-flake": "neovim-flake",
         "nixpkgs": "nixpkgs_6",
-        "nixpkgs-emoji": "nixpkgs-emoji",
+        "nixpkgs-stable": "nixpkgs-stable",
         "nixpkgs-wayland": "nixpkgs-wayland",
         "nur": "nur",
         "secrets": "secrets",
@@ -1338,11 +1341,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1670283949,
-        "narHash": "sha256-EUykssQvo42IT5YHoiudbT891kdG8JyDBu+VO1FMDNE=",
+        "lastModified": 1675974012,
+        "narHash": "sha256-VCiC6fMZlBWAkJkLjTyCDk1T0T8b38+ZZHnsj76ptgQ=",
         "ref": "main",
-        "rev": "dc9fa2eb20ec96df61147a63c166d12abe98a7bc",
-        "revCount": 20,
+        "rev": "2fad0e484266d874fbe61db688feecbd7340ae67",
+        "revCount": 22,
         "type": "git",
         "url": "ssh://git@github.com/jordanisaacs/secrets.git"
       },
