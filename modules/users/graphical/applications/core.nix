@@ -48,6 +48,22 @@ in {
       xournalpp
       rnote
 
+      # System Fonts
+      (nerdfonts.override {fonts = ["JetBrainsMono"];})
+      noto-fonts-emoji
+      roboto
+      bm-font
+      noto-fonts-cjk # Chinese
+      dejavu_fonts
+      liberation_ttf
+
+      fontpreview
+      emote
+      #openmoji-color
+
+      # Typing fonts
+      carlito
+
       # Sound
       pavucontrol
       pasystray
