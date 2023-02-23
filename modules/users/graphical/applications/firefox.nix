@@ -21,6 +21,9 @@ in {
   config = mkIf cfg.firefox.enable {
     programs.firefox = {
       enable = true;
+      package = pkgs.wrapFirefox pkgs.firefox-unwrapped {
+        extraNativeMessagingHosts = with pkgs.nur.repos.wolfangaukang; [vdhcoapp];
+      };
       extensions = with pkgs.nur.repos.rycee.firefox-addons; let
         firefoxTheme =
           if (config.jd.graphical.theme == "arc-dark")
@@ -34,8 +37,8 @@ in {
 
               meta = with lib; {
                 description = "Arc dark theme";
-                license = pkgs.lib.licenses.cc-by-30;
-                platforms = pkgs.lib.platforms.all;
+                license = licenses.cc-by-30;
+                platforms = platforms.all;
               };
             })
           else
@@ -48,8 +51,8 @@ in {
 
               meta = with lib; {
                 description = "Materia dark gtk theme";
-                license = pkgs.lib.licenses.cc-by-30;
-                platforms = pkgs.lib.platforms.all;
+                license = licenses.cc-by-30;
+                platforms = platforms.all;
               };
             });
       in [
@@ -91,6 +94,38 @@ in {
           meta = with lib; {
             description = ''
               Check your texts for spelling and grammar problems everywhere on the web
+            '';
+            platforms = platforms.all;
+          };
+        })
+        (buildFirefoxXpiAddon {
+          pname = "localcdn";
+          version = "2.6.46";
+          addonId = "{b86e4813-687a-43e6-ab65-0bde4ab75758}";
+          url = "https://addons.mozilla.org/firefox/downloads/file/4066709/localcdn_fork_of_decentraleyes-2.6.46.xpi";
+          sha256 = "sha256-qOJyPDZQ+jP//xvdpU0swYB9YAP03y66GHlTGLyyAfg=";
+
+          meta = with lib; {
+            description = ''
+              Emulates remote frameworks (e.g. jQuery, Bootstrap, AngularJS) and delivers them as local resource.
+              Prevents unnecessary 3rd party requests to Google, StackPath, MaxCDN and more.
+              Prepared rules for uBlock Origin/uMatrix.
+            '';
+            platforms = platforms.all;
+          };
+        })
+        (buildFirefoxXpiAddon {
+          pname = "enforce-browser-fonts";
+          version = "1.2";
+          addonId = "{83e08b00-32de-44e7-97bb-1bab84d1350f}";
+          url = "https://addons.mozilla.org/firefox/downloads/file/3782841/enforce_browser_fonts-1.2.xpi";
+          sha256 = "sha256-h8h1hXim3d9y+Anze3ENz1dAneNXywINwcGXRieGl0U=";
+
+          meta = with lib; {
+            description = ''
+              Enforce browser fonts easily instead of letting websites use their own fonts.
+              Easily toggle between browser fonts and website fonts by clicking on addon toolbar
+              icon or its keyboard shortcut (Alt-Comma).
             '';
             platforms = platforms.all;
           };
@@ -166,11 +201,12 @@ in {
               "app.shield.optoutstudies.enable" = false;
             };
 
-            domPrivacy = {
+            privacy = {
               # clipboard events: https://superuser.com/questions/1595994/dont-let-websites-overwrite-clipboard-in-firefox-without-explicitly-giving-perm
               # Breaks copy/paste on websites
               #"dom.event.clipboardevents.enabled" = false;
               "dom.battery.enabled" = false;
+              # "privacy.resistFingerprinting" = true;
             };
 
             https = {
@@ -180,8 +216,11 @@ in {
 
             graphics = {
               "media.ffmpeg.vaapi.enabled" = true;
-              "media.rdd-ffmpeg.enabled" = true;
-              "media.navigator.mediadataencoder_vpx_enabled" = true;
+              "media.gpu-process-decoder" = true;
+              "dom.webgpu.enabled" = true;
+              "gfx.webrender.all" = true;
+              "layers.mlgpu.enabled" = true;
+              "layers.gpu-process.enabled" = true;
             };
 
             generalSettings = {
@@ -198,11 +237,11 @@ in {
               "extensions.pocket.enabled" = false;
               "browser.fullscreen.autohide" = false;
               "browser.contentblocking.category" = "standard";
+              # "browser.display.use_document_fonts" = 0; Using enable-browser-fonts extension instead
             };
 
             toolbars = {
               "browser.tabs.firefox-view" = false;
-              "browser.download.autohideButton" = false;
               "browser.toolbars.bookmarks.visibility" = "newtab";
             };
 
@@ -215,6 +254,8 @@ in {
 
             downloads = {
               "browser.download.useDownloadDir" = false;
+              "browser.download.autohideButton" = false;
+              "browser.download.always_ask_before_handling_new_types" = true;
             };
           in
             generalSettings
@@ -223,7 +264,7 @@ in {
             // https
             // newTab
             // searchBar
-            // domPrivacy
+            // privacy
             // telemetry
             // graphics
             // downloads
