@@ -2,6 +2,7 @@
   description = "System Config";
   inputs = {
     nixpkgs.url = "nixpkgs/nixos-unstable";
+    nixpkgs-stable.url = "nixpkgs/nixos-22.11";
 
     nur = {
       url = "github:nix-community/NUR";
@@ -78,7 +79,7 @@
   outputs = {
     self,
     nixpkgs,
-    nixpkgs-emoji,
+    nixpkgs-stable,
     jdpkgs,
     impermanence,
     deploy-rs,
@@ -124,6 +125,8 @@
           deploy-rs
           agenix
           nixpkgs-wayland
+          nixpkgs-stable
+          secrets
           ;
       })
       overlays
@@ -334,7 +337,10 @@
     ];
 
     defaultClientConfig = {
-      core.enable = true;
+      core = {
+        enable = true;
+        ccache = true;
+      };
       boot.type = "encrypted-efi";
       gnome = {
         enable = true;
@@ -468,6 +474,7 @@
             enable = true;
             direnv.enable = true;
             syncthing.enable = true;
+            neomutt.enable = true;
             taskwarrior = {
               enable = true;
               server = {
