@@ -27,6 +27,25 @@ in {
           qt5ct
 
           xdg-utils
+
+          # System Fonts
+          (nerdfonts.override {fonts = ["JetBrainsMono"];})
+          noto-fonts-emoji
+          roboto
+          bm-font
+          noto-fonts-cjk # Chinese
+          dejavu_fonts
+          liberation_ttf
+          corefonts # microsoft
+
+          fontpreview
+          emote
+          #openmoji-color
+
+          jdpkgs.la-capitaine-icon-theme
+
+          # Typing fonts
+          carlito
         ];
       };
 
@@ -38,6 +57,8 @@ in {
         # https://github.com/nix-community/home-manager/blob/693d76eeb84124cc3110793ff127aeab3832f95c/modules/config/home-cursor.nix#L152
         gtk.enable = true;
       };
+
+      fonts.fontconfig.enable = true;
 
       gtk = {
         enable = true;

@@ -19,25 +19,7 @@ in {
   };
 
   config = mkIf (isGraphical && cfg.enable && cfg.libreoffice.enable) {
-    home.packages = with pkgs; [libreoffice-fresh];
-
-    # Setting up dictionary modified from:
-    # https://www.thedroneely.com/posts/nixos-in-the-wild/#libreoffice-and-spell-checking
-
-    home.sessionVariables = {
-      DICPATH = "${config.xdg.dataHome}/dictionary/hunspell:${config.xdg.dataHome}/dictionary/hyphen";
-    };
-    # $DRY_RUN_CMD unlink ${config.xdg.dataHome}/dictionary/hunspell
-    # $DRY_RUN_CMD unlink ${config.xdg.dataHome}/dictionary/myspell
-    # $DRY_RUN_CMD unlink ${config.xdg.dataHome}/dictionary/hyphen
-
-    home.activation = {
-      dictionaryLinker = lib.hm.dag.entryAfter ["writeBoundary"] ''
-        $DRY_RUN_CMD mkdir -p ${config.xdg.dataHome}/dictionary
-        $DRY_RUN_CMD ln -sfn ${pkgs.hunspellDicts.en_US-large}/share/hunspell ${config.xdg.dataHome}/dictionary/hunspell
-        $DRY_RUN_CMD ln -sfn ${pkgs.hunspellDicts.en_US-large}/share/myspell ${config.xdg.dataHome}/dictionary/myspell
-        $DRY_RUN_CMD ln -sfn ${pkgs.hyphen}/share/hyphen ${config.xdg.dataHome}/dictionary/hyphen
-      '';
-    };
+    # https://github.com/NixOS/nixpkgs/blob/9c2d391f0d403a67e68d432026037ed8dc3deb92/pkgs/applications/office/libreoffice/wrapper.sh#L21
+    home.packages = [pkgs.libreoffice-fresh];
   };
 }

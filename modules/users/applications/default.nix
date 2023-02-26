@@ -44,9 +44,17 @@ in {
       nnn # file manager
       grit # to-do
       buku # bookmarks
-      yt-dlp
-      # Productivity Suite
-      pdftk
+      yt-dlp # download youtube
+      pdftk # pdf editing
+
+      # Spell checking
+      # Setting up dictionary modified from:
+      # https://www.thedroneely.com/posts/nixos-in-the-wild/#libreoffice-and-spell-checking
+      # https://github.com/NixOS/nixpkgs/issues/14430
+      # https://github.com/NixOS/nixpkgs/blob/nixos-22.11/pkgs/development/libraries/hunspell/0001-Make-hunspell-look-in-XDG_DATA_DIRS-for-dictionaries.patch
+      hunspell
+      hunspellDicts.en_US-large
+      hyphen
 
       # nixpkgs
       nixpkgs-review
@@ -64,8 +72,6 @@ in {
       # music
       playerctl
     ];
-
-    fonts.fontconfig.enable = true;
 
     programs.mpv = {
       enable = true;
