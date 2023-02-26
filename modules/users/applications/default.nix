@@ -11,6 +11,7 @@ in {
     ./taskwarrior
     ./direnv
     ./syncthing
+    ./neomutt
   ];
 
   options.jd.applications = {
