@@ -1,5 +1,6 @@
 {
   pkgs,
+  nixpkgs-stable,
   nur,
   dwm-flake,
   deploy-rs,
@@ -14,6 +15,7 @@
   impermanence,
   nixpkgs-wayland,
   agenix,
+  secrets,
 }: {
   overlays = [
     nur.overlay
@@ -21,9 +23,10 @@
     dwl-flake.overlays.default
     scripts.overlay
 
-    (final: prev: {
-      waybar = nixpkgs-wayland.packages.${prev.system}.waybar;
-      neovimWork = prev.neovimBuilder {
+    (self: super: {
+      waybar = nixpkgs-wayland.packages.${super.system}.waybar;
+      systemd_251 = nixpkgs-stable.legacyPackages.${super.system}.systemd;
+      neovimWork = super.neovimBuilder {
         config = {
           vim.lsp = {
             enable = true;
@@ -90,22 +93,12 @@
         };
       };
       # Version of xss-lock that supports logind SetLockedHint
-      xss-lock = prev.xss-lock.overrideAttrs (old: {
-        src = prev.fetchFromGitHub {
+      xss-lock = super.xss-lock.overrideAttrs (old: {
+        src = super.fetchFromGitHub {
           owner = "xdbob";
           repo = "xss-lock";
           rev = "7b0b4dc83ff3716fd3051e6abf9709ddc434e985";
           sha256 = "TG/H2dGncXfdTDZkAY0XAbZ80R1wOgufeOmVL9yJpSk=";
-        };
-      });
-      # For -fork-on-lock
-      waylock = prev.waylock.overrideAttrs (old: {
-        src = prev.fetchFromGitHub {
-          owner = "ifreund";
-          repo = "waylock";
-          rev = "814d8bb62e415e7e9eaeaf70a8a434a364858a9d";
-          sha256 = "sha256-rfVaoYcPPvofBrB5U+VikCKVW9aClckdlUAGV0qTOkw=";
-          fetchSubmodules = true;
         };
       });
       # Commented out because need to update the patch
@@ -117,9 +110,9 @@
       # };
       dwmJD = dwm-flake.packages.${system}.dwmJD;
       stJD = st-flake.packages.${system}.stJD;
-      weechatJD = prev.weechat.override {
+      weechatJD = super.weechat.override {
         configure = {availablePlugins, ...}: {
-          scripts = with prev.weechatScripts; [
+          scripts = with super.weechatScripts; [
             weechat-matrix
           ];
         };
@@ -127,6 +120,7 @@
       agenix-cli = agenix.defaultPackage."${system}";
       deploy-rs = deploy-rs.packages."${system}".deploy-rs;
       jdpkgs = jdpkgs.packages."${system}";
+      bm-font = super.callPackage (secrets + "/bm") {};
       inherit homeage impermanence;
     })
   ];
