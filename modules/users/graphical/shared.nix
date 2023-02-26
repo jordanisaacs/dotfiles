@@ -99,26 +99,13 @@ in {
         # So graphical services are themed (eg trays)
         QT_QPA_PLATFORMTHEME = "qt5ct";
         PATH = builtins.concatStringsSep ":" [
-          "${pkgs.libsForQt5.qtstyleplugin-kvantum}/bin"
-          "${pkgs.qt5ct}/bin"
-          "${pkgs.xdg-utils}/bin"
+          # Following two needed for themes from trays
+          # "${pkgs.libsForQt5.qtstyleplugin-kvantum}/bin"
+          # "${pkgs.qt5ct}/bin"
+          # needed for opening things from trays
+          # "${pkgs.xdg-utils}/bin"
           # "${pkgs.dolphin}/bin"
         ];
-      };
-
-      systemd.user.services = {
-        plasma-dolphin = {
-          Unit = {
-            Description = "Dolphin file manager";
-            PartOf = "graphical-session.target";
-          };
-
-          Service = {
-            ExecStart = "${pkgs.dolphin}/bin/dolphin --daemon";
-            BusName = "org.freedesktop.FileManager1";
-            Slice = "background.slice";
-          };
-        };
       };
 
       xdg = {

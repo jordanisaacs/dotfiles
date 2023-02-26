@@ -295,7 +295,7 @@ in {
         Unit = {
           Description = "swaybg background service";
           Documentation = ["man:swabyg(1)"];
-          PartOf = ["wayland-session.target"];
+          Requires = ["wayland-session.target"];
           After = ["wayland-session.target"];
           Before = mkIf (cfg.statusbar.enable) ["waybar.service"];
         };
@@ -451,13 +451,30 @@ in {
             color: @theme_text_color;
           }
         '';
-        systemd.enable = true;
+        # Use custom systemd
+        systemd.enable = false;
       };
 
-      systemd.user.services.waybar = mkIf cfg.statusbar.enable {
-        Unit.PartOf = lib.mkForce ["wayland-session.target"];
-        Unit.After = lib.mkForce ["wayland-session.target"];
-        Install.WantedBy = lib.mkForce ["wayland-session.target"];
+      systemd.user.services.waybar = {
+        Unit = {
+          Description = "Highly customizable Wayland bar for Sway and Wlroots based compositors.";
+          Documentation = "https://github.com/Alexays/Waybar/wiki";
+          BindsTo = ["wayland-session.target"];
+          After = ["wayland-session.target"];
+          Wants = ["tray.target"];
+          Before = ["tray.target"];
+        };
+
+        Service = {
+          ExecStart = "${pkgs.waybar}/bin/waybar";
+          ExecReload = "${pkgs.coreutils}/bin/kill -SIGUSR2 $MAINPID";
+          Restart = "on-failure";
+          KillMode = "mixed";
+        };
+
+        Install = {
+          WantedBy = ["wayland-session.target"];
+        };
       };
     })
   ]);

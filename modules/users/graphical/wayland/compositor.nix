@@ -123,8 +123,7 @@ with lib; let
 
     ## https://bbs.archlinux.org/viewtopic.php?id=224652
     # Need QT theme for syncthing tray
-    dbus-update-activation-environment --systemd DISPLAY WAYLAND_DISPLAY XDG_CURRENT_DESKTOP \
-      XDG_SESSION_TYPE QT_QPA_PLATFORM
+    dbus-update-activation-environment --systemd DISPLAY WAYLAND_DISPLAY XDG_SESSION_TYPE
 
     # Need QT for syncthing tray
     # systemctl --user import-environment PATH XDG_RUNTIME_DIR WAYLAND_DISPLAY XDG_CURRENT_DESKTOP
@@ -173,6 +172,10 @@ in {
             export BEMENU_SCALE=2
             export CLUTTER_BACKEND=wayland
             export SDL_VIDEODRIVER=wayland
+
+            # https://bbs.archlinux.org/viewtopic.php?id=224652
+            # Need QT theme for syncthing tray
+            dbus-update-activation-environment --all --systemd
 
             ${optionalString isDwl ''
               ${dwlJD}/bin/dwl -s "${compositorStartup}/bin/compositor-setup"

@@ -47,6 +47,7 @@ in {
       buku # bookmarks
       yt-dlp # download youtube
       pdftk # pdf editing
+      graphviz # dot
 
       # Spell checking
       # Setting up dictionary modified from:
