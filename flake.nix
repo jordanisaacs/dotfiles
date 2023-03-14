@@ -400,10 +400,6 @@
     frameworkConfig = utils.recursiveMerge [
       defaultClientConfig
       {
-        networking.interfaces = ["wlan0"];
-        networking.wifi = {
-          backend = "iwd";
-        };
         laptop.enable = true;
         core.time = "east";
         greetd.enable = true;

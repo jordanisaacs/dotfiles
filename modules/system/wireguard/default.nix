@@ -105,42 +105,32 @@ with lib; let
           };
         };
 
+      # TODO: Switch to systemd-networkd
       wireguard = {
         enable = true;
 
         interfaces."${wireguardConf.interface}" = {
           ips = ["${myConf.wgAddrV4}/${builtins.toString myConf.interfaceMask}"];
           listenPort = myConf.listenPort;
-          # 
-          postSetup = if (myConf.dns == "client") then ''
-            resolvectl domain ${wireguardConf.interface} '~.'
-            resolvectl dnssec ${wireguardConf.interface} false
-            ${
-              concatStringsSep
-              "\n"
-              (builtins.filter
-                (v: !(builtins.isNull v))
-                (mapAttrsToList (_: peerConf:
-                  if (peerConf.dns == "server")
-                  then "resolvectl dns ${wireguardConf.interface} ${peerConf.wgAddrV4}"
-                  else null)
-                peerConfs))
-            }
-            ${myConf.postSetup}
-          '' else myConf.postSetup;
-          # postSetup = mkIf (myConf.useDns) (
-          #   builtins.filter (
-          #     builtins.concatStringsSep
-          #     " "
-          #     (v: !(builtins.isNull v))
-          #     (mapAttrsToList (_: peerConf:
-          #       if (peerConf.hasDns)
-          #       then peerConf.wgAddrV4
-          #       else null)
-          #     peerConfs)
-          #   )
-          # );
-          # ''
+          postSetup =
+            if (myConf.dns == "client")
+            then ''
+              resolvectl domain ${wireguardConf.interface} '~.'
+              resolvectl dnssec ${wireguardConf.interface} false
+              ${
+                concatStringsSep
+                "\n"
+                (builtins.filter
+                  (v: !(builtins.isNull v))
+                  (mapAttrsToList (_: peerConf:
+                    if (peerConf.dns == "server")
+                    then "resolvectl dns ${wireguardConf.interface} ${peerConf.wgAddrV4}"
+                    else null)
+                  peerConfs))
+              }
+              ${myConf.postSetup}
+            ''
+            else myConf.postSetup;
 
           postShutdown = myConf.postShutdown;
           privateKeyFile = myConf.privateKeyPath;

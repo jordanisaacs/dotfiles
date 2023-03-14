@@ -96,8 +96,6 @@ with utils; {
             };
 
             networking.hostName = name;
-            networking.wireless.interfaces = wifi;
-            networking.useDHCP = false; # Disable any new interface added that is not in config
 
             boot.initrd.availableKernelModules = initrdMods;
             boot.kernelModules = kernelMods;

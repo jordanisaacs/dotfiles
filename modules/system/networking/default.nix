@@ -11,7 +11,7 @@ in {
     interfaces = mkOption {
       type = with types; listOf str;
       default = [];
-      description = "List of network interface cards";
+      description = "List of network interface cards, do not add wifi card";
     };
 
     wifi = {
@@ -19,11 +19,6 @@ in {
         description = "Enable wifi with default options";
         type = types.bool;
         default = false;
-      };
-      backend = mkOption {
-        description = "Wifi backend";
-        type = types.enum ["iwd" "wpa_supplicant"];
-        default = "wpa_supplicant";
       };
     };
 
@@ -60,39 +55,32 @@ in {
       (map
         (n: {
           name = "${n}";
-          # Use builtin DHCP if using iwd
-          value = {useDHCP = cfg.wifi.backend == "wpa_supplicant";};
+          # Use builtin DHCP of iwd
+          value = {useDHCP = false;};
         })
         cfg.interfaces);
   in
     mkMerge [
       (mkIf cfg.wifi.enable {
-        networking = {
-          wireless = {
-            iwd = mkIf (cfg.wifi.backend == "iwd") {
-              enable = true;
-              settings = {
-                General = {
-                  EnableNetworkConfiguration = true;
-                  UseDefaultInterface = false;
-                };
-                Network = {
-                  NameResolvingService = "systemd";
-                  EnableIPv6 = true;
-                };
-              };
+        jd.networking.interfaces = ["wlan0"];
+        networking.wireless.iwd = {
+          enable = true;
+          settings = {
+            General = {
+              EnableNetworkConfiguration = true;
+              UseDefaultInterface = false;
             };
-            enable = cfg.wifi.backend == "wpa_supplicant";
-          };
-          networkmanager = mkIf (cfg.wifi.backend == "wpa_supplicant") {
-            enable = true;
-            wifi.backend = "wpa_supplicant";
+            Network = {
+              NameResolvingService = "systemd";
+              EnableIPv6 = true;
+            };
           };
         };
       })
       {
         networking = {
           interfaces = networkCfg;
+          useNetworkd = true;
           useDHCP = false;
           enableIPv6 = true;
         };
