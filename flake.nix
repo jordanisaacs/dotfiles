@@ -359,7 +359,7 @@
           allowKdeconnect = false;
           allowDefaultSyncthing = true;
         };
-        networkmanager.enable = true;
+        wifi.enable = true;
       };
       graphical = {
         enable = true;
@@ -400,7 +400,10 @@
     frameworkConfig = utils.recursiveMerge [
       defaultClientConfig
       {
-        networking.interfaces = ["wlp170s0"];
+        networking.interfaces = ["wlan0"];
+        networking.wifi = {
+          backend = "iwd";
+        };
         laptop.enable = true;
         core.time = "east";
         greetd.enable = true;

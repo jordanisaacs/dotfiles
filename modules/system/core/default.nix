@@ -42,8 +42,6 @@ in {
           else "Asia/Bangkok"
         );
 
-    hardware.enableRedistributableFirmware = lib.mkDefault true;
-
     # Nix search paths/registries from:
     # https://github.com/gytis-ivaskevicius/flake-utils-plus/blob/166d6ebd9f0de03afc98060ac92cba9c71cfe550/lib/options.nix
     # Context thread: https://github.com/gytis-ivaskevicius/flake-utils-plus/blob/166d6ebd9f0de03afc98060ac92cba9c71cfe550/lib/options.nix
@@ -201,6 +199,8 @@ in {
 
     security.sudo.extraConfig = "Defaults env_reset,timestamp_timeout=5";
     security.sudo.execWheelOnly = true;
+
+    hardware.enableRedistributableFirmware = true;
 
     services.udisks2.enable = true;
     services.fwupd.enable = true;

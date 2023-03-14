@@ -14,16 +14,17 @@ in {
       description = "List of network interface cards";
     };
 
-    networkmanager.enable = mkOption {
-      description = "Enable network manager with default options";
-      type = types.bool;
-      default = false;
-    };
-
-    wifi.enable = mkOption {
-      description = "Enable wifi with default options";
-      type = types.bool;
-      default = false;
+    wifi = {
+      enable = mkOption {
+        description = "Enable wifi with default options";
+        type = types.bool;
+        default = false;
+      };
+      backend = mkOption {
+        description = "Wifi backend";
+        type = types.enum ["iwd" "wpa_supplicant"];
+        default = "wpa_supplicant";
+      };
     };
 
     chairlift = mkOption {
@@ -59,18 +60,40 @@ in {
       (map
         (n: {
           name = "${n}";
-          value = {useDHCP = true;};
+          # Use builtin DHCP if using iwd
+          value = {useDHCP = cfg.wifi.backend == "wpa_supplicant";};
         })
         cfg.interfaces);
   in
     mkMerge [
+      (mkIf cfg.wifi.enable {
+        networking = {
+          wireless = {
+            iwd = mkIf (cfg.wifi.backend == "iwd") {
+              enable = true;
+              settings = {
+                General = {
+                  EnableNetworkConfiguration = true;
+                  UseDefaultInterface = false;
+                };
+                Network = {
+                  NameResolvingService = "systemd";
+                  EnableIPv6 = true;
+                };
+              };
+            };
+            enable = cfg.wifi.backend == "wpa_supplicant";
+          };
+          networkmanager = mkIf (cfg.wifi.backend == "wpa_supplicant") {
+            enable = true;
+            wifi.backend = "wpa_supplicant";
+          };
+        };
+      })
       {
         networking = {
           interfaces = networkCfg;
-          networkmanager.enable = cfg.networkmanager.enable;
-          wireless = mkIf (cfg.wifi.enable) {
-            enable = true;
-          };
+          useDHCP = false;
           enableIPv6 = true;
         };
 
