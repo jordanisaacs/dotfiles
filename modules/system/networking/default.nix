@@ -20,6 +20,12 @@ in {
         type = types.bool;
         default = false;
       };
+
+      interface = mkOption {
+        type = types.str;
+        default = "wlan0";
+        description = "Name of wifi NIC";
+      };
     };
 
     chairlift = mkOption {
@@ -61,8 +67,29 @@ in {
         cfg.interfaces);
   in
     mkMerge [
+      {
+        networking = {
+          # TODO: Switch to systemd-networkd
+          # Routing
+          # http://linux-ip.net/html/basic-reading.html
+          interfaces = networkCfg;
+          useNetworkd = true;
+          useDHCP = false;
+          enableIPv6 = true;
+        };
+      }
       (mkIf cfg.wifi.enable {
-        jd.networking.interfaces = ["wlan0"];
+        systemd.network.networks."40-${cfg.wifi.interface}" = {
+          matchConfig = {
+            Name = "${cfg.wifi.interface}";
+          };
+          networkConfig = {
+            DHCP = "yes";
+            # https://wiki.archlinux.org/title/IPv6#Privacy_extensions
+            IPv6PrivacyExtensions = "kernel";
+          };
+        };
+
         networking.wireless.iwd = {
           enable = true;
           settings = {
@@ -77,16 +104,8 @@ in {
           };
         };
       })
-      {
-        networking = {
-          # TODO: Switch to systemd-networkd
-          interfaces = networkCfg;
-          useNetworkd = true;
-          useDHCP = false;
-          enableIPv6 = true;
-        };
-
-        networking.firewall = mkIf (cfg.firewall.enable) {
+      (mkIf cfg.firewall.enable {
+        networking.firewall = {
           enable = true;
           interfaces =
             listToAttrs
@@ -109,9 +128,9 @@ in {
                   })
                 ];
               })
-              cfg.interfaces);
+              (cfg.interfaces ++ lib.optional cfg.wifi.enable cfg.wifi.interface));
         };
-      }
+      })
       (mkIf cfg.chairlift {
         networking = {
           interfaces.enp1s0.ipv6.addresses = [
@@ -143,7 +162,7 @@ in {
           ];
         };
 
-        system.nssDatabases.hosts = [
+        system.nssDatabases.hosts = mkForce [
           # Resolution for containers registered with systemd-machined
           # see man nss-mymachines
           "mymachines"
