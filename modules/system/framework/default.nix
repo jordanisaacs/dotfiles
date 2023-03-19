@@ -67,8 +67,6 @@ in {
         # 2. https://community.frame.work/t/some-notes-on-audio-in-linux/8815Aa
         extraModprobeConfig = ''
           options snd-hda-intel model=dell-headset-multi
-          options i915 enable_guc=3
-          options i915 enable_fbc=1
         '';
       };
     }
