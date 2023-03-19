@@ -6,6 +6,7 @@
 }:
 with lib; let
   cfg = config.jd.graphical;
+  systemCfg = config.machineData.systemConfig;
 in {
   options.jd.graphical.applications = {
     enable = mkOption {
@@ -16,47 +17,49 @@ in {
   };
 
   config = mkIf (cfg.applications.enable) {
-    home.packages = with pkgs; [
-      dolphin # fixes dbus/firefox
-      okular
-      xorg.xinput
+    home.packages = with pkgs;
+      [
+        dolphin # fixes dbus/firefox
+        okular
+        xorg.xinput
 
-      thunderbird
-      # jdpkgs.rstudioWrapper
-      # jdpkgs.texstudioWrapper
-      microsoft-edge
+        thunderbird
+        # jdpkgs.rstudioWrapper
+        # jdpkgs.texstudioWrapper
+        microsoft-edge
 
-      flameshot
-      libsixel
+        flameshot
+        libsixel
 
-      # Password manager
-      bitwarden
-      jdpkgs.authy
+        # Password manager
+        bitwarden
+        jdpkgs.authy
 
-      # Messaging
-      slack
-      discord
-      jdpkgs.element-desktop
+        # Messaging
+        slack
+        discord
+        jdpkgs.element-desktop
 
-      # Reading
-      calibre
+        # Reading
+        calibre
 
-      # Video conference
-      zoom-us
+        # Video conference
+        zoom-us
 
-      # Note taking
-      xournalpp
-      rnote
+        # Note taking
+        xournalpp
+        rnote
 
-      # Sound
-      pavucontrol
-      pasystray
+        # Sound
+        pavucontrol
+        pasystray
 
-      # music
-      cider
+        # music
+        cider
 
-      # kdeconnect
-    ];
+        # kdeconnect
+      ]
+      ++ lib.optional systemCfg.networking.wifi.enable pkgs.iwgtk;
 
     xdg.configFile = {
       "discord/settings.json" = {
