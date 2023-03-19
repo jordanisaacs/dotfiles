@@ -56,7 +56,7 @@ in {
         (n: {
           name = "${n}";
           # Use builtin DHCP of iwd
-          value = {useDHCP = false;};
+          value = {useDHCP = true;};
         })
         cfg.interfaces);
   in
@@ -67,7 +67,7 @@ in {
           enable = true;
           settings = {
             General = {
-              EnableNetworkConfiguration = true;
+              # EnableNetworkConfiguration = true;
               UseDefaultInterface = false;
             };
             Network = {
@@ -79,6 +79,7 @@ in {
       })
       {
         networking = {
+          # TODO: Switch to systemd-networkd
           interfaces = networkCfg;
           useNetworkd = true;
           useDHCP = false;
@@ -127,10 +128,11 @@ in {
       })
       # If unbound is enabled do not use systemd-resolved
       (mkIf (!config.jd.unbound.enable) {
+        # https://zwischenzugs.com/2018/06/08/anatomy-of-a-linux-dns-lookup-part-i/
+        # https://blogs.gnome.org/mcatanzaro/2020/12/17/understanding-systemd-resolved-split-dns-and-vpn-configuration/
         networking.resolvconf.enable = false;
 
         services.resolved = {
-          # https://blogs.gnome.org/mcatanzaro/2020/12/17/understanding-systemd-resolved-split-dns-and-vpn-configuration/
           enable = true;
           fallbackDns = [
             # Quad9
@@ -141,15 +143,24 @@ in {
           ];
         };
 
-        # https://zwischenzugs.com/2018/06/08/anatomy-of-a-linux-dns-lookup-part-i/
         system.nssDatabases.hosts = [
+          # Resolution for containers registered with systemd-machined
+          # see man nss-mymachines
           "mymachines"
+          # Use systemd-resolved
+          # see man nss-systemd
           "resolve"
+          # if systemd-resolved was available, return immediately
           "[!UNAVAIL=return]"
+          # Check /etc/hosts to see if hardcoded
           "files"
+          # Local hostname is always resolveable
           "myhostname"
+          # Avahi for mdns resolution
           "mdns4_minimal"
-          "[!NOTFOUND=return]"
+          # If "no such name found" then return immediately
+          "[NOTFOUND=return]"
+          # Check /etc/resolve.conf for DNS
           "dns"
         ];
       })
