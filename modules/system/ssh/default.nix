@@ -55,7 +55,7 @@ in {
 
   config = mkMerge [
     (mkIf (cfg.type == "client") {
-      programs.ssh.startAgent = true;
+      # programs.ssh.startAgent = true;
     })
     (mkIf (cfg.type == "server") (mkMerge [
       (mkIf (cfg.firewall == "world") {

@@ -19,6 +19,8 @@ in {
       home = {
         sessionVariables = {
           QT_QPA_PLATFORMTHEME = "qt5ct";
+          SSH_AUTH_SOCK = ''''${XDG_RUNTIME_DIR}/keyring/ssh'';
+          SSH_ASKPASS = "${pkgs.gnome.seahorse}/libexec/seahorse/ssh-askpass";
         };
 
         packages = with pkgs; [
@@ -28,7 +30,7 @@ in {
 
           xdg-utils
 
-          # System Fonts
+          # Fonts
           (nerdfonts.override {fonts = ["JetBrainsMono"];})
           noto-fonts-emoji
           roboto
@@ -37,6 +39,7 @@ in {
           dejavu_fonts
           liberation_ttf
           corefonts # microsoft
+          carlito
 
           fontpreview
           emote
@@ -44,8 +47,7 @@ in {
 
           jdpkgs.la-capitaine-icon-theme
 
-          # Typing fonts
-          carlito
+          gnome.seahorse
         ];
       };
 
@@ -179,8 +181,18 @@ in {
         };
       };
 
-      services = {
-        gnome-keyring.enable = true;
+      systemd.user.services.gnome-keyring = mkIf config.machineData.systemConfig.gnome.keyring.enable {
+        Unit = {
+          Description = "GNOME Keyring";
+          PartOf = ["graphical-session-pre.target"];
+        };
+
+        Service = {
+          ExecStart = "/run/wrappers/bin/gnome-keyring-daemon --start --foreground";
+          Restart = "on-abort";
+        };
+
+        Install = {WantedBy = ["graphical-session-pre.target"];};
       };
 
       xdg = {
