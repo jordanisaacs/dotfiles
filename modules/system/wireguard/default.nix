@@ -5,6 +5,8 @@
   ...
 }:
 with lib; let
+  wireguardConf = config.jd.wireguard;
+
   inList = val: list: builtins.any (item: val == item) list;
 
   # Get the list of tag names from a conf
@@ -58,34 +60,37 @@ with lib; let
       (_: peerConf: (
         let
           tagConf = getTagConf tags peerConf;
-          isStatic = tagConf.ipAddr != null;
+          isDynamic = tagConf.ipAddr == null;
         in {
-          publicKey = peerConf.publicKey;
-          allowedIPs = ["${peerConf.wgAddrV4}/32"];
-          persistentKeepalive = mkIf (!isStatic) 25;
-          endpoint = mkIf isStatic "${tagConf.ipAddr}:${builtins.toString peerConf.listenPort}";
+          wireguardPeerConfig =
+            {
+              PublicKey = peerConf.publicKey;
+              AllowedIPs = ["${peerConf.wgAddrV4}/32"];
+              PersistentKeepalive = 25;
+            }
+            // optionalAttrs (!isDynamic) {
+              Endpoint = "${tagConf.ipAddr}:${builtins.toString peerConf.listenPort}";
+            };
         }
       ))
       (filterTags tags peerConfs);
 
   # Build the wireguard conf
-  buildConfig = name: wireguardConf: let
-    myConf = wireguardConf.peers."${name}";
+  buildConfig = name: let
+    myConf = wireguardConf.peers.${name};
     peerConfs = builtins.removeAttrs wireguardConf.peers [name];
   in {
+    environment.systemPackages = [pkgs.wireguard-tools];
+
     age.secrets.wireguard_private_key = {
       file = myConf.privateKeyAge;
       path = myConf.privateKeyPath;
-      mode = "600";
+      owner = "root";
+      group = "systemd-network";
+      mode = "0640";
     };
 
     networking = {
-      nat = {
-        enable = true;
-        externalInterface = "eth0";
-        internalInterfaces = [wireguardConf.interface];
-      };
-
       firewall.interfaces = let
         # allow wireguard listen port on each system interface
         openWireguard =
@@ -104,39 +109,51 @@ with lib; let
             allowedTCPPorts = myConf.firewall.allowedTCPPorts;
           };
         };
+    };
 
-      # TODO: Switch to systemd-networkd
-      wireguard = {
-        enable = true;
+    systemd.network = {
+      networks."99-${wireguardConf.interface}" = {
+        matchConfig.Name = wireguardConf.interface;
+        routes = [
+          {
+            routeConfig = {
+              PreferredSource = "${myConf.wgAddrV4}";
+              Scope = "link";
+              Destination = "${myConf.wgAddrV4}/${builtins.toString myConf.interfaceMask}";
+            };
+          }
+        ];
+        networkConfig =
+          {
+            Address = ["${myConf.wgAddrV4}/32"];
+          }
+          // optionalAttrs (myConf.dns == "client") {
+            DNS =
+              builtins.filter
+              (v: !(builtins.isNull v))
+              (mapAttrsToList (_: peerConf:
+                if (peerConf.dns == "server")
+                then peerConf.wgAddrV4
+                else null)
+              peerConfs);
+            Domains = "~.";
+            DNSSEC = true;
+            DNSSECNegativeTrustAnchors = mapAttrsToList (_: peerConf: peerConf.domainName) peerConfs;
+          };
+      };
 
-        interfaces."${wireguardConf.interface}" = {
-          ips = ["${myConf.wgAddrV4}/${builtins.toString myConf.interfaceMask}"];
-          listenPort = myConf.listenPort;
-          postSetup =
-            if (myConf.dns == "client")
-            then ''
-              resolvectl domain ${wireguardConf.interface} '~.'
-              resolvectl dnssec ${wireguardConf.interface} false
-              ${
-                concatStringsSep
-                "\n"
-                (builtins.filter
-                  (v: !(builtins.isNull v))
-                  (mapAttrsToList (_: peerConf:
-                    if (peerConf.dns == "server")
-                    then "resolvectl dns ${wireguardConf.interface} ${peerConf.wgAddrV4}"
-                    else null)
-                  peerConfs))
-              }
-              ${myConf.postSetup}
-            ''
-            else myConf.postSetup;
-
-          postShutdown = myConf.postShutdown;
-          privateKeyFile = myConf.privateKeyPath;
-
-          peers = buildPeers myConf peerConfs;
+      netdevs."99-${wireguardConf.interface}" = {
+        netdevConfig = {
+          Name = wireguardConf.interface;
+          Kind = "wireguard";
         };
+
+        wireguardConfig = {
+          PrivateKeyFile = myConf.privateKeyPath;
+          ListenPort = myConf.listenPort;
+        };
+
+        wireguardPeers = buildPeers myConf peerConfs;
       };
     };
   };
@@ -222,18 +239,6 @@ with lib; let
         };
       };
 
-      postSetup = mkOption {
-        default = "";
-        type = types.str;
-        description = "";
-      };
-
-      postShutdown = mkOption {
-        default = "";
-        type = types.str;
-        description = "";
-      };
-
       tags = mkOption {
         type = with types; listOf (submodule peerTagConf);
         description = ''
@@ -244,8 +249,6 @@ with lib; let
       };
     };
   };
-
-  cfg = config.jd.wireguard;
 in {
   options.jd.wireguard = {
     enable = mkOption {
@@ -266,5 +269,5 @@ in {
     };
   };
 
-  config = mkIf (cfg.enable) (buildConfig (config.networking.hostName) cfg);
+  config = mkIf wireguardConf.enable (buildConfig config.networking.hostName);
 }
