@@ -94,7 +94,47 @@ in {
           };
         };
       })
+      # Cannot create subvolumes until it is mounted,
+      # If iso does not have bcachefs
+      (let
+        # todo: hardcode
+        device = "/dev/vda1";
 
+        unlock = device: ''
+          ds="${device}"
+          while [ $success -eq 0 ]; do
+            ${systemd}/bin/systemd-ask-password "Enter key: for $ds" | ${bcachefs-tools}/bin/bcachefs unlock "$ds" \
+              && success=1
+          done
+        '';
+      in
+        mkIf (cfg.type == "bcachefs-bootstrap" || cfg.type == "bcachefs")
+        {
+          boot = {
+            loader = {
+              efi = {
+                canTouchEfiVariables = true;
+                efiSysMountPoint = "/boot";
+              };
+              systemd-boot = {
+                enable = true;
+                efiSupport = false;
+              };
+            };
+            supportedFilesystems = ["bcachefs"];
+            kernelParams = ["nohibernate"];
+            initrd.systemd = {
+              enable = true;
+              extraBin = {
+              };
+            };
+          };
+
+          fileSystems."/" = {
+            inherit device;
+            fsType = "bcachefs";
+          };
+        })
       # ZFS sources
       # https://nixos.wiki/wiki/ZFS
       # https://elis.nu/blog/2019/08/encrypted-zfs-mirror-with-mirrored-boot-on-nixos/
