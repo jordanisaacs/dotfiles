@@ -22,8 +22,6 @@ in {
   config = mkIf (config.jd.applications.enable && cfg.enable) {
     services.syncthing = {
       enable = true;
-      # TODO: fails on service starting during login. Restarting it sets it up correctly
-      tray.enable = false;
     };
 
     systemd.user.services = {
@@ -39,7 +37,7 @@ in {
           # Shitty hack to make syncthingtray wait until tray is initialized
           # --wait does not work on wayland due to:
           # QObject::connect: No such signal QPlatformNativeInterface::systemTrayWindowChanged(QScreen*)
-          ExecStartPre = "${pkgs.coreutils}/bin/sleep 0.5";
+          ExecStartPre = "${pkgs.coreutils}/bin/sleep 2";
           ExecStart = "${pkgs.syncthingtray-minimal}/bin/syncthingtray";
         };
 

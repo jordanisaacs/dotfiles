@@ -38,7 +38,7 @@ in {
         # Messaging
         slack
         discord
-        jdpkgs.element-desktop
+        element-desktop
 
         # Reading
         calibre

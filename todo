@@ -12,7 +12,7 @@ Blocked:
     [ ] systemd boot & plymouth (waiting on systemd-stage-1 - not currently feature complete)
     [ ] wayland compositor just meh (switch back to dwl but need to update dwl-flake)
 
-Private Cloud Services:
+Private Cloud:
     [x] Public mailserver (simple-nixos-mailserver)
     [x] Private recursing DNS with domains (unbound)
     [-] Nginx reverse proxy
@@ -28,6 +28,17 @@ Private Cloud Services:
     [ ] Investigate using microvms for services
     [ ] Dynamic IP that works with DNS (see natguard repo for progress)
 
+Public Cloud:
+    [ ] Use disko for ZFS formatting
+    [ ] Secondary wireguard network
+    [ ] Get networking working
+    [ ] Hydra build system
+        [ ] github integration
+        [ ] local qemu build machines
+        [ ] nginx reverse proxy
+            [ ] https
+            [ ] hydra subdomain
+
 System:
     [ ] Get waydroid running
     [ ] Get windows 10 QEMU working
@@ -35,8 +46,6 @@ System:
     [ ] Greetd/tuigreet
         [ ] kernel logs and fprintd output make tuigreet go visually insane :(
         [ ] fix session configurations
-    [ ] Systemd
-        [ ] Currently jankily working around xdg-portal-gtk failing by force restart, figure out what is wrong
     [ ] Printer/wifi:
         [ ] Find a good way to automatically set up. Use agenix?
 
@@ -46,6 +55,7 @@ User:
         [ ] foot coloring
         [ ] bemenu coloring & font size
     [ ] SSH-Agent
+        [x] Working gnome-keyring
         [ ] Setup auto-login bitwarden-cli using gnome-keyring
         [ ] valid-before/after SSH signing file
         [ ] Bitwarden ssh-agent python script

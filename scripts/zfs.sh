@@ -1,20 +1,18 @@
 # TODO: change to script arguments
 
-sgdisk --zap-all /dev/sda
+set -e
 
-SDA_ID="$(ls /dev/disk/by-id/ | grep '^[scsi]')"
-DISK=/dev/disk/by-id/$SDA_ID
+DISK=$1
 
-sgdisk -n 0:0:+1MiB -t 0:ef02 -c 0:grub $DISK
-sgdisk -n 0:0:+512MiB -t 0:ea00 -c 0:boot $DISK
-sgdisk -n 0:0:+2GiB -t 0:8200 -c 0:swap $DISK
-sgdisk -n 0:0:0 -t 0:BF01 -c 0:ZFS $DISK
+sgdisk --zap-all $DISK
 
-BOOT=$DISK-part2
-SWAP = $DISK-part3
-ZFS=$DISK-part4
 
-mkswap -L SWAP $SWAP
+sgdisk -n 0:0:+512MiB -t 0:ef00 -c 0:boot $DISK
+sgdisk -n 0:0:0 -t 0:BF01 -c 0:zfs $DISK
+
+BOOT=${DISK}1
+ZFS=${DISK}2
+
 mkfs.vfat -n BOOT $BOOT
 
 zpool create \

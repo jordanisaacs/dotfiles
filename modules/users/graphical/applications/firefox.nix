@@ -98,22 +98,22 @@ in {
             platforms = platforms.all;
           };
         })
-        (buildFirefoxXpiAddon {
-          pname = "localcdn";
-          version = "2.6.46";
-          addonId = "{b86e4813-687a-43e6-ab65-0bde4ab75758}";
-          url = "https://addons.mozilla.org/firefox/downloads/file/4066709/localcdn_fork_of_decentraleyes-2.6.46.xpi";
-          sha256 = "sha256-qOJyPDZQ+jP//xvdpU0swYB9YAP03y66GHlTGLyyAfg=";
+        # (buildFirefoxXpiAddon {
+        #   pname = "localcdn";
+        #   version = "2.6.46";
+        #   addonId = "{b86e4813-687a-43e6-ab65-0bde4ab75758}";
+        #   url = "https://addons.mozilla.org/firefox/downloads/file/4066709/localcdn_fork_of_decentraleyes-2.6.46.xpi";
+        #   sha256 = "sha256-qOJyPDZQ+jP//xvdpU0swYB9YAP03y66GHlTGLyyAfg=";
 
-          meta = with lib; {
-            description = ''
-              Emulates remote frameworks (e.g. jQuery, Bootstrap, AngularJS) and delivers them as local resource.
-              Prevents unnecessary 3rd party requests to Google, StackPath, MaxCDN and more.
-              Prepared rules for uBlock Origin/uMatrix.
-            '';
-            platforms = platforms.all;
-          };
-        })
+        #   meta = with lib; {
+        #     description = ''
+        #       Emulates remote frameworks (e.g. jQuery, Bootstrap, AngularJS) and delivers them as local resource.
+        #       Prevents unnecessary 3rd party requests to Google, StackPath, MaxCDN and more.
+        #       Prepared rules for uBlock Origin/uMatrix.
+        #     '';
+        #     platforms = platforms.all;
+        #   };
+        # })
         (buildFirefoxXpiAddon {
           pname = "enforce-browser-fonts";
           version = "1.2";
