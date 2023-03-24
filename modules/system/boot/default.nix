@@ -15,15 +15,31 @@ in {
     };
 
     hostId = mkOption {
+      # Generate with:
+      # head -c4 /dev/urandom | od -A none -t x4
       description = "HostID, needed for server-zfs";
       default = null;
       type = types.str;
     };
 
-    swapPartuuid = mkOption {
-      description = "Swap part uuid, needed for server-zfs";
+    grubDevice = mkOption {
+      description = "Grub device";
       default = null;
       type = types.str;
+    };
+
+    swap = {
+      enable = mkOption {
+        description = "Whether zfs has swap";
+        default = false;
+        type = types.bool;
+      };
+
+      swapPartuuid = mkOption {
+        description = "Swap part uuid, needed for server-zfs";
+        default = null;
+        type = types.str;
+      };
     };
   };
 
@@ -99,75 +115,73 @@ in {
       # https://nixos.wiki/wiki/ZFS
       # https://elis.nu/blog/2019/08/encrypted-zfs-mirror-with-mirrored-boot-on-nixos/
       # https://florianfranke.dev/posts/2020/03/installing-nixos-with-encrypted-zfs-on-a-netcup.de-root-server/
-      (
-        mkIf (cfg.type == "zfs") {
-          boot = {
-            loader = {
-              grub = {
-                enable = true;
-                version = 2;
-                device = "/dev/sda";
-                efiSupport = false;
-              };
+      (mkIf (cfg.type == "zfs") {
+        boot = {
+          loader = {
+            grub = {
+              enable = true;
+              version = 2;
+              device = cfg.grubDevice;
+              efiSupport = false;
             };
-            supportedFilesystems = ["zfs"];
-            kernelParams = ["nohibernate"];
-            zfs.requestEncryptionCredentials = true;
+          };
+          supportedFilesystems = ["zfs"];
+          kernelParams = ["nohibernate"];
+          zfs.requestEncryptionCredentials = true;
+        };
+
+        services.zfs.trim.enable = true;
+        services.zfs.autoScrub.enable = true;
+        services.zfs.autoScrub.pools = ["rpool"];
+
+        networking.hostId = cfg.hostId;
+
+        fileSystems."/boot" = {
+          device = "/dev/disk/by-label/BOOT";
+          fsType = "vfat";
+        };
+
+        swapDevices =
+          lib.optional (cfg.swap.enable)
+          {
+            device = "/dev/disk/by-partuuid/${cfg.swap.swapPartuuid}";
+            randomEncryption = true;
           };
 
-          services.zfs.trim.enable = true;
-          services.zfs.autoScrub.enable = true;
-          services.zfs.autoScrub.pools = ["rpool"];
+        fileSystems."/" = {
+          device = "rpool/local/root";
+          fsType = "zfs";
+        };
 
-          networking.hostId = cfg.hostId;
+        fileSystems."/home" = {
+          device = "rpool/local/home";
+          fsType = "zfs";
+        };
 
-          fileSystems."/boot" = {
-            device = "/dev/disk/by-label/BOOT";
-            fsType = "vfat";
-          };
+        fileSystems."/nix" = {
+          device = "rpool/local/nix";
+          fsType = "zfs";
+          neededForBoot = true;
+        };
 
-          swapDevices = [
-            {
-              device = "/dev/disk/by-partuuid/${cfg.swapPartuuid}";
-              randomEncryption = true;
-            }
-          ];
+        fileSystems."/persist" = {
+          device = "rpool/persist/root";
+          fsType = "zfs";
+          neededForBoot = true;
+        };
 
-          fileSystems."/" = {
-            device = "rpool/local/root";
-            fsType = "zfs";
-          };
+        fileSystems."/persist/home" = {
+          device = "rpool/persist/home";
+          fsType = "zfs";
+          neededForBoot = true;
+        };
 
-          fileSystems."/home" = {
-            device = "rpool/local/home";
-            fsType = "zfs";
-          };
-
-          fileSystems."/nix" = {
-            device = "rpool/local/nix";
-            fsType = "zfs";
-            neededForBoot = true;
-          };
-
-          fileSystems."/persist" = {
-            device = "rpool/persist/root";
-            fsType = "zfs";
-            neededForBoot = true;
-          };
-
-          fileSystems."/persist/home" = {
-            device = "rpool/persist/home";
-            fsType = "zfs";
-            neededForBoot = true;
-          };
-
-          fileSystems."/persist/data" = {
-            device = "rpool/persist/data";
-            fsType = "zfs";
-            neededForBoot = true;
-          };
-        }
-      )
+        fileSystems."/persist/data" = {
+          device = "rpool/persist/data";
+          fsType = "zfs";
+          neededForBoot = true;
+        };
+      })
     ];
   in
     bootConfig;
