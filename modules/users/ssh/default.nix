@@ -24,6 +24,9 @@ in {
           user = "root";
           identityFile = "~/.ssh/local";
         };
+        "38.45.64.210" = {
+          forwardAgent = true;
+        };
       };
       extraConfig = ''
         AddKeysToAgent yes
