@@ -576,12 +576,10 @@
         name = "chairlift";
         initrdMods = ["sd_mod" "sr_mod" "ahci" "xhci_pci"];
         kernelMods = [];
-        # TODO: Switch to 5.19 when zfs gains support
-        kernelPackage = pkgs.linuxPackages_5_15;
+        kernelPackage = pkgs.zfs.latestCompatibleLinuxPackages;
         kernelParams = ["nohibernate"];
         kernelPatches = [];
         systemConfig = chairliftConfig;
-        users = [defaultUser];
         cpuCores = 2;
         stateVersion = "21.11";
       };
