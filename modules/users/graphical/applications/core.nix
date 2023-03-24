@@ -28,7 +28,8 @@ in {
         # jdpkgs.texstudioWrapper
         microsoft-edge
 
-        flameshot
+        # updated version with wayland/grim backend
+        jdpkgs.flameshot
         libsixel
 
         # Password manager
@@ -38,7 +39,7 @@ in {
         # Messaging
         slack
         discord
-        jdpkgs.element-desktop
+        element-desktop
 
         # Reading
         calibre

@@ -117,7 +117,7 @@
           ];
         };
       };
-      agenix-cli = agenix.defaultPackage."${system}";
+      agenix-cli = agenix.packages."${system}".default;
       deploy-rs = deploy-rs.packages."${system}".deploy-rs;
       jdpkgs = jdpkgs.packages."${system}";
       bm-font = super.callPackage (secrets + "/bm") {};

@@ -1,42 +1,45 @@
 {
   description = "System Config";
   inputs = {
+    # Package repositories
     nixpkgs.url = "nixpkgs/nixos-unstable";
     nixpkgs-stable.url = "nixpkgs/nixos-22.11";
 
-    nur = {
-      url = "github:nix-community/NUR";
-    };
+    home-manager.url = "github:nix-community/home-manager";
+    home-manager.inputs.nixpkgs.follows = "nixpkgs";
 
-    flake-utils = {
-      url = "github:numtide/flake-utils";
-    };
+    nur.url = "github:nix-community/NUR";
 
-    home-manager = {
-      url = "github:nix-community/home-manager";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
+    nixpkgs-wayland.url = "github:nix-community/nixpkgs-wayland";
 
-    impermanence = {
-      url = "github:nix-community/impermanence";
-    };
+    jdpkgs.url = "github:jordanisaacs/jdpkgs";
+    jdpkgs.inputs.nixpkgs.follows = "nixpkgs";
 
-    simple-nixos-mailserver = {
-      url = "gitlab:simple-nixos-mailserver/nixos-mailserver";
-      inputs.nixpkgs.follows = "nixpkgs";
-      inputs.utils.follows = "flake-utils";
-    };
+    # Extra nix/nixos modules
+    impermanence.url = "github:nix-community/impermanence";
 
-    deploy-rs = {
-      url = "github:serokell/deploy-rs";
-      inputs.nixpkgs.follows = "nixpkgs";
-      inputs.utils.follows = "flake-utils";
-    };
+    disko.url = "github:nix-community/disko";
+    disko.inputs.nixpkgs.follows = "nixpkgs";
 
-    agenix = {
-      url = "github:ryantm/agenix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
+    simple-nixos-mailserver.url = "gitlab:simple-nixos-mailserver/nixos-mailserver";
+    simple-nixos-mailserver.inputs.nixpkgs.follows = "nixpkgs";
+    simple-nixos-mailserver.inputs.utils.follows = "flake-utils";
+
+    flake-utils.url = "github:numtide/flake-utils";
+
+    deploy-rs.url = "github:serokell/deploy-rs";
+    deploy-rs.inputs.nixpkgs.follows = "nixpkgs";
+    deploy-rs.inputs.utils.follows = "flake-utils";
+
+    # Secrets
+    secrets.url = "git+ssh://git@github.com/jordanisaacs/secrets.git?ref=main";
+    secrets.inputs.nixpkgs.follows = "nixpkgs";
+
+    agenix.url = "github:ryantm/agenix";
+    agenix.inputs.nixpkgs.follows = "nixpkgs";
+
+    homeage.url = "github:jordanisaacs/homeage";
+    homeage.inputs.nixpkgs.follows = "nixpkgs";
 
     microvm-nix = {
       url = "github:astro/microvm.nix";
@@ -44,32 +47,12 @@
       inputs.flake-utils.follows = "flake-utils";
     };
 
-    nixpkgs-wayland = {
-      url = "github:nix-community/nixpkgs-wayland";
-    };
-
-    homeage = {
-      url = "github:jordanisaacs/homeage";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    jdpkgs = {
-      url = "github:jordanisaacs/jdpkgs";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    secrets = {
-      url = "git+ssh://git@github.com/jordanisaacs/secrets.git?ref=main";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
+    # Programs
     neovim-flake.url = "github:jordanisaacs/neovim-flake";
 
-    st-flake = {
-      url = "github:jordanisaacs/st-flake";
-      inputs.nixpkgs.follows = "nixpkgs";
-      inputs.flake-utils.follows = "flake-utils";
-    };
+    st-flake.url = "github:jordanisaacs/st-flake";
+    st-flake.inputs.nixpkgs.follows = "nixpkgs";
+    st-flake.inputs.flake-utils.follows = "flake-utils";
 
     dwm-flake.url = "github:jordanisaacs/dwm-flake";
 
@@ -100,7 +83,7 @@
     inherit (nixpkgs) lib;
 
     util = import ./lib {
-      inherit system nixpkgs pkgs home-manager lib overlays inputs patchedPkgs;
+      inherit system nixpkgs pkgs home-manager lib overlays patchedPkgs inputs;
     };
 
     scripts = import ./scripts {
@@ -349,10 +332,10 @@
         microbin.enable = true;
         calibre.web.enable = true;
         syncthing = {
-          relay.enable = true;
-          discovery.enable = true;
+          relay.enable = false;
+          discovery.enable = false;
         };
-        languagetool.enable = true;
+        languagetool.enable = false;
         mailserver = with secrets.mailserver; {
           enable = true;
           inherit fqdn sendingFqdn domains;
@@ -375,7 +358,8 @@
           firewall = "wg";
         };
         ankisyncd = {
-          enable = true;
+          # build is broken
+          enable = false;
           address = "10.55.0.2";
           firewall = "wg";
         };

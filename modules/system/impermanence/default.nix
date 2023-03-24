@@ -129,7 +129,7 @@ in {
       }
       {
         # Wait to acivate age decryption until mounted
-        system.activationScripts.agenixInstall.deps = ["specialfs" "persist-files"];
+        system.activationScripts.agenixNewGeneration.deps = ["specialfs" "persist-files"];
       }
     ];
   in
