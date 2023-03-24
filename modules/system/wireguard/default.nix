@@ -90,6 +90,8 @@ with lib; let
       mode = "0640";
     };
 
+    jd.wireguard.allAddresses = mapAttrsToList (_: v: v.wgAddrV4) wireguardConf.peers;
+
     networking = {
       firewall.interfaces = let
         # allow wireguard listen port on each system interface
@@ -100,7 +102,7 @@ with lib; let
               inherit name;
               value = {allowedUDPPorts = [myConf.listenPort];};
             })
-            config.jd.networking.interfaces);
+            config.jd.networking.allInterfaces);
       in
         openWireguard
         // {
@@ -266,6 +268,12 @@ in {
     peers = mkOption {
       type = with types; attrsOf (submodule wgConf);
       description = "The wireguard configuration for the system";
+    };
+
+    allAddresses = mkOption {
+      type = with types; listOf str;
+      internal = true;
+      description = "All addresses on the network";
     };
   };
 

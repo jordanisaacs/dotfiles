@@ -61,24 +61,23 @@ in {
       (mkIf (cfg.firewall == "world") {
         services.openssh.openFirewall = true;
       })
-      (
-        let
-          wgconf = config.jd.wireguard;
-        in
-          mkIf
-          (cfg.firewall == "wg" && (assertMsg wgconf.enable "Wireguard must be enabled for wireguard ssh firewall"))
-          {
-            services.openssh.openFirewall = false;
-            networking.firewall.interfaces.${wgconf.interface}.allowedTCPPorts = cfg.ports;
-          }
-      )
+      (mkIf
+        (cfg.firewall == "wg" && (assertMsg config.jd.wireguard.enable "Wireguard must be enabled for wireguard ssh firewall")) {
+          services.openssh.openFirewall = false;
+          networking.firewall.interfaces.${config.jd.wireguard.interface}.allowedTCPPorts = cfg.ports;
+        })
 
       {
         services.openssh = {
           enable = true;
           ports = cfg.ports;
           hostKeys = [];
+          settings = {
+            PasswordAuthentication = false;
+          };
           extraConfig = ''
+            PubkeyAuthentication yes
+
             HostKey ${cfg.hostKeyPath}
           '';
         };
@@ -100,29 +99,28 @@ in {
       }
 
       (mkIf (config.jd.boot.type == "zfs") {
-        boot.initrd = {
-          network = {
+        boot.initrd.network = {
+          # Disable if bootstrapped because keys are not yet created
+          enable = true;
+          ssh = {
             enable = true;
-            ssh = {
-              enable = true;
-              port = 2323;
-              hostKeys = [
-                "/etc/secrets/initrd/ssh_host_ed25519_key"
-              ];
-              authorizedKeys = cfg.initrdKeys;
-            };
-            postCommands = ''
-              cat <<EOF > /root/.profile
-              if pgrep -x "zfs" > /dev/null
-              then
-                zfs load-key -a
-                killall zfs
-              else
-                echo "zfs not running -- maybe the pool is taking time to load for unforseen reasons"
-              fi
-              EOF
-            '';
+            port = 2323;
+            hostKeys = [
+              "/etc/secrets/initrd/ssh_host_ed25519_key"
+            ];
+            authorizedKeys = cfg.initrdKeys;
           };
+          postCommands = ''
+            cat <<EOF > /root/.profile
+            if pgrep -x "zfs" > /dev/null
+            then
+              zfs load-key -a
+              killall zfs
+            else
+              echo "zfs not running -- maybe the pool is taking time to load for unforseen reasons"
+            fi
+            EOF
+          '';
         };
       })
     ]))

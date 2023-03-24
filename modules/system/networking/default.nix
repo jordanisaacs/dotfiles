@@ -14,6 +14,12 @@ in {
       description = "List of network interface cards, do not add wifi card";
     };
 
+    allInterfaces = mkOption {
+      internal = true;
+      default = [];
+      description = "List of network interface cards";
+    };
+
     wifi = {
       enable = mkOption {
         description = "Enable wifi with default options";
@@ -25,6 +31,42 @@ in {
         type = types.str;
         default = "wlan0";
         description = "Name of wifi NIC";
+      };
+    };
+
+    static = {
+      enable = mkOption {
+        description = "Enable static addresses";
+        type = types.bool;
+        default = false;
+      };
+
+      interface = mkOption {
+        description = "Name of NIC";
+        default = null;
+        type = types.str;
+      };
+
+      ipv4 = {
+        gateway = mkOption {
+          description = "ipv4 gateway";
+          type = types.str;
+          default = null;
+        };
+
+        addr = mkOption {
+          description = "ipv4 address";
+          type = types.str;
+          default = null;
+        };
+      };
+
+      ipv6 = {
+        addr = mkOption {
+          description = "ipv6 address";
+          type = types.str;
+          default = null;
+        };
       };
     };
 
@@ -65,9 +107,15 @@ in {
           value = {useDHCP = true;};
         })
         cfg.interfaces);
+
+    interfaces =
+      cfg.interfaces
+      ++ lib.optional cfg.wifi.enable cfg.wifi.interface
+      ++ lib.optional cfg.static.enable cfg.static.interface;
   in
     mkMerge [
       {
+        jd.networking.allInterfaces = interfaces;
         networking = {
           # TODO: Switch to systemd-networkd
           # Routing
@@ -105,6 +153,8 @@ in {
         };
       })
       (mkIf cfg.firewall.enable {
+        # Use nftables
+        networking.nftables.enable = true;
         networking.firewall = {
           enable = true;
           interfaces =
@@ -128,22 +178,45 @@ in {
                   })
                 ];
               })
-              (cfg.interfaces ++ lib.optional cfg.wifi.enable cfg.wifi.interface));
+              interfaces);
         };
       })
-      (mkIf cfg.chairlift {
-        networking = {
-          interfaces.enp1s0.ipv6.addresses = [
+      (mkIf cfg.static.enable {
+        systemd.network.networks."40-${cfg.static.interface}" = {
+          matchConfig = {
+            Name = cfg.static.interface;
+          };
+
+          networkConfig = {
+            Address = [cfg.static.ipv4.addr cfg.static.ipv6.addr];
+            DNS = ["9.9.9.9" "149.112.112.112" "2620:fe::fe" "2620:fe::9"]; # quad9
+            Gateway = [cfg.static.ipv4.gateway "fe80::1"];
+            DNSSEC = "allow-downgrade";
+            # https://tldp.org/HOWTO/Linux+IPv6-HOWTO/ch06s05.html
+            IPv6PrivacyExtensions = "no";
+            LinkLocalAddressing = "ipv6";
+          };
+
+          routes = [
             {
-              address = "2a01:4ff:f0:865b::1";
-              prefixLength = 64;
+              routeConfig = {
+                Gateway = "0.0.0.0";
+                Destination = cfg.static.ipv4.gateway;
+              };
             }
           ];
-          defaultGateway6 = {
-            address = "fe80::1";
-            interface = "enp1s0";
-          };
         };
+
+        # hack around to set up our networking. not "post" but just give it ordering before all
+        # other postCommands
+        boot.initrd.network.postCommands = mkBefore ''
+          echo "Bringing up ${cfg.static.interface}"
+          ip link set ${cfg.static.interface} up
+          echo "Setting address and routes"
+          ip addr add ${cfg.static.ipv4.addr} dev ${cfg.static.interface} scope global
+          ip route add ${cfg.static.ipv4.gateway} dev ${cfg.static.interface} scope link
+          ip route add default via ${cfg.static.ipv4.gateway} dev ${cfg.static.interface}
+        '';
       })
       # If unbound is enabled do not use systemd-resolved
       (mkIf (!config.jd.unbound.enable) {

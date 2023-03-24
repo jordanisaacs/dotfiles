@@ -296,9 +296,22 @@
         wireguard = wireguardConf;
         ssh.firewall = "wg";
         secrets.identityPaths = [secrets.age.system.chairlift.privateKeyPath];
-        ssh.hostKeyAge = secrets.ssh.host.chairlift.secret.file;
-        networking.interfaces = ["enp1s0"];
-        networking.chairlift = true;
+        wireguard = wireguardConf;
+        networking = {
+          static = {
+            enable = true;
+            interface = "enp1s0";
+            ipv6.addr = "2a01:4ff:f0:865b::1/64";
+            ipv4 = {
+              addr = "5.161.103.90/32";
+              gateway = "172.31.1.1";
+            };
+          };
+        };
+        ssh = {
+          firewall = "wg";
+          hostKeyAge = secrets.ssh.host.chairlift.secret.file;
+        };
         acme.email = secrets.acme.email;
         monitoring.enable = false;
         microbin.enable = true;
@@ -393,7 +406,7 @@
       {
         desktop.enable = true;
         greetd.enable = true;
-        networking.interfaces = ["enp6s0" "wlp5s0"];
+        networking.interfaces = ["enp6s0"];
         wireguard = wireguardConf;
         secrets.identityPaths = [secrets.age.system.desktop.privateKeyPath];
         waydroid.enable = true;
@@ -405,7 +418,7 @@
       {
         laptop.enable = true;
         secrets.identityPaths = [""];
-        networking.interfaces = ["enp0s31f6" "wlp2s0"];
+        networking.interfaces = ["enp0s31f6"];
       }
     ];
 
