@@ -288,6 +288,32 @@
       impermanence.enable = true;
     };
 
+    gondolaConfig = utils.recursiveMerge [
+      defaultServerConfig
+      {
+        users.rootPassword = secrets.passwords.gondola;
+        isQemuGuest = true;
+        boot = {
+          hostId = "fe120267";
+          grubDevice = "/dev/vda";
+        };
+        secrets.identityPaths = [secrets.age.system.gondola.privateKeyPath];
+        networking = {
+          static = {
+            enable = true;
+            interface = "ens3";
+            ipv6.addr = "2001:550:5a00:550b::1/64";
+            ipv4.addr = "38.45.64.210/32";
+            ipv4.gateway = "38.45.64.1";
+          };
+        };
+        ssh = {
+          firewall = "world";
+          hostKeyAge = secrets.ssh.host.gondola.secret.file;
+        };
+      }
+    ];
+
     chairliftConfig = utils.recursiveMerge [
       defaultServerConfig
       {
@@ -575,6 +601,18 @@
         cpuCores = 2;
         stateVersion = "21.11";
       };
+
+      gondola = host.mkHost {
+        name = "gondola";
+        initrdMods = ["sr_mod" "ata_piix" "virtio_pci" "virtio_scsi" "virtio_blk" "virtio_net"];
+        kernelMods = [];
+        kernelPackage = pkgs.zfs.latestCompatibleLinuxPackages;
+        kernelParams = ["nohibernate"];
+        kernelPatches = [];
+        systemConfig = gondolaConfig;
+        cpuCores = 8;
+        stateVersion = "21.11";
+      };
     };
 
     deploy.nodes.chairlift = {
@@ -587,6 +625,20 @@
           sshUser = "root";
           user = "root";
           path = deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations.chairlift;
+        };
+      };
+    };
+
+    deploy.nodes.gondola = {
+      hostname = "38.45.64.210";
+      sshOpts = ["-p" "23"];
+      autoRollback = false;
+      magicRollback = false;
+      profiles = {
+        system = {
+          sshUser = "root";
+          user = "root";
+          path = deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations.gondola;
         };
       };
     };
