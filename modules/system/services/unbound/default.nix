@@ -29,8 +29,8 @@ in {
   };
 
   config = let
-    unboundPort = config.services.unbound.settings.server.port;
-    wgIps = config.networking.wireguard.interfaces.${config.jd.wireguard.interface}.ips;
+    unboundPort = 53;
+    wgIps = config.jd.wireguard.allAddresses;
     wgIpsStripped = with builtins;
       map
       (ip: head (splitString "/" ip))
@@ -66,7 +66,7 @@ in {
             resolveLocalQueries = true;
             settings = {
               server = {
-                port = 53;
+                port = unboundPort;
                 so-reuseport = "yes";
                 # use all CPUs
                 num-threads = 2;
@@ -141,7 +141,7 @@ in {
                 ];
                 root-hints = builtins.fetchurl {
                   url = "https://www.internic.net/domain/named.cache";
-                  sha256 = "sha256:1jcjjdqi3bvi8kilhpc7a38534l9j24pjf3bvgxfxxcdqxis3b1w";
+                  sha256 = "sha256:1chilncl5ryj2jbm77cfhpqw96sm0wf14rnv8gq6japkbz3axqi8";
                 };
               };
             };
