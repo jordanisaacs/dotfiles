@@ -28,5 +28,6 @@
     ./android
     ./windows
     ./desktop
+    ./users
   ];
 }

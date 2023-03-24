@@ -259,13 +259,23 @@
       };
     };
 
+    defaultUser = {
+      name = "jd";
+      groups = ["wheel"];
+      uid = 1000;
+      shell = pkgs.zsh;
+    };
+
+    defaultDesktopUser =
+      defaultUser
+      // {
+        groups = defaultUser.groups ++ ["networkmanager" "video" "libvirtd"];
+      };
+
     defaultServerConfig = {
       core.enable = true;
-      boot = {
-        type = "zfs";
-        hostId = "2d360981";
-        swapPartuuid = "52c2b662-0b7b-430c-9a10-068acbe9d15d";
-      };
+      boot.type = "zfs";
+      users.mutableUsers = false;
       ssh = {
         enable = true;
         type = "server";
@@ -281,6 +291,7 @@
     chairliftConfig = utils.recursiveMerge [
       defaultServerConfig
       {
+        users.rootPassword = secrets.passwords.chairlift;
         isQemuGuest = true;
         wireguard = wireguardConf;
         ssh.firewall = "wg";
@@ -341,6 +352,7 @@
         enable = true;
         ccache = true;
       };
+      users.users = [defaultDesktopUser];
       boot.type = "encrypted-efi";
       gnome = {
         enable = true;
@@ -414,21 +426,6 @@
         windows.enable = true;
       }
     ];
-
-    defaultUser = {
-      name = "jd";
-      groups = ["wheel"];
-      uid = 1000;
-      shell = pkgs.zsh;
-    };
-
-    defaultUsers = [defaultUser];
-
-    defaultDesktopUser =
-      defaultUser
-      // {
-        groups = defaultUser.groups ++ ["networkmanager" "video" "libvirtd"];
-      };
   in {
     installMedia = {
       kde = host.mkISO {
@@ -518,7 +515,6 @@
         kernelParams = [];
         kernelPatches = [];
         systemConfig = laptopConfig;
-        users = defaultUsers;
         cpuCores = 4;
         stateVersion = "21.05";
       };
@@ -531,7 +527,6 @@
         kernelParams = [];
         kernelPatches = [];
         systemConfig = frameworkConfig;
-        users = [defaultDesktopUser];
         cpuCores = 8;
         stateVersion = "21.11";
       };
@@ -544,7 +539,6 @@
         kernelParams = [];
         kernelPatches = [];
         systemConfig = desktopConfig;
-        users = [defaultDesktopUser];
         cpuCores = 12;
         stateVersion = "21.11";
       };

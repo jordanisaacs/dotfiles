@@ -64,16 +64,26 @@ with builtins; {
     groups,
     uid,
     shell,
+    password ? null,
     ...
   }: {
-    users.users."${name}" = {
-      name = name;
-      isNormalUser = true;
-      isSystemUser = false;
-      extraGroups = groups;
-      uid = uid;
-      initialPassword = "helloworld";
-      shell = shell;
-    };
+    users.users."${name}" =
+      {
+        name = name;
+        isNormalUser = true;
+        isSystemUser = false;
+        extraGroups = groups;
+        uid = uid;
+        shell = shell;
+      }
+      // (
+        if password == null
+        then {
+          initialPassword = "helloworld";
+        }
+        else {
+          hashedPassword = password;
+        }
+      );
   };
 }

@@ -50,15 +50,12 @@ with utils; {
     kernelPatches,
     systemConfig,
     cpuCores,
-    users,
     stateVersion,
     wifi ? [],
     passthru ? {},
     gpuTempSensor ? null,
     cpuTempSensor ? null,
   }: let
-    sys_users = map (u: user.mkSystemUser u) users;
-
     enable = ["enable"];
     impermanencePath = ["impermanence"];
     qemuPath = ["isQemuGuest"];
@@ -85,7 +82,7 @@ with utils; {
       modules =
         [
           {
-            imports = [(import ../modules/system {inherit inputs patchedPkgs;})] ++ sys_users;
+            imports = [(import ../modules/system {inherit inputs patchedPkgs;})];
 
             jd = systemConfigStripped;
 
@@ -110,7 +107,7 @@ with utils; {
           }
           passthru
         ]
-        ++ [inputs.agenix.nixosModule]
+        ++ [inputs.agenix.nixosModules.age]
         ++ [inputs.simple-nixos-mailserver.nixosModule]
         ++ (systemEnableModule (import (inputs.nixpkgs + "/nixos/modules/profiles/qemu-guest.nix")) qemuPath)
         ++ (systemEnableModuleConfig inputs.impermanence.nixosModule moduleFolder {
