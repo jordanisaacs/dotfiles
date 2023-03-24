@@ -1,6 +1,6 @@
-[x] done, [-] in progress, [ ] todo
+[x] done, [-] in progress, [ ] todo, [!] Broken
 
-Refactors:
+Flake Refactors:
     [-] flake.nix should only contain configuration.
     [-] Switch to submodules to make nested options work better.
     [ ] Refactor builder function to take global configuration
@@ -8,46 +8,84 @@ Refactors:
             Make every machine get passed into the module and have which machine config you want to build
         [ ] Remove the builder function custom parameters and make them part of module system
 
-Blocked:
-    [ ] systemd boot & plymouth (waiting on systemd-stage-1 - not currently feature complete)
-    [ ] wayland compositor just meh (switch back to dwl but need to update dwl-flake)
+Overall: 
+    [ ] Systemd service hardening
+        - https://bertptrs.nl/2021/09/05/securely-passing-secrets-to-dynamicuser-systemd-services.html
+    [ ] Systemd stage 1 (blocked on networking support)
+        - Stage 1 status - https://github.com/NixOS/nixpkgs/projects/51
+    [!] DynamicUser=yes and reading files for systemd - breaks syncthing services
+        - Switch to dynamic users with systemd credentials
 
-Private Cloud Services:
-    [x] Public mailserver (simple-nixos-mailserver)
-    [x] Private recursing DNS with domains (unbound)
-    [-] Nginx reverse proxy
-        [-] Services
-            [x] Nginx Status Page
-            [x] RSS (Miniflux)
-            [-] Firefly iii
-            [ ] Monitoring? Program TBD
-            [ ] Bookmarking (linkding/linkace)
-            [ ] Tandoor recipes
-            [ ] Nocodb
-        [ ] Subdomains
-    [ ] Investigate using microvms for services
-    [ ] Dynamic IP that works with DNS (see natguard repo for progress)
+Private Cloud:
+    Network:
+        [ ] Switch to knot resolver
+            [ ] Blocklists module
+            [ ] Wireguard module - see wanted programs
+        [ ] Vector.dev topology
+    Gondola:
+        [ ] Grafana instance that pulls from vector logs
+    Chairlift:
+        [x] Public mailserver (simple-nixos-mailserver)
+        [x] Private recursing DNS with domains (unbound)
+        [-] Nginx reverse proxy
+            [-] Services
+                [x] Nginx Status Page
+                [x] RSS (Miniflux)
+                [-] Firefly iii
+                [ ] Monitoring? Program TBD
+                [ ] Tandoor recipes
+                [ ] Nocodb
+            [ ] Subdomains
 
-System:
-    [ ] Get waydroid running
-    [ ] Get windows 10 QEMU working
-    [ ] Fix xorg settype patch to work on most recent xserver
-    [ ] Greetd/tuigreet
-        [ ] kernel logs and fprintd output make tuigreet go visually insane :(
-        [ ] fix session configurations
-    [ ] Systemd
-        [ ] Currently jankily working around xdg-portal-gtk failing by force restart, figure out what is wrong
-    [ ] Printer/wifi:
-        [ ] Find a good way to automatically set up. Use agenix?
+Public Cloud:
+    Gondola:
+        [ ] nginx reverse proxy
+            [ ] builds.snowytrees.dev
+            [ ] links.snowytrees.dev (https://sr.ht/~mlb/linkhut/)
+            [ ] snowytrees.dev (public website)
+        [ ] Build system w/ buildbot
+            - CI - buildbot
+                - https://buildbot.net/
+                - https://github.com/Mic92/dotfiles/tree/main/nixos/eve/modules/buildbot
+            - Nix Distributed builds
+                - https://nixos.wiki/wiki/Distributed_build
+            - Merge Queues - bors
+                - https://kflansburg.com/posts/merge-queues/
+                - https://github.com/bors-ng/bors-ng
+    Chairlift:
+        [ ] Not currently public facing
 
-User:
-    [ ] Desktop theming
-        [ ] Waybar indicators, colors, etc
-        [ ] foot coloring
-        [ ] bemenu coloring & font size
-    [ ] SSH-Agent
-        [ ] Setup auto-login bitwarden-cli using gnome-keyring
-        [ ] valid-before/after SSH signing file
-        [ ] Bitwarden ssh-agent python script
-    [ ] Eww widgets
-    [ ] Switch back to dwl (see dwl-flake, needs updates)
+
+General:
+    Gondola:
+        [ ] Get IPv6 working
+
+    Chairlift:
+        [ ] Re-enable broken services (syncthing-* & ankisyncd)
+
+    System:
+        [ ] Get waydroid running
+        [ ] Get windows 10 QEMU working
+        [ ] Fix xorg settype patch to work on most recent xserver
+        [ ] Systemd boot & plymouth (waiting on systemd-stage-1 - not currently feature complete)
+        [ ] Greetd/tuigreet
+            [ ] kernel logs and fprintd output make tuigreet go visually insane :(
+            [ ] fix session configurations
+        [ ] Printer/wifi secrets with agenix
+
+    User:
+        [ ] Desktop theming
+            [ ] Waybar indicators, colors, etc
+            [ ] foot coloring
+            [ ] bemenu coloring & font size
+        [ ] SSH-Agent
+            [x] Working gnome-keyring
+            [ ] Setup auto-login bitwarden-cli using gnome-keyring
+            [ ] valid-before/after SSH signing file
+            [ ] Bitwarden ssh-agent python script
+        [ ] Eww widgets
+
+
+Programs I want:
+    [ ] CLI libsecret
+    [ ] Wireguard NAT traversal - module for knot dns
