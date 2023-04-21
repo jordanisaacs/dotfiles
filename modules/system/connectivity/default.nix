@@ -29,23 +29,8 @@ in {
 
   config = {
     environment.systemPackages = with pkgs;
-      [
-      ]
-      ++ (
-        if (cfg.bluetooth.enable)
-        then [
-          scripts.bluetoothTools
-        ]
-        else []
-      )
-      ++ (
-        if (cfg.sound.enable)
-        then [
-          pulseaudio
-          scripts.soundTools
-        ]
-        else []
-      );
+      optional cfg.bluetooth.enable scripts.bluetoothTools
+      ++ optionals cfg.sound.enable [pulseaudio scripts.soundTools];
 
     security.rtkit.enable = cfg.sound.enable;
     services.pipewire = mkIf (cfg.sound.enable) {
@@ -60,10 +45,7 @@ in {
 
     services.printing.enable = cfg.printing.enable;
 
-    hardware.bluetooth = {
-      enable = cfg.bluetooth.enable;
-    };
-
-    services.blueman.enable = true;
+    hardware.bluetooth.enable = cfg.bluetooth.enable;
+    services.blueman.enable = cfg.bluetooth.enable;
   };
 }
