@@ -182,7 +182,11 @@ in {
           fileSystems."/persist/root" = {
             device = "rpool/persist/root";
             fsType = "zfs";
-            neededForBoot = true;
+          };
+
+          fileSystems."/persist/data" = {
+            device = "rpool/persist/data";
+            fsType = "zfs";
           };
 
           fileSystems."/backup/root" = {

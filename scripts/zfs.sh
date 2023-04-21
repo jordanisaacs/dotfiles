@@ -59,13 +59,14 @@ zfs snapshot rpool/local/home@blank
 zfs create -p -o canmount=on -o mountpoint=legacy rpool/persist/nix
 
 # Root mounts (erased every boot)
-zfs create -p -o canmount=on -o mountpoint=legacy rpool/local/home
+zfs create -p -o canmount=on -o mountpoint=legacy rpool/local/root
 zfs create -p -o canmount=on -o mountpoint=legacy rpool/persist/root
 zfs create -p -o canmount=on -o mountpoint=legacy rpool/backup/root
 zfs snapshot rpool/local/root@blank
 
 # Data pool, part of service being backed up
 zfs create -p -o canmount=on -o mountpoint=legacy rpool/backup/data
+zfs create -p -o canmount=on -o mountpoint=legacy rpool/persist/data
 
 
 install_jd() {
@@ -85,7 +86,7 @@ if [ "answer" != "${answer#[Yy]}" ]; then
   install_jd
 fi
 
-mount -t zfs rpool/local/root /mnt
+mount -t zfs rpool/local /mnt
 
 mkdir /mnt/boot
 mount $BOOT /mnt/boot
@@ -96,8 +97,14 @@ mount -t zfs rpool/local/nix /mnt/nix
 mkdir /mnt/home
 mount -t zfs rpool/local/home /mnt/home
 
-mkdir /mnt/persist
-mount -t zfs rpool/persist/root /mnt/persist
+mkdir -p /mnt/persist/root
+mount -t zfs rpool/persist/root /mnt/persist/root
 
-mkdir /mnt/persist/home
-mount -t zfs rpool/persist/home /mnt/persist/home
+mkdir -p /mnt/persist/data
+mount -t zfs rpool/persist/data /mnt/persist/data
+
+mkdir -p /mnt/backup/root
+mount -t zfs rpool/backup/root /mnt/backup/root
+
+mkdir -p /mnt/backup/data
+mount -t zfs rpool/backup/data /mnt/backup/data

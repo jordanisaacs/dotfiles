@@ -421,7 +421,12 @@
       defaultClientConfig
       {
         core.time = "east";
-        boot.type = "zfs-v2";
+        boot = {
+          type = "zfs-v2";
+
+          hostId = "f5db52d8";
+          grubDevice = "nodev";
+        };
         desktop.enable = true;
         greetd.enable = true;
         wireguard = wireguardConf;
