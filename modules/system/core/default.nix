@@ -207,9 +207,6 @@ in {
     services.udisks2.enable = true;
     services.fwupd.enable = true;
 
-    # TODO: Remove when systemd is updated to 253. Fixes suspend regressions
-    systemd.package = pkgs.systemd_251;
-
     programs.ccache.enable = cfg.ccache;
 
     documentation = {

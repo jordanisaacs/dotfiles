@@ -25,8 +25,10 @@ in {
 
       hardware.opengl = {
         enable = true;
-        extraPackages = [
-          pkgs.mesa.drivers
+        # TODO: remove after https://github.com/NixOS/nixpkgs/pull/223530 reaches nixos-unstable
+        mesaPackage = pkgs.mesa;
+        extraPackages = with pkgs; [
+          mesa.drivers
         ];
       };
 

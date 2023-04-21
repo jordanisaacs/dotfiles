@@ -281,7 +281,7 @@
           hostId = "fe120267";
           grubDevice = "/dev/vda";
         };
-        secrets.identityPaths = [secrets.age.system.gondola.privateKeyPath];
+        secrets.identityPaths = [secrets.age.gondola.privateKeyPath];
         networking = {
           static = {
             enable = true;
@@ -311,7 +311,7 @@
             enable = true;
           };
         };
-        secrets.identityPaths = [secrets.age.system.chairlift.privateKeyPath];
+        secrets.identityPaths = [secrets.age.chairlift.privateKeyPath];
         wireguard = wireguardConf;
         networking = {
           static = {
@@ -425,7 +425,7 @@
         greetd.enable = true;
         networking.interfaces = ["enp6s0"];
         wireguard = wireguardConf;
-        secrets.identityPaths = [secrets.age.system.desktop.privateKeyPath];
+        secrets.identityPaths = [secrets.age.desktop.system.privateKeyPath];
         waydroid.enable = true;
       }
     ];
@@ -452,7 +452,7 @@
           };
         };
         wireguard = wireguardConf;
-        secrets.identityPaths = [secrets.age.system.framework.privateKeyPath];
+        secrets.identityPaths = [secrets.age.framework.system.privateKeyPath];
         windows.enable = true;
       }
     ];
