@@ -383,7 +383,6 @@
         ccache = true;
       };
       users.users = [defaultDesktopUser];
-      boot.type = "encrypted-efi";
       gnome = {
         enable = true;
         keyring = {
@@ -421,18 +420,20 @@
     desktopConfig = utils.recursiveMerge [
       defaultClientConfig
       {
+        core.time = "east";
+        boot.type = "zfs-v2";
         desktop.enable = true;
         greetd.enable = true;
-        networking.interfaces = ["enp6s0"];
         wireguard = wireguardConf;
-        secrets.identityPaths = [secrets.age.desktop.system.privateKeyPath];
         waydroid.enable = true;
+        secrets.identityPaths = [secrets.age.desktop.system.privateKeyPath];
       }
     ];
 
     laptopConfig = utils.recursiveMerge [
       defaultClientConfig
       {
+        boot.type = "encrypted-efi";
         laptop.enable = true;
         secrets.identityPaths = [""];
         networking.interfaces = ["enp0s31f6"];
@@ -442,6 +443,7 @@
     frameworkConfig = utils.recursiveMerge [
       defaultClientConfig
       {
+        boot.type = "encrypted-efi";
         laptop.enable = true;
         core.time = "east";
         greetd.enable = true;
@@ -563,10 +565,10 @@
 
       desktop = host.mkHost {
         name = "desktop";
-        kernelPackage = pkgs.linuxPackages_latest;
+        kernelPackage = pkgs.zfs.latestCompatibleLinuxPackages;
+        kernelParams = ["nohibernate"];
         initrdMods = ["nvme" "xhci_pci" "ahci" "usb_storage" "usbhid" "sd_mod"];
         kernelMods = ["kvm-amd"];
-        kernelParams = [];
         kernelPatches = [];
         systemConfig = desktopConfig;
         cpuCores = 12;
