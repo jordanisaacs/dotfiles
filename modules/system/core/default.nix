@@ -129,6 +129,7 @@ in {
         # Hardware
         inxi # system information tool
         usbutils # tools for usb
+        pciutils # tools for pci utils
 
         # Kernel
         systeroid
@@ -154,6 +155,7 @@ in {
         # Processors
         jq
         htmlq
+
         ripgrep
         gawk
         gnused
@@ -170,6 +172,8 @@ in {
 
         # version ocntrol
         git
+        git-lfs
+        git-filter-repo
         difftastic
 
         # Nix tools
