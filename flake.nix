@@ -246,7 +246,8 @@
       name = "jd";
       groups = ["wheel"];
       uid = 1000;
-      shell = pkgs.zsh;
+      # Fixes assertion issue: https://github.com/NixOS/nixpkgs/pull/211603
+      shell = "${pkgs.zsh}/bin/zsh";
     };
 
     defaultDesktopUser =

@@ -42,7 +42,8 @@ with lib; let
         type = types.int;
       };
       shell = mkOption {
-        type = types.package;
+        # TODO: remove when assertion of shells is removed
+        type = with types; either package str;
       };
       groups = mkOption {
         type = with types; listOf str;
