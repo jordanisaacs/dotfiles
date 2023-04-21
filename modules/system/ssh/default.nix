@@ -6,6 +6,7 @@
 }:
 with lib; let
   cfg = config.jd.ssh;
+  backup = config.jd.impermanence.persistedDatasets.data.backup;
 in {
   options.jd.ssh = {
     enable = mkOption {
@@ -98,31 +99,36 @@ in {
         };
       }
 
-      (mkIf (config.jd.boot.type == "zfs") {
-        boot.initrd.network = {
-          # Disable if bootstrapped because keys are not yet created
-          enable = true;
-          ssh = {
-            enable = true;
-            port = 2323;
-            hostKeys = [
-              "/etc/secrets/initrd/ssh_host_ed25519_key"
-            ];
-            authorizedKeys = cfg.initrdKeys;
-          };
-          postCommands = ''
-            cat <<EOF > /root/.profile
-            if pgrep -x "zfs" > /dev/null
-            then
-              zfs load-key -a
-              killall zfs
-            else
-              echo "zfs not running -- maybe the pool is taking time to load for unforseen reasons"
-            fi
-            EOF
-          '';
-        };
-      })
+      (mkIf (let type = config.jd.boot.type; in type == "zfs" || type == "zfs-v2") (mkMerge [
+          (mkIf config.jd.impermanence.enable {
+            environment.persistence.${backup} = ["/etc/secrets/initrd"];
+          })
+          {
+            boot.initrd.network = {
+              enable = true;
+              ssh = {
+                enable = true;
+                port = 2323;
+                hostKeys = [
+                  "/etc/secrets/initrd/ssh_host_ed25519_key"
+                ];
+                authorizedKeys = cfg.initrdKeys;
+              };
+              postCommands = ''
+                cat <<EOF > /root/.profile
+                if pgrep -x "zfs" > /dev/null
+                then
+                  zfs load-key -a
+                  killall zfs
+                else
+                  echo "zfs not running -- maybe the pool is taking time to load for unforseen reasons"
+                fi
+                EOF
+              '';
+            };
+          }
+        ]) {
+        })
     ]))
   ];
 }

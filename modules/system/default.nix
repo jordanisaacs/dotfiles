@@ -15,6 +15,7 @@
     ./boot
     ./extraContainer
     (import ./core {inherit inputs patchedPkgs;})
+    ./impermanence
     ./greetd
     ./gnome
     ./networking

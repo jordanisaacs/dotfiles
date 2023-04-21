@@ -6,13 +6,19 @@
 }:
 with lib; let
   cfg = config.jd.secrets;
+  backup = config.jd.impermanence.persistedDatasets.data.backup;
 in {
   options.jd.secrets.identityPaths = mkOption {
     type = with types; listOf str;
     description = "The path to age identities (private key)";
   };
 
-  config = {
-    age.identityPaths = cfg.identityPaths;
-  };
+  config = mkMerge [
+    {
+      age.identityPaths = cfg.identityPaths;
+    }
+    (mkIf config.jd.impermanence.enable {
+      environment.persistence.${backup}.files = cfg.identityPaths;
+    })
+  ];
 }

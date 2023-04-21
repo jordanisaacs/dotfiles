@@ -109,10 +109,7 @@ with utils; {
         ]
         ++ [inputs.agenix.nixosModules.age]
         ++ [inputs.simple-nixos-mailserver.nixosModule]
-        ++ (systemEnableModule (import (inputs.nixpkgs + "/nixos/modules/profiles/qemu-guest.nix")) qemuPath)
-        ++ (systemEnableModuleConfig inputs.impermanence.nixosModule moduleFolder {
-          path = impermanencePath;
-          activate = enable;
-        });
+        ++ [inputs.impermanence.nixosModule]
+        ++ (systemEnableModule (import (inputs.nixpkgs + "/nixos/modules/profiles/qemu-guest.nix")) qemuPath);
     };
 }

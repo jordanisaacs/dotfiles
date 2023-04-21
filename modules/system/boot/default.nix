@@ -148,6 +148,17 @@ in {
       })
       (mkIf (cfg.type == "zfs-v2") (mkMerge [
         {
+          jd.impermanence.rollbackDatasets = [
+            "rpool/local"
+            "rpool/local/root"
+            "rpool/local/home"
+          ];
+
+          jd.impermanence.persistedDatasets = {
+            "root" = {};
+            "data" = {};
+          };
+
           fileSystems."/" = {
             device = "rpool/local";
             fsType = "zfs";
@@ -202,6 +213,19 @@ in {
         })
       ]))
       (mkIf (cfg.type == "zfs") {
+        jd.impermanence.rollbackDatasets = [
+          "rpool/local/root"
+          "rpool/local/home"
+        ];
+
+        jd.impermanence.persistedDatasets = {
+          "root" = {
+            persist = "/persist";
+            backup = "/persist";
+          };
+          "data" = {backup = "/persist/data";};
+        };
+
         fileSystems."/" = {
           device = "rpool/local/root";
           fsType = "zfs";
