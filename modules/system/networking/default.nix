@@ -54,6 +54,12 @@ in {
           default = null;
         };
 
+        onlink = mkOption {
+          description = "Whether the gateway is not on the same network as the address";
+          type = types.bool;
+          default = false;
+        };
+
         addr = mkOption {
           description = "ipv4 address";
           type = types.str;
@@ -138,6 +144,10 @@ in {
           };
         };
 
+        # Race condition with where iwd starts before wireless network card powers on
+        # https://wiki.archlinux.org/title/Iwd#Restarting_iwd.service_after_boot
+        systemd.services.iwd.serviceConfig.ExecStartPre = "${pkgs.coreutils}/bin/sleep 2";
+
         networking.wireless.iwd = {
           enable = true;
           settings = {
@@ -190,20 +200,27 @@ in {
           networkConfig = {
             Address = [cfg.static.ipv4.addr cfg.static.ipv6.addr];
             DNS = ["9.9.9.9" "149.112.112.112" "2620:fe::fe" "2620:fe::9"]; # quad9
-            Gateway = [cfg.static.ipv4.gateway "fe80::1"];
             DNSSEC = "allow-downgrade";
             # https://tldp.org/HOWTO/Linux+IPv6-HOWTO/ch06s05.html
             IPv6PrivacyExtensions = "no";
-            LinkLocalAddressing = "ipv6";
+            # IPv6AcceptRA = true;
+            # LinkLocalAddressing = "ipv6";
           };
 
           routes = [
+            {routeConfig.Gateway = "fe80::1";}
             {
               routeConfig = {
-                Gateway = "0.0.0.0";
-                Destination = cfg.static.ipv4.gateway;
+                Gateway = cfg.static.ipv4.gateway;
+                GatewayOnLink = cfg.static.ipv4.onlink;
               };
             }
+            # {
+            #   routeConfig = {
+            #     Gateway = "0.0.0.0";
+            #     Destination = cfg.static.ipv4.gateway;
+            #   };
+            # }
           ];
         };
 
