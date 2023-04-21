@@ -10,8 +10,19 @@ sgdisk -n 0:0:+1MiB -t 0:ef02 -c 0:grub $DISK
 sgdisk -n 0:0:+512MiB -t 0:ef00 -c 0:boot $DISK
 sgdisk -n 0:0:0 -t 0:8200 -c 0:zfs $DISK
 
-BOOT=${DISK}2
-ZFS=${DISK}3
+
+printf 'Disk is nvme (y/n)? '
+old_stty_cfg=$(stty -g)
+stty raw -echo
+answer=$(while ! head -c 1 | grep -i '[ny]' ;do true ;done )
+stty $old_stty_cfg
+if [ "answer" != "${answer#[Yy]}" ]; then
+  BOOT=${DISK}p2
+  ZFS=${DISK}p3
+else
+  BOOT=${DISK}2
+  ZFS=${DISK}3
+fi
 
 mkfs.vfat -n BOOT $BOOT
 
@@ -36,16 +47,43 @@ zpool create \
 # Reserve 1GB to allow ZFS operations
 zfs create -o refreservation=1G -o mountpoint=none rpool/reserved
 
-zfs create -p -o canmount=on -o mountpoint=legacy rpool/local/root
-zfs create -p -o canmount=on -o mountpoint=legacy rpool/local/nix
+# Base mount
+zfs create -p -o canmount=on -o mountpoint=legacy rpool/local
+zfs snapshot rpool/local@blank
+
+# Home mount
 zfs create -p -o canmount=on -o mountpoint=legacy rpool/local/home
-
-zfs create -p -o canmount=on -o mountpoint=legacy rpool/persist/root
-zfs create -p -o canmount=on -o mountpoint=legacy rpool/persist/home
-zfs create -p -o canmount=on -o mountpoint=legacy rpool/persist/data
-
-zfs snapshot rpool/local/root@blank
 zfs snapshot rpool/local/home@blank
+
+# Nix store mounts
+zfs create -p -o canmount=on -o mountpoint=legacy rpool/persist/nix
+
+# Root mounts (erased every boot)
+zfs create -p -o canmount=on -o mountpoint=legacy rpool/local/home
+zfs create -p -o canmount=on -o mountpoint=legacy rpool/persist/root
+zfs create -p -o canmount=on -o mountpoint=legacy rpool/backup/root
+zfs snapshot rpool/local/root@blank
+
+# Data pool, part of service being backed up
+zfs create -p -o canmount=on -o mountpoint=legacy rpool/backup/data
+
+
+install_jd() {
+  zfs create -p -o canmount=on -o mountpoint=legacy rpool/local/home/jd
+  zfs create -p -o canmount=on -o mountpoint=legacy rpool/persist/home/jd
+  zfs create -p -o canmount=on -o mountpoint=legacy rpool/backup/home/jd
+
+  zfs snapshot rpool/local/home/jd@blank
+}
+
+printf 'Make jd pool (y/n)? '
+old_stty_cfg=$(stty -g)
+stty raw -echo
+answer=$(while ! head -c 1 | grep -i '[ny]' ;do true ;done )
+stty $old_stty_cfg
+if [ "answer" != "${answer#[Yy]}" ]; then
+  install_jd
+fi
 
 mount -t zfs rpool/local/root /mnt
 

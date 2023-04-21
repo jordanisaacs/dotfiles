@@ -11,7 +11,7 @@ in {
     type = mkOption {
       description = "Type of boot. Default encrypted-efi";
       default = null;
-      type = types.enum ["encrypted-efi" "zfs"];
+      type = types.enum ["encrypted-efi" "zfs" "zfs-v2"];
     };
 
     hostId = mkOption {
@@ -28,17 +28,17 @@ in {
       type = types.str;
     };
 
-    swap = {
-      enable = mkOption {
-        description = "Whether zfs has swap";
-        default = false;
-        type = types.bool;
-      };
+    zfs = {
+      userPool = mkEnableOption "a user pool";
 
-      swapPartuuid = mkOption {
-        description = "Swap part uuid, needed for server-zfs";
-        default = null;
-        type = types.str;
+      swap = {
+        enable = mkEnableOption "zfs swap";
+
+        swapPartuuid = mkOption {
+          description = "Swap part uuid, needed for server-zfs";
+          default = null;
+          type = types.str;
+        };
       };
     };
   };
@@ -115,7 +115,7 @@ in {
       # https://nixos.wiki/wiki/ZFS
       # https://elis.nu/blog/2019/08/encrypted-zfs-mirror-with-mirrored-boot-on-nixos/
       # https://florianfranke.dev/posts/2020/03/installing-nixos-with-encrypted-zfs-on-a-netcup.de-root-server/
-      (mkIf (cfg.type == "zfs") {
+      (mkIf (cfg.type == "zfs" || cfg.type == "zfs-v2") {
         boot = {
           loader = {
             grub = {
@@ -141,13 +141,67 @@ in {
           fsType = "vfat";
         };
 
-        swapDevices =
-          lib.optional (cfg.swap.enable)
-          {
-            device = "/dev/disk/by-partuuid/${cfg.swap.swapPartuuid}";
-            randomEncryption = true;
+        swapDevices = lib.optional (cfg.zfs.swap.enable) {
+          device = "/dev/disk/by-partuuid/${cfg.zfs.swap.swapPartuuid}";
+          randomEncryption = true;
+        };
+      })
+      (mkIf (cfg.type == "zfs-v2") (mkMerge [
+        {
+          fileSystems."/" = {
+            device = "rpool/local";
+            fsType = "zfs";
           };
 
+          fileSystems."/nix" = {
+            device = "rpool/local/nix";
+            fsType = "zfs";
+          };
+
+          fileSystems."/root" = {
+            device = "rpool/local/root";
+            fsType = "zfs";
+          };
+
+          fileSystems."/home" = {
+            device = "rpool/local/home";
+            fsType = "zfs";
+          };
+
+          fileSystems."/persist/root" = {
+            device = "rpool/persist/root";
+            fsType = "zfs";
+            neededForBoot = true;
+          };
+
+          fileSystems."/backup/root" = {
+            device = "rpool/backup/root";
+            fsType = "zfs";
+          };
+
+          fileSystems."/backup/data" = {
+            device = "rpool/backup/data";
+            fsType = "zfs";
+          };
+        }
+        (mkIf cfg.zfs.userPool {
+          fileSystems."/home/jd" = {
+            device = "rpool/local/home/jd";
+            fsType = "zfs";
+          };
+
+          fileSystems."/persist/home/jd" = {
+            device = "rpool/persist/home/jd";
+            fsType = "zfs";
+          };
+
+          fileSystems."/backup/home/jd" = {
+            device = "rpool/backup/home/jd";
+            fsType = "zfs";
+          };
+        })
+      ]))
+      (mkIf (cfg.type == "zfs") {
         fileSystems."/" = {
           device = "rpool/local/root";
           fsType = "zfs";

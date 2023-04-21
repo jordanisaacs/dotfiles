@@ -29,6 +29,18 @@ in {
 
   config = let
     impermanence = mkMerge [
+      (mkIf (config.jd.boot.type == "zfs-v2") {
+        boot.initrd.postDeviceCommands = lib.mkAfter ''
+          zfs rollback -r rpool/local@blank
+          zfs rollback -r rpool/local/home@blank
+          zfs rollback -r rpool/local/root@blank
+        '';
+
+        environment.persistence."/backup/data" = {
+          hideMounts = true;
+          files = config.jd.secrets.identityPaths;
+        };
+      })
       (mkIf (config.jd.boot.type == "zfs") {
         # Erase zfs pools on boot
         boot.initrd.postDeviceCommands = lib.mkAfter ''

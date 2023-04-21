@@ -306,7 +306,7 @@
         boot = {
           hostId = "2d360981";
           grubDevice = "/dev/sda";
-          swap = {
+          zfs.swap = {
             swapPartuuid = "52c2b662-0b7b-430c-9a10-068acbe9d15d";
             enable = true;
           };
