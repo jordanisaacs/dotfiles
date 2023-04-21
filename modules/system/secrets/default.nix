@@ -6,7 +6,7 @@
 }:
 with lib; let
   cfg = config.jd.secrets;
-  backup = config.jd.impermanence.persistedDatasets.data.backup;
+  backup = config.jd.impermanence.persistedDatasets.root.backup;
 in {
   options.jd.secrets.identityPaths = mkOption {
     type = with types; listOf str;
