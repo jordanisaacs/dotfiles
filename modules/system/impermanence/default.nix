@@ -8,16 +8,18 @@ with lib; let
   cfg = config.jd.impermanence;
 
   datasets = {name, ...}: {
-    persist = mkOption {
-      description = "Location of the persist dataset";
-      type = types.str;
-      default = "/persist/${name}";
-    };
+    options = {
+      persist = mkOption {
+        description = "Location of the persist dataset";
+        type = types.str;
+        default = "/persist/${name}";
+      };
 
-    backup = mkOption {
-      description = "Location of the backup dataset";
-      type = types.str;
-      default = "/backup/${name}";
+      backup = mkOption {
+        description = "Location of the backup dataset";
+        type = types.str;
+        default = "/backup/${name}";
+      };
     };
   };
 in {
@@ -30,13 +32,13 @@ in {
 
     rollbackDatasets = mkOption {
       description = "Names of the erase your darling datasets, ones that are rollback to @blank snapshot on boot";
-      types = with types; listOf str;
+      type = with types; listOf str;
       default = [];
     };
 
     persistedDatasets = mkOption {
       description = "Names of the persisted datasets which all have a persist and backup";
-      types = with types; attrsOf (submodule datasets);
+      type = with types; attrsOf (submodule datasets);
       default = {};
     };
   };
@@ -48,12 +50,12 @@ in {
         (concatMapStringsSep
           "\n"
           (d: "zfs rollback -r ${d}@blank")
-          cfg.rollbackPools);
+          cfg.rollbackDatasets);
     };
 
     impermanence = {
-      environment.persistent =
-        builtins.concatMapAttrs
+      environment.persistence =
+        concatMapAttrs
         # persist can be equal to backup, quick and easy to way ensure no merge issues (just overrides)
         (n: v:
           {
@@ -74,8 +76,8 @@ in {
 
     # TODO: Refactor out
     apps = {
-      environment.persistence.${v.backup} = mkMerge [
-        (mkIf (config.services.postgresql.enable) {
+      environment.persistence.${cfg.persistedDatasets.data.backup} = mkMerge [
+        (mkIf config.services.postgresql.enable {
           directories = [config.services.postgresql.dataDir];
         })
         (mkIf (config.mailserver.enable) {
@@ -96,16 +98,6 @@ in {
               directory = config.jd.ankisyncd.dataDir;
               user = "ankisyncd";
               group = "ankisyncd";
-              mode = "0700";
-            }
-          ];
-        })
-        (mkIf (config.jd.microbin.enable) {
-          directories = [
-            {
-              directory = "/var/lib/microbin";
-              user = "microbin";
-              group = "microbin";
               mode = "0700";
             }
           ];
@@ -153,7 +145,7 @@ in {
       ];
     };
 
-    config = mkMerge [zfs impermanence apps];
+    mergeConfig = mkMerge [zfs impermanence apps];
   in
-    mkIf cfg.enable config;
+    mkIf cfg.enable mergeConfig;
 }
