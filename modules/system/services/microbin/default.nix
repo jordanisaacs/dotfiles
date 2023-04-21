@@ -33,46 +33,31 @@ in {
   };
 
   config = mkIf (cfg.enable) (mkMerge [
-    {
-      users = {
-        groups.${group} = {};
-        users.${user} = {
-          inherit group;
-          isSystemUser = true;
-          description = "Microbin user";
-        };
+    (mkIf config.jd.impermanence.enable {
+      environment.persistence.${config.jd.impermanence.persistedDatasets."data".backup} = {
+        directories = ["/var/lib/private/microbin"];
       };
-
-      systemd.services.microbin = let
-        microbin = pkgs.rustPlatform.buildRustPackage rec {
-          pname = "microbin";
-          version = "1.2.0";
-
-          src = pkgs.fetchCrate {
-            inherit pname version;
-            sha256 = "sha256-dZClslUTUchx+sOJzFG8wiAgyW/0RcCKfKYklKfVrzM=";
-          };
-
-          cargoSha256 = "sha256-fBbChu5iy/2H/8IYCwd1OwxplGPZAmkd8z8xD7Uc0vo=";
-        };
-      in {
+    })
+    {
+      systemd.services.microbin = {
         description = "Microbin - pastebin server";
         wantedBy = ["multi-user.target"];
         after = ["network.target"];
 
         serviceConfig = {
           ExecStart = ''
-            ${microbin}/bin/microbin \
+            ${pkgs.microbin}/bin/microbin \
               --editable --hide-footer --highlightsyntax \
               --wide --qr --gc-days 0 \
               --enable-burn-after \
               -b ${cfg.address} -p ${builtins.toString cfg.port} \
               --public-path="http://chairlift.wg/microbin"
           '';
-          Type = "simple";
-          User = user;
-          Group = group;
+          DynamicUser = true;
+          StateDirectory = "microbin";
           WorkingDirectory = "/var/lib/microbin";
+          ProtectProc = "invisible";
+          Type = "simple";
           Restart = "always";
         };
       };
