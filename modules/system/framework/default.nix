@@ -78,7 +78,6 @@ in {
 
       environment.defaultPackages = with pkgs; [intel-gpu-tools];
       hardware = {
-        video.hidpi.enable = true;
         opengl = {
           enable = true;
           extraPackages = with pkgs; [
