@@ -1,12 +1,9 @@
-# TODO: change to script arguments
-
 set -e
 
 DISK=$1
 
 sgdisk --zap-all $DISK
 
-sgdisk -n 0:0:+1MiB -t 0:ef02 -c 0:grub $DISK
 sgdisk -n 0:0:+512MiB -t 0:ef00 -c 0:boot $DISK
 sgdisk -n 0:0:0 -t 0:8200 -c 0:zfs $DISK
 
@@ -17,11 +14,11 @@ stty raw -echo
 answer=$(while ! head -c 1 | grep -i '[ny]' ;do true ;done )
 stty $old_stty_cfg
 if [ "answer" != "${answer#[Yy]}" ]; then
-  BOOT=${DISK}p2
-  ZFS=${DISK}p3
+  BOOT=${DISK}p1
+  ZFS=${DISK}p2
 else
-  BOOT=${DISK}2
-  ZFS=${DISK}3
+  BOOT=${DISK}1
+  ZFS=${DISK}2
 fi
 
 mkfs.vfat -n BOOT $BOOT
@@ -60,13 +57,14 @@ zfs create -p -o canmount=on -o mountpoint=legacy rpool/persist/nix
 
 # Root mounts (erased every boot)
 zfs create -p -o canmount=on -o mountpoint=legacy rpool/local/root
-zfs create -p -o canmount=on -o mountpoint=legacy rpool/persist/root
 zfs create -p -o canmount=on -o mountpoint=legacy rpool/backup/root
+zfs create -p -o canmount=on -o mountpoint=legacy rpool/persist/root
+
 zfs snapshot rpool/local/root@blank
 
 # Data pool, part of service being backed up
-zfs create -p -o canmount=on -o mountpoint=legacy rpool/backup/data
 zfs create -p -o canmount=on -o mountpoint=legacy rpool/persist/data
+zfs create -p -o canmount=on -o mountpoint=legacy rpool/backup/data
 
 
 install_jd() {
@@ -91,11 +89,14 @@ mount -t zfs rpool/local /mnt
 mkdir /mnt/boot
 mount $BOOT /mnt/boot
 
-mkdir /mnt/nix
-mount -t zfs rpool/local/nix /mnt/nix
-
 mkdir /mnt/home
 mount -t zfs rpool/local/home /mnt/home
+
+mkdir /mnt/root
+mount -t zfs rpool/local/root /mnt/root
+
+mkdir /mnt/nix
+mount -t zfs rpool/persist/nix /mnt/nix
 
 mkdir -p /mnt/persist/root
 mount -t zfs rpool/persist/root /mnt/persist/root

@@ -164,11 +164,6 @@ in {
             fsType = "zfs";
           };
 
-          fileSystems."/nix" = {
-            device = "rpool/local/nix";
-            fsType = "zfs";
-          };
-
           fileSystems."/root" = {
             device = "rpool/local/root";
             fsType = "zfs";
@@ -176,6 +171,11 @@ in {
 
           fileSystems."/home" = {
             device = "rpool/local/home";
+            fsType = "zfs";
+          };
+
+          fileSystems."/nix" = {
+            device = "rpool/persist/nix";
             fsType = "zfs";
           };
 
