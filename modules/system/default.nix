@@ -30,5 +30,6 @@
     ./windows
     ./desktop
     ./users
+    ./fs
   ];
 }

@@ -258,7 +258,8 @@
 
     defaultServerConfig = {
       core.enable = true;
-      boot.type = "zfs";
+      boot.type = "bios";
+      fs.type = "zfs";
       users.mutableUsers = false;
       ssh = {
         enable = true;
@@ -277,10 +278,8 @@
       {
         users.rootPassword = secrets.passwords.gondola;
         isQemuGuest = true;
-        boot = {
-          hostId = "fe120267";
-          grubDevice = "/dev/vda";
-        };
+        boot.grubDevice = "/dev/vda";
+        fs.hostId = "fe120267";
         secrets.identityPaths = [secrets.age.gondola.privateKeyPath];
         networking = {
           static = {
@@ -303,9 +302,9 @@
       {
         users.rootPassword = secrets.passwords.chairlift;
         isQemuGuest = true;
-        boot = {
+        boot.grubDevice = "/dev/sda";
+        fs = {
           hostId = "2d360981";
-          grubDevice = "/dev/sda";
           zfs.swap = {
             swapPartuuid = "52c2b662-0b7b-430c-9a10-068acbe9d15d";
             enable = true;
@@ -422,11 +421,11 @@
       defaultClientConfig
       {
         core.time = "east";
-        boot = {
+        users.mutableUsers = false;
+        boot.type = "efi";
+        fs = {
           type = "zfs-v2";
-
           hostId = "f5db52d8";
-          grubDevice = "nodev";
         };
         desktop.enable = true;
         impermanence.enable = true;
@@ -440,7 +439,8 @@
     laptopConfig = utils.recursiveMerge [
       defaultClientConfig
       {
-        boot.type = "encrypted-efi";
+        boot.type = "efi";
+        fs.type = "encrypted-efi";
         laptop.enable = true;
         secrets.identityPaths = [""];
         networking.interfaces = ["enp0s31f6"];
@@ -450,7 +450,8 @@
     frameworkConfig = utils.recursiveMerge [
       defaultClientConfig
       {
-        boot.type = "encrypted-efi";
+        boot.type = "efi";
+        fs.type = "encrypted-efi";
         laptop.enable = true;
         core.time = "east";
         greetd.enable = true;
@@ -624,8 +625,8 @@
     deploy.nodes.gondola = {
       hostname = "38.45.64.210";
       sshOpts = ["-p" "23"];
-      autoRollback = false;
-      magicRollback = false;
+      autoRollback = true;
+      magicRollback = true;
       profiles = {
         system = {
           sshUser = "root";
