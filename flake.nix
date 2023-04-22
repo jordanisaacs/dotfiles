@@ -429,6 +429,7 @@
           grubDevice = "nodev";
         };
         desktop.enable = true;
+        impermanence.enable = true;
         greetd.enable = true;
         wireguard = wireguardConf;
         waydroid.enable = true;

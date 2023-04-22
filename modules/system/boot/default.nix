@@ -162,41 +162,49 @@ in {
           fileSystems."/" = {
             device = "rpool/local";
             fsType = "zfs";
+            neededForBoot = true;
           };
 
           fileSystems."/root" = {
             device = "rpool/local/root";
             fsType = "zfs";
+            neededForBoot = true;
           };
 
           fileSystems."/home" = {
             device = "rpool/local/home";
             fsType = "zfs";
+            neededForBoot = true;
           };
 
           fileSystems."/nix" = {
             device = "rpool/persist/nix";
             fsType = "zfs";
+            neededForBoot = true;
           };
 
           fileSystems."/persist/root" = {
             device = "rpool/persist/root";
             fsType = "zfs";
+            neededForBoot = true;
           };
 
           fileSystems."/persist/data" = {
             device = "rpool/persist/data";
             fsType = "zfs";
+            neededForBoot = true;
           };
 
           fileSystems."/backup/root" = {
             device = "rpool/backup/root";
             fsType = "zfs";
+            neededForBoot = true;
           };
 
           fileSystems."/backup/data" = {
             device = "rpool/backup/data";
             fsType = "zfs";
+            neededForBoot = true;
           };
         }
         (mkIf cfg.zfs.userPool {
