@@ -32,6 +32,13 @@ in {
 
   config = mkIf (cfg.enable) {
     i18n.defaultLocale = "en_US.UTF-8";
+    console = {
+      earlySetup = true;
+      keyMap = "us";
+      font = "ter-v32n";
+      packages = with pkgs; [terminus_font];
+    };
+
     time.timeZone =
       if (cfg.time == "east")
       then "US/Eastern"

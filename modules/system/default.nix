@@ -11,16 +11,22 @@
   # some are modules that are reliant on non nixos modules.
   # Thus imported at top level in lib/mkhost
   imports = [
-    ./connectivity
+    ./fs
+    ./kernel
     ./boot
+    ./initrd
+
+    ./laptop
+    ./desktop
+    ./framework
+
+    ./connectivity
     ./extraContainer
     (import ./core {inherit inputs patchedPkgs;})
     ./impermanence
     ./greetd
     ./gnome
     ./networking
-    ./laptop
-    ./framework
     ./graphical
     ./ssh
     ./services
@@ -28,8 +34,6 @@
     ./secrets
     ./android
     ./windows
-    ./desktop
     ./users
-    ./fs
   ];
 }

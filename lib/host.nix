@@ -30,12 +30,6 @@ with utils; {
           networking.networkmanager.enable = true;
           networking.useDHCP = false;
 
-          boot.initrd.availableKernelModules = initrdMods;
-          boot.kernelModules = kernelMods;
-
-          boot.kernelParams = kernelParams;
-          boot.kernelPackages = kernelPackage;
-
           nixpkgs.pkgs = pkgs;
         }
       ];
@@ -43,11 +37,6 @@ with utils; {
 
   mkHost = {
     name,
-    initrdMods,
-    kernelMods,
-    kernelParams,
-    kernelPackage,
-    kernelPatches,
     systemConfig,
     cpuCores,
     stateVersion,
@@ -93,12 +82,6 @@ with utils; {
             };
 
             networking.hostName = name;
-
-            boot.initrd.availableKernelModules = initrdMods;
-            boot.kernelModules = kernelMods;
-            boot.kernelParams = kernelParams;
-            boot.kernelPackages = kernelPackage;
-            boot.kernelPatches = kernelPatches;
 
             nixpkgs.pkgs = pkgs;
             nix.settings.max-jobs = lib.mkDefault cpuCores;

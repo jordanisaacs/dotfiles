@@ -57,6 +57,9 @@
     dwm-flake.url = "github:jordanisaacs/dwm-flake";
 
     dwl-flake.url = "github:jordanisaacs/dwl-flake";
+
+    efi-power.url = "github:jordanisaacs/efi-power";
+    efi-power.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs = {
@@ -74,6 +77,7 @@
     nur,
     neovim-flake,
     simple-nixos-mailserver,
+    efi-power,
     st-flake,
     dwm-flake,
     dwl-flake,
@@ -100,6 +104,7 @@
           neovim-flake
           st-flake
           dwm-flake
+          efi-power
           homeage
           scripts
           jdpkgs
@@ -279,7 +284,10 @@
         users.rootPassword = secrets.passwords.gondola;
         isQemuGuest = true;
         boot.grubDevice = "/dev/vda";
+        kernel.initrdMods = ["sr_mod" "ata_piix" "virtio_pci" "virtio_scsi" "virtio_blk" "virtio_net"];
+
         fs.hostId = "fe120267";
+
         secrets.identityPaths = [secrets.age.gondola.privateKeyPath];
         networking = {
           static = {
@@ -303,6 +311,7 @@
         users.rootPassword = secrets.passwords.chairlift;
         isQemuGuest = true;
         boot.grubDevice = "/dev/sda";
+        kernel.initrd = ["sd_mod" "sr_mod" "ahci" "xhci_pci"];
         fs = {
           hostId = "2d360981";
           zfs.swap = {
@@ -420,13 +429,17 @@
     desktopConfig = utils.recursiveMerge [
       defaultClientConfig
       {
-        core.time = "east";
-        users.mutableUsers = false;
-        boot.type = "efi";
+        boot.type = "uefi";
+        kernel.initrdMods = ["nvme" "xhci_pci" "ahci" "usb_storage" "usbhid" "sd_mod"];
+        kernel.mods = ["kvm-amd"];
         fs = {
           type = "zfs-v2";
           hostId = "f5db52d8";
         };
+
+        core.time = "east";
+        users.mutableUsers = false;
+
         desktop.enable = true;
         impermanence.enable = true;
         greetd.enable = true;
@@ -439,19 +452,29 @@
     laptopConfig = utils.recursiveMerge [
       defaultClientConfig
       {
-        boot.type = "efi";
+        boot.type = "uefi";
         fs.type = "encrypted-efi";
         laptop.enable = true;
         secrets.identityPaths = [""];
         networking.interfaces = ["enp0s31f6"];
+        kernel.initrd = ["xhci_pci" "nvme" "usb_storage" "sd_mod" "rtsx_pci_sdmmc"];
+        kernel.mods = ["kvm-intel"];
       }
     ];
 
     frameworkConfig = utils.recursiveMerge [
       defaultClientConfig
       {
-        boot.type = "efi";
+        boot.type = "uefi";
         fs.type = "encrypted-efi";
+        initrd.plymouth = {
+          enable = true;
+          theme = "hexa_retro";
+        };
+        kernel = {
+          initrdMods = ["xhci_pci" "thunderbolt" "nvme" "usb_storage" "sd_mod"];
+          mods = ["kvm-intel"];
+        };
         laptop.enable = true;
         core.time = "east";
         greetd.enable = true;
@@ -463,7 +486,6 @@
         };
         wireguard = wireguardConf;
         secrets.identityPaths = [secrets.age.framework.system.privateKeyPath];
-        windows.enable = true;
       }
     ];
   in {
@@ -549,11 +571,6 @@
     nixosConfigurations = {
       laptop = host.mkHost {
         name = "laptop";
-        kernelPackage = pkgs.linuxPackages;
-        initrdMods = ["xhci_pci" "nvme" "usb_storage" "sd_mod" "rtsx_pci_sdmmc"];
-        kernelMods = ["kvm-intel"];
-        kernelParams = [];
-        kernelPatches = [];
         systemConfig = laptopConfig;
         cpuCores = 4;
         stateVersion = "21.05";
@@ -561,11 +578,6 @@
 
       framework = host.mkHost {
         name = "framework";
-        kernelPackage = pkgs.linuxPackages_latest;
-        initrdMods = ["xhci_pci" "thunderbolt" "nvme" "usb_storage" "sd_mod"];
-        kernelMods = ["kvm-intel"];
-        kernelParams = [];
-        kernelPatches = [];
         systemConfig = frameworkConfig;
         cpuCores = 8;
         stateVersion = "21.11";
@@ -573,11 +585,6 @@
 
       desktop = host.mkHost {
         name = "desktop";
-        kernelPackage = pkgs.zfs.latestCompatibleLinuxPackages;
-        kernelParams = ["nohibernate"];
-        initrdMods = ["nvme" "xhci_pci" "ahci" "usb_storage" "usbhid" "sd_mod"];
-        kernelMods = ["kvm-amd"];
-        kernelPatches = [];
         systemConfig = desktopConfig;
         cpuCores = 12;
         stateVersion = "21.11";
@@ -585,11 +592,6 @@
 
       chairlift = host.mkHost {
         name = "chairlift";
-        initrdMods = ["sd_mod" "sr_mod" "ahci" "xhci_pci"];
-        kernelMods = [];
-        kernelPackage = pkgs.zfs.latestCompatibleLinuxPackages;
-        kernelParams = ["nohibernate"];
-        kernelPatches = [];
         systemConfig = chairliftConfig;
         cpuCores = 2;
         stateVersion = "21.11";
@@ -597,11 +599,6 @@
 
       gondola = host.mkHost {
         name = "gondola";
-        initrdMods = ["sr_mod" "ata_piix" "virtio_pci" "virtio_scsi" "virtio_blk" "virtio_net"];
-        kernelMods = [];
-        kernelPackage = pkgs.zfs.latestCompatibleLinuxPackages;
-        kernelParams = ["nohibernate"];
-        kernelPatches = [];
         systemConfig = gondolaConfig;
         cpuCores = 8;
         stateVersion = "21.11";

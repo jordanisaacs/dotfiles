@@ -39,16 +39,24 @@ in {
 
   config = let
     fsConfig = mkMerge [
+      {
+        # Uses a tmpfs for /tmp (not just on boot)
+        boot.tmp.useTmpfs = true;
+        boot.tmp.tmpfsSize = "50%";
+        boot.tmp.cleanOnBoot = true;
+      }
+
       (mkIf (cfg.type == "encrypted-efi") {
         environment.systemPackages = with pkgs; [e2fsprogs];
-        fileSystems."/" = {
-          device = "/dev/disk/by-label/DECRYPTNIXROOT";
-          fsType = "ext4";
-        };
 
         fileSystems."/boot" = {
           device = "/dev/disk/by-label/BOOT";
           fsType = "vfat";
+        };
+
+        fileSystems."/" = {
+          device = "/dev/disk/by-label/DECRYPTNIXROOT";
+          fsType = "ext4";
         };
 
         swapDevices = [
@@ -56,9 +64,7 @@ in {
         ];
 
         boot = {
-          # plymouth.enable = true;
           initrd = {
-            # systemd.enable = true;
             luks.devices = {
               cryptkey = {
                 device = "/dev/disk/by-label/NIXKEY";
@@ -84,9 +90,13 @@ in {
       # https://florianfranke.dev/posts/2020/03/installing-nixos-with-encrypted-zfs-on-a-netcup.de-root-server/
       (mkIf (cfg.type == "zfs" || cfg.type == "zfs-v2") {
         boot = {
+          kernelPackages = pkgs.zfs.latestCompatibleLinuxPackages;
+
           supportedFilesystems = ["zfs"];
           kernelParams = ["nohibernate"];
+
           zfs.requestEncryptionCredentials = true;
+          zfs.forceImportRoot = false;
         };
 
         services.zfs.trim.enable = true;

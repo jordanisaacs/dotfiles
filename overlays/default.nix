@@ -16,10 +16,12 @@
   nixpkgs-wayland,
   agenix,
   secrets,
+  efi-power,
 }: {
   overlays = [
     nur.overlay
     dwl-flake.overlays.default
+    efi-power.overlays.default
     scripts.overlay
 
     (self: super: {
