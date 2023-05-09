@@ -55,15 +55,17 @@ in {
         };
 
         fileSystems."/" = {
-          device = "/dev/disk/by-label/DECRYPTNIXROOT";
+          device = "/dev/mapper/cryptroot";
           fsType = "ext4";
         };
 
         swapDevices = [
-          {device = "/dev/disk/by-label/DECRYPTNIXSWAP";}
+          {device = "/dev/mapper/cryptswap";}
         ];
 
         boot = {
+          resumeDevice = "/dev/mapper/cryptswap";
+
           initrd = {
             luks.devices = {
               cryptkey = {

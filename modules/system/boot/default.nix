@@ -30,7 +30,6 @@ in {
   config = mkMerge [
     (mkIf (cfg.type == "uefi") {
       boot = {
-        initrd.systemd.enable = true;
         loader = {
           efi = {
             efiSysMountPoint = "/boot";
@@ -40,6 +39,7 @@ in {
           systemd-boot = {
             enable = true;
             editor = false;
+            configurationLimit = 15;
             extraEntries = {
               # Sorting is from z-a so go after nixos entries
               "power.conf" = ''

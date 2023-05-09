@@ -151,6 +151,8 @@ in {
         traceroute # track route taken by packets
         ipcalc # ip network calculator
 
+        lm_sensors
+
         # DNS
         dnsutils
         dnstop
@@ -219,6 +221,8 @@ in {
     services.fwupd.enable = true;
 
     programs.ccache.enable = cfg.ccache;
+
+    services.dbus.implementation = "broker";
 
     documentation = {
       enable = true;

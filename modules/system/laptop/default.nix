@@ -6,6 +6,62 @@
 }:
 with lib; let
   cfg = config.jd.laptop;
+  brightnessScript = pkgs.writeShellScript "auto-brightness" ''
+    adjust=3
+    sensitivity=$(($(cat /sys/class/backlight/intel_backlight/max_brightness)/20))
+    max=
+    min=20
+    delay=2
+    while :; do
+        updated=1
+        while [ $updated -gt 0 ]; do
+            if [ -n "$(${pkgs.acpi}/bin/acpi -a | ${pkgs.gnugrep}/bin/grep off-line)" ]; then
+                max=50
+            else
+                max=100
+            fi
+
+            updated=0
+            backlight=$(cat /sys/class/backlight/intel_backlight/brightness)
+            sensor=$(cat /sys/bus/iio/devices/iio:device0/in_illuminance_raw)
+            target=$(printf '%.0f' "$(${pkgs.light}/bin/light -G)")
+            if [ $backlight -gt $sensor ]; then
+                if [ $(($backlight - $sensor)) -gt $sensitivity ]; then
+                    if [ $target -eq $min ]; then
+                        break
+                    fi
+                    updated=1
+                    target=$(($target - $adjust))
+                fi
+            fi
+            if [ $backlight -lt $sensor ]; then
+                if [ $(($backlight - $sensor)) -lt $sensitivity ]; then
+                    if [ $target -eq $max ]; then
+                        break
+                    fi
+                    updated=1
+                    target=$(($target + $adjust))
+                fi
+            fi
+            if [ $target -gt $max ]; then
+                target=$max
+            fi
+            if [ $target -lt $min ]; then
+                target=$min
+            fi
+            if [ $updated -gt 0 ]; then
+                echo “Setting brightness: $target”
+                echo “Backlight brightness: $backlight”
+                echo “Ambient light: $sensor”
+                echo “Adjusted brightness: $target”
+                echo "-------"
+                ${pkgs.light}/bin/light -S $target
+            fi
+        done
+
+        sleep $delay
+    done
+  '';
 in {
   options.jd.laptop = {
     enable = mkOption {
@@ -31,8 +87,24 @@ in {
       # Framework: cat /sys/power/mem_sleep -> [s2idle] deep
       # Change suspendstate to deep for framework
       sleep.extraConfig = ''
-        HibernateDelaySec=30min
+        HibernateDelaySec=1h
       '';
+
+      user.services."autobrightness" = {
+        wantedBy = ["default.target"];
+
+        unitConfig = {
+          Description = "Automatic brightness adjustment";
+        };
+
+        serviceConfig = {
+          ExecStart = brightnessScript;
+          Restart = "on-failure";
+          RestartSec = 30;
+          StartLimitInterval = 350;
+          StartLimitBurst = 10;
+        };
+      };
     };
 
     # https://man.archlinux.org/man/systemd-sleep.conf.5
@@ -51,8 +123,9 @@ in {
         # Options: ttps://www.freedesktop.org/software/systemd/man/logind.conf.html
         extraConfig = ''
           HandleLidSwitch=suspend-then-hibernate
-          HandlePowerKey=suspend-then-hibernate
+          HandleLidSwitchExternalPower=suspend-then-hibernate
           HandleLidSwitchDocked=ignore
+          HandlePowerKey=suspend-then-hibernate
           IdleAction=suspend-then-hibernate
           IdleActionSec=5min
         '';
@@ -72,22 +145,22 @@ in {
             event = "video/brightnessup";
             action = "${pkgs.light}/bin/light -A 4";
           };
-          ac-power = {
-            event = "ac_adapter/*";
-            action = ''
-              vals=($1)  # space separated string to array of multiple values
-              case ''${vals[3]} in
-                00000000)
-                  max_bright=30
-                  curr_bright=$(echo $(${pkgs.light}/bin/light -G) | xargs printf "%0.f")
-                  ${pkgs.light}/bin/light -S $((curr_bright<max_bright ? curr_bright : max_bright))
-                  ;;
-                00000001)
-                  ${pkgs.light}/bin/light -S 100
-                  ;;
-              esac
-            '';
-          };
+          # ac-power = {
+          #   event = "ac_adapter/*";
+          #   action = ''
+          #     vals=($1)  # space separated string to array of multiple values
+          #     case ''${vals[3]} in
+          #       00000000)
+          #         max_bright=30
+          #         curr_bright=$(echo $(${pkgs.light}/bin/light -G) | xargs printf "%0.f")
+          #         ${pkgs.light}/bin/light -S $((curr_bright<max_bright ? curr_bright : max_bright))
+          #         ;;
+          #       00000001)
+          #         ${pkgs.light}/bin/light -S 100
+          #         ;;
+          #     esac
+          #   '';
+          # };
         };
       };
 

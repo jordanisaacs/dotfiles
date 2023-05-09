@@ -26,6 +26,12 @@ in {
       type = with types; listOf str;
     };
 
+    watchdog = mkOption {
+      description = "Enable watchdog";
+      default = true;
+      type = types.bool;
+    };
+
     quiet = mkEnableOption "quiet kernel console on boot";
 
     # https://bugzilla.redhat.com/show_bug.cgi?id=1718564
@@ -46,7 +52,14 @@ in {
     kernelPackages = mkDefault cfg.package;
     kernelModules = cfg.mods;
 
-    # use rd because systemd
-    kernelParams = ["boot.shell_on_fail"] ++ optionals cfg.quiet ["quiet" "rd.udev.log_level=3"] ++ optional cfg.disableBGRTRestore "video=efifb:nobgrt";
+    blacklistedKernelModules = optionals (!cfg.watchdog) [
+      "iTCO_wdt"
+    ];
+
+    kernelParams =
+      ["boot.shell_on_fail"]
+      ++ optionals cfg.quiet ["quiet"]
+      ++ optional cfg.disableBGRTRestore "video=efifb:nobgrt"
+      ++ optionals (!cfg.watchdog) ["nowatchdog" "nmi_watchdog=0"];
   };
 }

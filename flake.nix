@@ -259,7 +259,7 @@
     defaultDesktopUser =
       defaultUser
       // {
-        groups = defaultUser.groups ++ ["networkmanager" "video" "libvirtd"];
+        groups = defaultUser.groups ++ ["video" "libvirtd"];
       };
 
     defaultServerConfig = {
@@ -412,6 +412,7 @@
         };
         wifi.enable = true;
       };
+      kernel.watchdog = false;
       graphical = {
         enable = true;
         xorg.enable = false;

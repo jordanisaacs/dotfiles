@@ -70,12 +70,13 @@ with utils; {
 
       modules =
         [
+          (import ../modules/system {inherit inputs patchedPkgs;})
           {
-            imports = [(import ../modules/system {inherit inputs patchedPkgs;})];
-
             jd = systemConfigStripped;
 
             services.qemuGuest.enable = lib.mkIf (optionIsTrue systemConfig qemuPath) true;
+
+            system.stateVersion = stateVersion;
 
             environment.etc = {
               "hmsystemdata.json".text = toJSON userCfg;
@@ -85,14 +86,12 @@ with utils; {
 
             nixpkgs.pkgs = pkgs;
             nix.settings.max-jobs = lib.mkDefault cpuCores;
-
-            system.stateVersion = stateVersion;
           }
+          inputs.agenix.nixosModules.age
+          inputs.simple-nixos-mailserver.nixosModule
+          inputs.impermanence.nixosModule
           passthru
         ]
-        ++ [inputs.agenix.nixosModules.age]
-        ++ [inputs.simple-nixos-mailserver.nixosModule]
-        ++ [inputs.impermanence.nixosModule]
         ++ (systemEnableModule (import (inputs.nixpkgs + "/nixos/modules/profiles/qemu-guest.nix")) qemuPath);
     };
 }

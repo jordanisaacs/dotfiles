@@ -139,7 +139,7 @@ with lib; let
                 else null)
               peerConfs);
             Domains = "~.";
-            DNSSEC = true;
+            # DNSSEC = true;
             DNSSECNegativeTrustAnchors = mapAttrsToList (_: peerConf: peerConf.domainName) peerConfs;
           };
       };

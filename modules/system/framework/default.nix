@@ -26,6 +26,7 @@ in {
   config = mkIf (cfg.enable) (mkMerge [
     {
       hardware.cpu.intel.updateMicrocode = true;
+      hardware.sensor.iio.enable = true;
 
       services = {
         fstrim = {
