@@ -35,7 +35,7 @@ with lib; let
     # Wait until the units actually stop.
     while [ -n "$(systemctl --user --no-legend --state=deactivating list-units)" ];
     do
-      sleep 0.5
+      sleep 0.2
     done
 
     ${optionalString (isSway || isSwayDbg) "swaymsg exit"}
@@ -123,11 +123,9 @@ with lib; let
 
     ## https://bbs.archlinux.org/viewtopic.php?id=224652
     # Need QT theme for syncthing tray
-    dbus-update-activation-environment --systemd DISPLAY WAYLAND_DISPLAY XDG_SESSION_TYPE DBUS_SESSION_BUS_ADDRESS
+    systemctl import-environment --user DISPLAY WAYLAND_DISPLAY XDG_SESSION_TYPE DBUS_SESSION_BUS_ADDRESS \
+      QT_QPA_PLATFORMTHEME PATH
 
-    # Need QT for syncthing tray
-    # systemctl --user import-environment PATH XDG_RUNTIME_DIR WAYLAND_DISPLAY XDG_CURRENT_DESKTOP
-    # systemctl --user restart xdg-desktop-portal.service
     ${optionalString isDwl ''
       wlr-randr --output "HDMI-A-1" --transform 90 --pos 0,0
       wlr-randr --output "DP-1" --transform normal --pos 1440,400
@@ -172,10 +170,6 @@ in {
             export BEMENU_SCALE=2
             export CLUTTER_BACKEND=wayland
             export SDL_VIDEODRIVER=wayland
-
-            # https://bbs.archlinux.org/viewtopic.php?id=224652
-            # Need QT theme for syncthing tray
-            dbus-update-activation-environment --all --systemd
 
             ${optionalString isDwl ''
               ${dwlJD}/bin/dwl -s "${compositorStartup}/bin/compositor-setup"
