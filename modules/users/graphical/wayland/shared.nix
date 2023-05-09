@@ -149,6 +149,17 @@ in {
       };
     };
 
+    screen = {
+      gamma = {
+        enable = mkEnableOption "screen gamma control";
+        loc = mkOption {
+          type = with types; enum ["pittsburgh"];
+          default = "pittsburgh";
+          description = "gamma control location";
+        };
+      };
+    };
+
     foot = {
       theme = mkOption {
         type = with types; enum ["tokyo-night" "dracula"];
@@ -227,7 +238,7 @@ in {
         in {
           text = ''
             pad=2x2 center
-            font=Berkeley Mono,Noto Color Emoji:style=Regular
+            font=Berkeley Mono Variable,Noto Color Emoji:style=Regular
 
             [cursor]
             color=282a36 f8f8f2
@@ -487,5 +498,21 @@ in {
         };
       };
     })
+    (mkIf cfg.screen.gamma.enable (let
+      locs = {
+        pittsburgh = {
+          latitude = "40.4";
+          longitude = "-80";
+        };
+      };
+    in {
+      services.wlsunset =
+        {
+          enable = true;
+        }
+        // (getAttr cfg.screen.gamma.loc locs);
+
+      systemd.user.services.wlsunset.Unit.PartOf = lib.mkForce ["wayland-session.target"];
+    }))
   ]);
 }
