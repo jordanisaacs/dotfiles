@@ -16,8 +16,8 @@ in {
   };
 
   config = mkIf cfg.firefox.enable (mkMerge [
-    (mkIf cfg.jd.impermanence.enable {
-      home.persist.${cfg.jd.impermanence.persistPool} = [".mozilla"];
+    (mkIf config.jd.impermanence.enable {
+      home.persistence.${config.jd.impermanence.persistPool} = [".mozilla"];
     })
     {
       home.file.".mozilla/firefox/ignore-dev-edition-profile".text = "";

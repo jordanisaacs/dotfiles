@@ -6,13 +6,46 @@
 }:
 with lib; let
   cfg = config.jd.graphical.applications;
+  isGraphical = let
+    cfg = config.jd.graphical;
+  in (cfg.xorg.enable == true || cfg.wayland.enable == true);
 in {
-  config = {
+  options.jd.graphical.applications.multimedia = {
+    enable = mkOption {
+      type = types.bool;
+      default = false;
+      description = "Enable multimedia packages";
+    };
+  };
+
+  config = mkIf (isGraphical && cfg.enable && cfg.multimedia.enable) {
     home.packages = with pkgs; [
-      vimiv-qt
+      # paint.net replacement
       pinta
+
+      # vector art
       inkscape
+
+      # painting/drawing
+      krita
+
+      # photo editing
+      gimp
+
+      # pdf viewer
       okular
+
+      # image viewer
+      vimiv-qt
+
+      # recording/streaming
+      obs-studio
+
+      # video editing
+      kdenlive
+
+      # audio
+      ardour
     ];
 
     programs.mpv = {

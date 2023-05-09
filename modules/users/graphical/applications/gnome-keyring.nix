@@ -7,11 +7,11 @@
 with lib; let
   cfg = config.jd.graphical;
 in {
-  options.jd.graphical.gnome-keyring = {
+  options.jd.graphical.applications.gnome-keyring = {
     enable = mkEnableOption "gnome-keyring with ssh support";
   };
 
-  config = mkIf (cfg.xorg.enable == true || cfg.wayland.enable == true) {
+  config = mkIf ((cfg.xorg.enable == true || cfg.wayland.enable == true) && cfg.applications.gnome-keyring.enable) {
     home = {
       sessionVariables = {
         SSH_AUTH_SOCK = "\${XDG_RUNTIME_DIR}/keyring/ssh";

@@ -10,6 +10,7 @@
     ./firefox.nix
     ./anki.nix
     ./multimedia.nix
+    ./gaming.nix
     ./kdeconnect.nix
     ./dolphin.nix
     ./gnome-keyring.nix

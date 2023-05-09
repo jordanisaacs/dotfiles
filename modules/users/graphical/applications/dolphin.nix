@@ -15,7 +15,7 @@ in {
   };
 
   config = mkIf (isGraphical && cfg.enable && cfg.dolphin.enable) {
-    home.packages = [
+    home.packages = with pkgs; [
       # Dolphin + Plugins
       # Dolphin is patched to remove plasma-dolphin.service and dbus-reliance on it.
       # This is because it requires `background.slice` which is kde specific.
@@ -23,6 +23,8 @@ in {
       libsForQt5.ffmpegthumbs
       libsForQt5.kdegraphics-thumbnailers
       libsForQt5.kio-extras
+      libsForQt5.phonon
+      libsForQt5.phonon-backend-vlc # TODO: package phonon-mpv
       libsForQt5.dolphin-plugins
       (runCommand "dolphin-nokde" {} ''
         mkdir $out
