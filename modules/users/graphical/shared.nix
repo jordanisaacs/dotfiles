@@ -99,11 +99,6 @@ in {
         };
       };
 
-      systemd.user.sessionVariables = {
-        # So graphical services are themed (eg trays)
-        QT_QPA_PLATFORMTHEME = "qt5ct";
-      };
-
       xdg = {
         systemDirs.data = [
           "${pkgs.gtk3}/share/gsettings-schemas/${pkgs.gtk3.name}"
@@ -111,38 +106,25 @@ in {
         ];
 
         configFile = {
-          # "fontconfig/conf.d/04-hm-rendering.conf" = let
-          #   fcBool = x: "<bool>" + (boolToString x) + "</bool>";
-          #   renderConf = ''
-          #     <?xml version='1.0'?>
-          #     <!DOCTYPE fontconfig SYSTEM 'urn:fontconfig:fonts.dtd'>
-          #     <fontconfig>
-          #       <!-- Default rendering settings -->
-          #       <match target="font">
-          #         <edit mode="assign" name="antialias">
-          #           ${fcBool true}
-          #         </edit>
-          #         <edit mode="assign" name="hinting">
-          #           ${fcBool true}
-          #         </edit>
-          #         <edit mode="assign" name="autohint">
-          #           ${fcBool false}
-          #         </edit>
-          #         <edit mode="assign" name="hintstyle">
-          #           <const>hintmedium</const>
-          #         </edit>
-          #         <edit mode="assign" name="rgba">
-          #           <const>rgb</const>
-          #         </edit>
-          #         <edit mode="assign" name="lcdfilter">
-          #           <const>lcddefault</const>
-          #         </edit>
-          #       </match>
-          #     </fontconfig>
-          #   '';
-          # in {
-          #   text = renderConf;
-          # };
+          "fontconfig/conf.d/04-font-priority.conf" = let
+            fcBool = x: "<bool>" + (boolToString x) + "</bool>";
+            renderConf = ''
+              <?xml version='1.0'?>
+              <!DOCTYPE fontconfig SYSTEM 'urn:fontconfig:fonts.dtd'>
+              <fontconfig>
+                <!-- Default rendering settings -->
+                <alias>
+                  <family>Berkeley Mono Variable</family>
+                  <prefer>
+                    <family>Berkeley Mono Variable</family>
+                    <family>JetbrainsMonoNL NFM</family>
+                  </prefer>
+                </alias>
+              </fontconfig>
+            '';
+          in {
+            text = renderConf;
+          };
 
           "qt5ct/qt5ct.conf" = {
             text = ''
