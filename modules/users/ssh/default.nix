@@ -15,22 +15,28 @@ in {
     };
   };
 
-  config = mkIf cfg.enable {
-    programs.ssh = {
-      enable = true;
-      matchBlocks = {
-        localhost = {
-          hostname = "127.0.0.1";
-          user = "root";
-          identityFile = "~/.ssh/local";
+  config = mkIf cfg.enable (mkMerge
+    [
+      {
+        programs.ssh = {
+          enable = true;
+          matchBlocks = {
+            localhost = {
+              hostname = "127.0.0.1";
+              user = "root";
+              identityFile = "~/.ssh/local";
+            };
+            "38.45.64.210" = {
+              forwardAgent = true;
+            };
+          };
+          extraConfig = ''
+            AddKeysToAgent yes
+          '';
         };
-        "38.45.64.210" = {
-          forwardAgent = true;
-        };
-      };
-      extraConfig = ''
-        AddKeysToAgent yes
-      '';
-    };
-  };
+      }
+      (mkIf config.jd.impermanence.enable {
+        home.persistence.${config.jd.impermanence.backupPool}.directories = [".ssh"];
+      })
+    ]);
 }

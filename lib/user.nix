@@ -4,6 +4,7 @@
   lib,
   system,
   overlays,
+  inputs,
   ...
 }:
 with builtins; {
@@ -36,6 +37,7 @@ with builtins; {
       modules = [
         ../modules/users
         machineModule
+        inputs.impermanence.nixosModules.home-manager.impermanence
         pkgs.homeage.homeManagerModules.homeage
         {
           jd = userConfig;

@@ -4,39 +4,27 @@
   lib,
   ...
 }:
-with lib; let
+with lib;
+with builtins; let
   cfg = config.jd.applications;
 in {
   imports = [
-    ./taskwarrior
-    ./direnv
-    ./syncthing
-    ./neomutt
+    ./taskwarrior.nix
+    ./direnv.nix
+    ./bat.nix
+    ./tldr.nix
+    ./syncthing.nix
+    ./neovim.nix
+    ./neomutt.nix
   ];
 
   options.jd.applications = {
-    enable = mkOption {
-      description = "Enable a set of common applications";
-      type = types.bool;
-      default = false;
-    };
+    enable = mkEnableOption "a set of common non-graphical applications";
   };
 
   config = mkIf (cfg.enable) {
-    home.sessionVariables = {
-      MANPAGER = "sh -c 'col -bx | bat -l man -p'";
-      EDITOR = "vim";
-    };
-
-    xdg.enable = true;
-
     # TTY compatible CLI applications
     home.packages = with pkgs; [
-      home-manager
-
-      # Text editor
-      neovimJD
-
       # ssh mount
       sshfs
 
@@ -73,17 +61,10 @@ in {
 
       # music
       playerctl
-    ];
 
-    programs.mpv = {
-      enable = true;
-      config = {
-        profile = "gpu-hq";
-        vo = "gpu";
-        hwdec = "auto-safe";
-        ytdl-format = "ytdl-format=bestvideo[height<=?1920][fps<=?30][vcodec!=?vp9]+bestaudio/best";
-      };
-    };
+      # A basic python environment
+      (python3.withPackages (ps: with ps; [pandas requests]))
+    ];
 
     services.playerctld.enable = true;
   };

@@ -11,5 +11,7 @@
     ./anki.nix
     ./multimedia.nix
     ./kdeconnect.nix
+    ./dolphin.nix
+    ./gnome-keyring.nix
   ];
 }

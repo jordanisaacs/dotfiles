@@ -9,24 +9,18 @@ with lib; let
   systemCfg = config.machineData.systemConfig;
 in {
   options.jd.graphical.applications = {
-    enable = mkOption {
-      type = types.bool;
-      default = false;
-      description = "Enable graphical applications";
-    };
+    enable = mkEnableOption "graphical applications";
   };
 
   config = mkIf (cfg.applications.enable) {
     home.packages = with pkgs;
       [
-        dolphin # fixes dbus/firefox
-        okular
         xorg.xinput
 
         thunderbird
         # jdpkgs.rstudioWrapper
         # jdpkgs.texstudioWrapper
-        microsoft-edge
+        ungoogled-chromium
 
         # updated version with wayland/grim backend
         jdpkgs.flameshot
@@ -59,6 +53,13 @@ in {
         cider
 
         # kdeconnect
+
+        # Utilities
+        # firmware-manager - need to wait for polkit support
+
+        (rstudioWrapper.override {
+          packages = with rPackages; [tidyverse];
+        })
       ]
       ++ lib.optional systemCfg.networking.wifi.enable pkgs.iwgtk;
 

@@ -12,75 +12,102 @@ in {
       vimiv-qt
       pinta
       inkscape
+      okular
     ];
 
-    xdg.configFile = {
-      "vimiv/vimiv.conf" = {
-        text = ''
-          [GENERAL]
-          monitor_filesystem = True
-          shuffle = False
-          startup_library = True
-          style = default-dark
+    programs.mpv = {
+      enable = true;
+      config = {
+        profile = "gpu-hq";
+        vo = "gpu";
+        hwdec = "auto-safe";
+        ytdl-format = "ytdl-format=bestvideo[height<=?1920][fps<=?30][vcodec!=?vp9]+bestaudio/best";
+      };
+    };
 
-          [COMMAND]
-          history_limit = 100
+    xdg = {
+      mimeApps. defaultApplications = {
+        "image/bmp" = "vimiv.desktop";
+        "image/gif" = "vimiv.desktop";
+        "image/jpeg" = "vimiv.desktop";
+        "image/jp2" = "vimiv.desktop";
+        "image/jpeg2000" = "vimiv.desktop";
+        "image/jpx" = "vimiv.desktop";
+        "image/png" = "vimiv.desktop";
+        "image/svg" = "vimiv.desktop";
+        "image/tiff" = "vimiv.desktop";
 
-          [COMPLETION]
-          fuzzy = False
+        "application/pdf" = "okularApplication_pdf.desktop";
+      };
 
-          [SEARCH]
-          ignore_case = True
-          incremental = True
+      configFile = {
+        "vimiv/vimiv.conf" = {
+          text = ''
+            [GENERAL]
+            monitor_filesystem = True
+            shuffle = False
+            startup_library = True
+            style = default-dark
 
-          [IMAGE]
-          autoplay = True
-          autowrite = ask
-          overzoom = 1.0
+            [COMMAND]
+            history_limit = 100
 
-          [LIBRARY]
-          width = 0.3
-          show_hidden = False
+            [COMPLETION]
+            fuzzy = False
 
-          [THUMBNAIL]
-          size = 128
+            [SEARCH]
+            ignore_case = True
+            incremental = True
 
-          [SLIDESHOW]
-          delay = 2.0
-          indicator = slideshow:
+            [IMAGE]
+            autoplay = True
+            autowrite = ask
+            overzoom = 1.0
 
-          [STATUSBAR]
-          collapse_home = True
-          show = True
-          message_timeout = 60000
-          mark_indicator = <b>*</b>
-          left = {pwd}
-          left_image = {index}/{total} {basename} [{zoomlevel}]
-          left_thumbnail = {thumbnail-index}/{thumbnail-total} {thumbnail-name}
-          left_manipulate = {basename}   {image-size}   Modified: {modified}   {processing}
-          center_thumbnail = {thumbnail-size}
-          center = {slideshow-indicator} {slideshow-delay} {transformation-info}
-          right = {keys}  {mark-count}  {mode}
-          right_image = {keys}  {mark-indicator} {mark-count}  {mode}
+            [LIBRARY]
+            width = 0.3
+            show_hidden = False
 
-          [KEYHINT]
-          delay = 500
-          timeout = 5000
+            [THUMBNAIL]
+            size = 128
 
-          [TITLE]
-          fallback = vimiv
-          image = vimiv - {basename}
+            [SLIDESHOW]
+            delay = 2.0
+            indicator = slideshow:
 
-          [METADATA]
-          keys1 = Exif.Image.Make, Exif.Image.Model, Exif.Image.DateTime, Exif.Photo.ExposureTime, Exif.Photo.FNumber, Exif.Photo.IsoSpeedRatings, Exif.Photo.FocalLength, Exif.Photo.LensMake, Exif.Photo.LensModel, Exif.Photo.ExposureBiasValue
-          keys2 = Exif.Photo.ExposureTime, Exif.Photo.FNumber, Exif.Photo.IsoSpeedRatings, Exif.Photo.FocalLength
-          keys3 = Exif.Image.Artist, Exif.Image.Copyright
+            [STATUSBAR]
+            collapse_home = True
+            show = True
+            message_timeout = 60000
+            mark_indicator = <b>*</b>
+            left = {pwd}
+            left_image = {index}/{total} {basename} [{zoomlevel}]
+            left_thumbnail = {thumbnail-index}/{thumbnail-total} {thumbnail-name}
+            left_manipulate = {basename}   {image-size}   Modified: {modified}   {processing}
+            center_thumbnail = {thumbnail-size}
+            center = {slideshow-indicator} {slideshow-delay} {transformation-info}
+            right = {keys}  {mark-count}  {mode}
+            right_image = {keys}  {mark-indicator} {mark-count}  {mode}
 
-          [PLUGINS]
-          print = default
+            [KEYHINT]
+            delay = 500
+            timeout = 5000
 
-          [ALIASES]
-        '';
+            [TITLE]
+            fallback = vimiv
+            image = vimiv - {basename}
+
+            [METADATA]
+            keys1 = Exif.Image.Make, Exif.Image.Model, Exif.Image.DateTime, Exif.Photo.ExposureTime, Exif.Photo.FNumber, Exif.Photo.IsoSpeedRatings, Exif.Photo.FocalLength, Exif.Photo.LensMake, Exif.Photo.LensModel, Exif.Photo.ExposureBiasValue
+            keys2 = Exif.Photo.ExposureTime, Exif.Photo.FNumber, Exif.Photo.IsoSpeedRatings, Exif.Photo.FocalLength
+            keys3 = Exif.Image.Artist, Exif.Image.Copyright
+
+            [PLUGINS]
+            print = default
+
+            [ALIASES]
+          '';
+        };
       };
     };
   };

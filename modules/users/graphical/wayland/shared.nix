@@ -170,6 +170,16 @@ in {
         mako
       ];
 
+      xdg.mimeApps = {
+        associations.added = {
+          "x-scheme-handler/terminal" = "foot.desktop";
+        };
+
+        defaultApplications = {
+          "x-scheme-handler/terminal" = "foot.desktop";
+        };
+      };
+
       xdg.configFile = {
         "foot/foot.ini" = let
           dracula = ''

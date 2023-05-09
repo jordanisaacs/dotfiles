@@ -123,7 +123,7 @@ with lib; let
 
     ## https://bbs.archlinux.org/viewtopic.php?id=224652
     # Need QT theme for syncthing tray
-    dbus-update-activation-environment --systemd DISPLAY WAYLAND_DISPLAY XDG_SESSION_TYPE
+    dbus-update-activation-environment --systemd DISPLAY WAYLAND_DISPLAY XDG_SESSION_TYPE DBUS_SESSION_BUS_ADDRESS
 
     # Need QT for syncthing tray
     # systemctl --user import-environment PATH XDG_RUNTIME_DIR WAYLAND_DISPLAY XDG_CURRENT_DESKTOP

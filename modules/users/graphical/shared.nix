@@ -7,10 +7,12 @@
 with lib; let
   cfg = config.jd.graphical;
 in {
-  options.jd.graphical.theme = mkOption {
-    type = with types; enum ["arc-dark" "materia-dark"];
-    description = "Enable wayland";
-    default = "arc-dark";
+  options.jd.graphical = {
+    theme = mkOption {
+      type = with types; enum ["arc-dark" "materia-dark"];
+      description = "Enable wayland";
+      default = "arc-dark";
+    };
   };
 
   config =
@@ -100,14 +102,6 @@ in {
       systemd.user.sessionVariables = {
         # So graphical services are themed (eg trays)
         QT_QPA_PLATFORMTHEME = "qt5ct";
-        PATH = builtins.concatStringsSep ":" [
-          # Following two needed for themes from trays
-          # "${pkgs.libsForQt5.qtstyleplugin-kvantum}/bin"
-          # "${pkgs.qt5ct}/bin"
-          # needed for opening things from trays
-          # "${pkgs.xdg-utils}/bin"
-          # "${pkgs.dolphin}/bin"
-        ];
       };
 
       xdg = {
@@ -117,6 +111,39 @@ in {
         ];
 
         configFile = {
+          # "fontconfig/conf.d/04-hm-rendering.conf" = let
+          #   fcBool = x: "<bool>" + (boolToString x) + "</bool>";
+          #   renderConf = ''
+          #     <?xml version='1.0'?>
+          #     <!DOCTYPE fontconfig SYSTEM 'urn:fontconfig:fonts.dtd'>
+          #     <fontconfig>
+          #       <!-- Default rendering settings -->
+          #       <match target="font">
+          #         <edit mode="assign" name="antialias">
+          #           ${fcBool true}
+          #         </edit>
+          #         <edit mode="assign" name="hinting">
+          #           ${fcBool true}
+          #         </edit>
+          #         <edit mode="assign" name="autohint">
+          #           ${fcBool false}
+          #         </edit>
+          #         <edit mode="assign" name="hintstyle">
+          #           <const>hintmedium</const>
+          #         </edit>
+          #         <edit mode="assign" name="rgba">
+          #           <const>rgb</const>
+          #         </edit>
+          #         <edit mode="assign" name="lcdfilter">
+          #           <const>lcddefault</const>
+          #         </edit>
+          #       </match>
+          #     </fontconfig>
+          #   '';
+          # in {
+          #   text = renderConf;
+          # };
+
           "qt5ct/qt5ct.conf" = {
             text = ''
               [Appearance]
@@ -147,29 +174,19 @@ in {
           };
 
           "kdeglobals" = {
+            # TODO: this is a wayland only terminal
             text = ''
               [General]
               TerminalApplication=${pkgs.foot}/bin/foot
+
+              [KDE]
+              ShowDeleteCommand=false
+
+              [PreviewSettings]
+              MaximumRemoteSize=0
             '';
           };
         };
-
-        #   # https://wiki.archlinux.org/title/XDG_MIME_Applications#New_MIME_types
-        #   # https://specifications.freedesktop.org/shared-mime-info-spec/shared-mime-info-spec-latest.html#idm46292897757504
-        #   # "mime/text/x-r-markdown.xml" = {
-        #   #   text = ''
-        #   #     <?xml version="1.0" encoding="UTF-8"?>
-        #   #     <mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
-        #   #       <mime-type type="text/x-r-markdown">
-        #   #         <comment>RMarkdown file</comment>
-        #   #         <icon name="text-x-r-markdown"/>
-        #   #         <glob pattern="*.Rmd"/>
-        #   #         <glob pattern="*.Rmarkdown"/>
-        #   #       </mime-type>
-        #   #     </mime-info>
-        #   #   '';
-        #   # };
-        # };
       };
 
       # dconf settings set by gtk settings: https://github.com/nix-community/home-manager/blob/693d76eeb84124cc3110793ff127aeab3832f95c/modules/misc/gtk.nix#L227
@@ -193,47 +210,6 @@ in {
         };
 
         Install = {WantedBy = ["graphical-session-pre.target"];};
-      };
-
-      xdg = {
-        enable = true;
-        mime.enable = true;
-        mimeApps = {
-          enable = true;
-          # TODO: Create a function for generating these better
-          associations.added = {
-            "x-scheme-handler/terminal" = "foot.desktop";
-            "x-scheme-handler/file" = "org.kde.dolphin.desktop";
-            "x-directory/normal" = "org.kde.dolphin.desktop";
-          };
-          defaultApplications = {
-            "application/pdf" = "okularApplication_pdf.desktop";
-            "application/x-shellscript" = "nvim.desktop";
-            "application/x-perl" = "nvim.desktop";
-            "application/json" = "nvim.desktop";
-            "text/x-readme" = "nvim.desktop";
-            "text/plain" = "nvim.desktop";
-            "text/markdown" = "nvim.desktop";
-            "text/x-csrc" = "nvim.desktop";
-            "text/x-chdr" = "nvim.desktop";
-            "text/x-python" = "nvim.desktop";
-            "text/x-tex" = "texstudio.desktop";
-            "text/x-makefile" = "nvim.desktop";
-            "inode/directory" = "org.kde.dolphin.desktop";
-            "x-directory/normal" = "org.kde.dolphin.desktop";
-            "x-scheme-handler/file" = "org.kde.dolphin.desktop";
-            "x-scheme-handler/terminal" = "foot.desktop";
-            "image/bmp" = "vimiv.desktop";
-            "image/gif" = "vimiv.desktop";
-            "image/jpeg" = "vimiv.desktop";
-            "image/jp2" = "vimiv.desktop";
-            "image/jpeg2000" = "vimiv.desktop";
-            "image/jpx" = "vimiv.desktop";
-            "image/png" = "vimiv.desktop";
-            "image/svg" = "vimiv.desktop";
-            "image/tiff" = "vimiv.desktop";
-          };
-        };
       };
     };
 }

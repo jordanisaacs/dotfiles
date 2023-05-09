@@ -10,6 +10,6 @@
   ...
 }: rec {
   utils = pkgs.callPackage ./utils.nix {self = inputs.self;};
-  user = import ./user.nix {inherit nixpkgs pkgs home-manager lib system overlays;};
+  user = import ./user.nix {inherit nixpkgs pkgs home-manager lib system overlays inputs;};
   host = import ./host.nix {inherit inputs patchedPkgs user utils lib system pkgs;};
 }

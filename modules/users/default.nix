@@ -5,6 +5,7 @@
   ...
 }: {
   imports = [
+    ./core
     ./applications
     ./graphical
     ./git
@@ -17,5 +18,6 @@
     ./pijul
     ./secrets
     ./weechat
+    ./impermanence
   ];
 }

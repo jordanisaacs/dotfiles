@@ -57,6 +57,7 @@
     dwm-flake.url = "github:jordanisaacs/dwm-flake";
 
     dwl-flake.url = "github:jordanisaacs/dwl-flake";
+    dwl-flake.inputs.nixpkgs.follows = "nixpkgs";
 
     efi-power.url = "github:jordanisaacs/efi-power";
     efi-power.inputs.nixpkgs.follows = "nixpkgs";
@@ -507,13 +508,14 @@
             theme = "arc-dark";
             applications = {
               enable = true;
+              anki.enable = true;
+              dolphin.enable = true;
               firefox.enable = true;
               libreoffice.enable = true;
-              anki = {
-                enable = true;
-                sync = true;
-              };
+              multimedia.enable = true;
+              gaming.enable = true;
               kdeconnect.enable = false;
+              gnome-keyring.enable = true;
             };
             wayland = {
               enable = true;
@@ -521,6 +523,7 @@
               background.enable = true;
               statusbar.enable = true;
               screenlock.enable = true;
+              screen.gamma.enable = true;
             };
             xorg = {
               enable = false;
@@ -530,21 +533,14 @@
           };
           applications = {
             enable = true;
+            bat.enable = true;
             direnv.enable = true;
+            tldr.enable = true;
             syncthing.enable = true;
             neomutt.enable = true;
-            taskwarrior = {
-              enable = true;
-              server = {
-                enable = true;
-                key = secrets.taskwarrior.client.key.secret.file;
-                ca = secrets.taskwarrior.client.ca.secret.file;
-                cert = secrets.taskwarrior.client.cert.secret.file;
-                credentials = secrets.taskwarrior.credentials;
-              };
-            };
+            neovim.enable = true;
           };
-          secrets.identityPaths = [secrets.age.user.jd.privateKeyPath];
+          secrets.identityPaths = [secrets.age.framework.jd.privateKeyPath];
           gpg.enable = true;
           git = {
             enable = true;
