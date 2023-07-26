@@ -13,57 +13,7 @@ with lib; let
   dwlTags = pkgs.writeShellApplication {
     name = "dwl-waybar";
     runtimeInputs = with pkgs; [gnugrep inotify-tools coreutils gnused gawk];
-    text = ''
-      set -e
-      echo '{"text": "| 1!| 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 |"}'
-      fname="/tmp/dwltags";
-
-      monitor="''${1}"
-
-      while true
-      do
-          while [ ! -f $fname ]
-          do
-              inotifywait -qqe create "$(dirname $fname)"
-          done;
-
-          inotifywait -qqe modify $fname
-
-
-          output="$(grep  "''${monitor}" "''${fname}" | tail -n6)"
-          title="$(echo   "''${output}" | grep '^[[:graph:]]* title'  | cut -d ' ' -f 3-  | sed s/\"//g)" # Replace quotes - prevent waybar crash
-          layout="$(echo  "''${output}" | grep '^[[:graph:]]* layout' | cut -d ' ' -f 3- )"
-
-          # Get the tag bit mask as a decimal
-          activetags="$(echo "''${output}"   | grep '^[[:graph:]]* tags' | awk '{print $3}')"
-          selectedtags="$(echo "''${output}" | grep '^[[:graph:]]* tags' | awk '{print $4}')"
-          urgenttags="$(echo "''${output}"   | grep '^[[:graph:]]* tags' | awk '{print $6}')"
-
-          n=""
-          for i in {0..8};
-          do
-              mask=$((1<<i))
-              if (( "$selectedtags" & mask))
-              then
-                n="''${n}|*$((i+1))"
-              else
-                if (( "$activetags" & mask ));
-                then
-                    n="''${n}|+$((i+1))"
-                else
-                    n="''${n}| $((i+1))"
-                fi
-              fi
-              if (( "$urgenttags" & mask ));
-              then
-                  n="$n!"
-              else
-                  n="$n "
-              fi
-          done
-          printf -- '{"text": "%s| %s %s"}\n' "$n" "$layout" "$title"
-      done
-    '';
+    text = builtins.readFile ./dwl.sh;
   };
 
   screenNames =
@@ -191,62 +141,63 @@ in {
         };
       };
 
-      xdg.configFile = {
-        "foot/foot.ini" = let
-          dracula = ''
-            alpha=1.0
-            foreground=f8f8f2
-            background=282a36
-            regular0=000000  # black
-            regular1=ff5555  # red
-            regular2=50fa7b  # green
-            regular3=f1fa8c  # yellow
-            regular4=bd93f9  # blue
-            regular5=ff79c6  # magenta
-            regular6=8be9fd  # cyan
-            regular7=bfbfbf  # white
-            bright0=4d4d4d   # bright black
-            bright1=ff6e67   # bright red
-            bright2=5af78e   # bright green
-            bright3=f4f99d   # bright yellow
-            bright4=caa9fa   # bright blue
-            bright5=ff92d0   # bright magenta
-            bright6=9aedfe   # bright cyan
-            bright7=e6e6e6   # bright white
-          '';
+      programs.foot = {
+        enable = true;
+        settings = let
+          dracula = {
+            alpha = "1.0";
+            foreground = "f8f8f2";
+            background = "282a36";
+            regular0 = "000000"; # black
+            regular1 = "ff5555"; # red
+            regular2 = "50fa7b"; # green
+            regular3 = "f1fa8c"; # yellow
+            regular4 = "bd93f9"; # blue
+            regular5 = "ff79c6"; # magenta
+            regular6 = "8be9fd"; # cyan
+            regular7 = "bfbfbf"; # white
+            bright0 = "4d4d4d"; # bright black
+            bright1 = "ff6e67"; # bright red
+            bright2 = "5af78e"; # bright green
+            bright3 = "f4f99d"; # bright yellow
+            bright4 = "caa9fa"; # bright blue
+            bright5 = "ff92d0"; # bright magenta
+            bright6 = "9aedfe"; # bright cyan
+            bright7 = "e6e6e6"; # bright white
+          };
 
-          tokyoNight = ''
-            background=1a1b26
-            foreground=c0caf5
-            regular0=15161E
-            regular1=f7768e
-            regular2=9ece6a
-            regular3=e0af68
-            regular4=7aa2f7
-            regular5=bb9af7
-            regular6=7dcfff
-            regular7=a9b1d6
-            bright0=414868
-            bright1=f7768e
-            bright2=9ece6a
-            bright3=e0af68
-            bright4=7aa2f7
-            bright5=bb9af7
-            bright6=7dcfff
-            bright7=c0caf5
-          '';
+          tokyoNight = {
+            background = "1a1b26";
+            foreground = "c0caf5";
+            regular0 = "15161E";
+            regular1 = "f7768e";
+            regular2 = "9ece6a";
+            regular3 = "e0af68";
+            regular4 = "7aa2f7";
+            regular5 = "bb9af7";
+            regular6 = "7dcfff";
+            regular7 = "a9b1d6";
+            bright0 = "414868";
+            bright1 = "f7768e";
+            bright2 = "9ece6a";
+            bright3 = "e0af68";
+            bright4 = "7aa2f7";
+            bright5 = "bb9af7";
+            bright6 = "7dcfff";
+            bright7 = "c0caf5";
+          };
         in {
-          text = ''
-            pad=2x2 center
-            font=Berkeley Mono Variable,Noto Color Emoji:style=Regular
-
-            [cursor]
-            color=282a36 f8f8f2
-
-            [colors]
-            ${optionalString (cfg.foot.theme == "tokyo-night") tokyoNight}
-            ${optionalString (cfg.foot.theme == "dracula") dracula}
-          '';
+          main = {
+            pad = "2x2 center";
+            font = "Berkeley Mono Variable:size=20,Noto Color Emoji:style=Regular:size=20";
+          };
+          cursor = {
+            color = "282a36 f8f8f2";
+          };
+          colors =
+            if (cfg.foot.theme == "tokyo-night")
+            then tokyoNight
+            else dracula;
         };
       };
 
@@ -340,8 +291,6 @@ in {
         dwlModule = dispName: {
           exec = "${dwlTags}/bin/dwl-waybar '${dispName}'";
           format = "{}";
-          escape = true;
-          max-length = 70;
           return-type = "json";
         };
       in {

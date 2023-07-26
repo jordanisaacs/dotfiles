@@ -13,6 +13,14 @@ in {
       description = "Enable wayland";
       default = "arc-dark";
     };
+
+    cursor = {
+      size = mkOption {
+        type = types.int;
+        default = 32;
+        description = "Cursor size";
+      };
+    };
   };
 
   config =
@@ -177,6 +185,7 @@ in {
           # https://askubuntu.com/questions/1404764/how-to-use-hdystylemanagercolor-scheme
           color-scheme = "prefer-dark";
           text-scaling-factor = 1.25;
+          cursor-size = cfg.cursor.size;
         };
       };
 

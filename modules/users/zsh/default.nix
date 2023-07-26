@@ -31,7 +31,7 @@ in {
         enable = true;
         enableAutosuggestions = true;
         historySubstringSearch.enable = true;
-        enableSyntaxHighlighting = true;
+        syntaxHighlighting.enable = true;
         enableCompletion = true;
         completionInit = ''
           autoload -U compinit

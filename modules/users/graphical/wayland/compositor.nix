@@ -25,6 +25,7 @@ with lib; let
         audiodown = ["${pkgs.scripts.soundTools}/bin/stools" "vol" "down" "5"];
         audiomut = ["${pkgs.scripts.soundTools}/bin/stools" "vol" "toggle"];
       };
+      visual.cursorSize = config.jd.graphical.cursor.size;
     };
   };
 
@@ -130,7 +131,7 @@ with lib; let
       wlr-randr --output "HDMI-A-1" --transform 90 --pos 0,0
       wlr-randr --output "DP-1" --transform normal --pos 1440,400
       systemctl --user start dwl-session.target
-      exec cp /dev/stdin /tmp/dwltags
+      exec cp /dev/stdin $XDG_CACHE_HOME/dwltags
     ''}
     ${optionalString (isSway || isSwayDbg) "systemctl --user start sway-session.target"}
   '';

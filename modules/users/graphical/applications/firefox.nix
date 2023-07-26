@@ -138,6 +138,8 @@ in {
               user-agent-string-switcher
               (bypass-paywalls-clean.override {
                 addonId = "magnolia@12.34";
+                url = "https://gitlab.com/magnolia1234/bpc-uploads/-/raw/master/bypass_paywalls_clean-3.2.5.0.xpi";
+                sha256 = "sha256-m1BVji6Ka3+vRlfdulfN+Ffi81pSzlQObgwrSkbr0IU=";
               })
               redirector
               rust-search-extension

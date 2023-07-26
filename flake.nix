@@ -12,7 +12,7 @@
 
     nixpkgs-wayland.url = "github:nix-community/nixpkgs-wayland";
 
-    jdpkgs.url = "path:/home/jd/Documents/dev/jdpkgs";
+    jdpkgs.url = "github:jordanisaacs/jdpkgs";
     jdpkgs.inputs.nixpkgs.follows = "nixpkgs";
 
     # Extra nix/nixos modules
