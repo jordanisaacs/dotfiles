@@ -126,6 +126,7 @@ in {
         # Misc.
         neofetch
         bat
+        utillinux
 
         # Shells
         zsh
@@ -142,6 +143,7 @@ in {
         inxi # system information tool
         usbutils # tools for usb
         pciutils # tools for pci utils
+        hwloc # topology
 
         # Kernel
         systeroid
@@ -214,6 +216,9 @@ in {
         tldr
         man-pages
         man-pages-posix
+
+        # file sending
+        rclone
       ];
     };
 
