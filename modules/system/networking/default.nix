@@ -32,6 +32,8 @@ in {
         default = "wlan0";
         description = "Name of wifi NIC";
       };
+
+      ipTime = mkEnableOption "set time based on ip when wifi interface routes";
     };
 
     static = {
@@ -142,26 +144,32 @@ in {
             # https://wiki.archlinux.org/title/IPv6#Privacy_extensions
             IPv6PrivacyExtensions = "kernel";
           };
-        };
+        }
+        (mkIf cfg.wifi.ipTime {
+          assertions = [
+            {
+              assertion = config.jd.core.time == null;
+              message = "Need time set to null for ip time";
+            }
+          ];
 
-        # Race condition with where iwd starts before wireless network card powers on
-        # https://wiki.archlinux.org/title/Iwd#Restarting_iwd.service_after_boot
-        systemd.services.iwd.serviceConfig.ExecStartPre = "${pkgs.coreutils}/bin/sleep 2";
+          services.networkd-dispatcher = {
+            enable = true;
+            rules."iptime" = {
+              onState = ["routable"];
+              script = ''
+                #!${pkgs.runtimeShell}
+                export PATH=${lib.makeBinPath (with pkgs; [systemd curl])}
 
-        networking.wireless.iwd = {
-          enable = true;
-          settings = {
-            General = {
-              # EnableNetworkConfiguration = true;
-              UseDefaultInterface = false;
-            };
-            Network = {
-              NameResolvingService = "systemd";
-              EnableIPv6 = true;
+                if [[ $IFACE == "wlan0" ]]; then
+                  timedatectl set-timezone "$(curl -fsS4 --interface wlan0 https://ipapi.co/timezone)"
+                fi
+                exit 0
+              '';
             };
           };
-        };
-      })
+        })
+      ]))
       (mkIf cfg.firewall.enable {
         # Use nftables
         networking.nftables.enable = true;

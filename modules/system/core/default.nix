@@ -18,8 +18,8 @@ in {
     };
 
     time = mkOption {
-      description = "Time zone";
-      type = types.enum ["west" "east" "asia"];
+      description = "Time zone (null if unmanaged)";
+      type = with types; nullOr (enum ["west" "east"]);
       default = "east";
     };
 
@@ -40,13 +40,18 @@ in {
     };
 
     time.timeZone =
-      if (cfg.time == "east")
-      then "US/Eastern"
+      if cfg.time == null
+      then null
       else
         (
-          if cfg.time == "west"
-          then "US/Pacific"
-          else "Asia/Bangkok"
+          if (cfg.time == "east")
+          then "US/Eastern"
+          else
+            (
+              if cfg.time == "west"
+              then "US/Pacific"
+              else "Asia/Bangkok"
+            )
         );
 
     # Nix search paths/registries from:
