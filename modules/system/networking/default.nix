@@ -134,15 +134,41 @@ in {
           enableIPv6 = true;
         };
       }
-      (mkIf cfg.wifi.enable {
-        systemd.network.networks."40-${cfg.wifi.interface}" = {
-          matchConfig = {
-            Name = "${cfg.wifi.interface}";
+      (mkIf cfg.wifi.enable (mkMerge [
+        {
+          systemd.services.systemd-networkd.environment.SYSTEMD_LOG_LEVEL = "debug";
+
+          systemd.network.networks."40-${cfg.wifi.interface}" = {
+            matchConfig = {
+              Name = "${cfg.wifi.interface}";
+            };
+            networkConfig = {
+              DHCP = "yes";
+              IPv6AcceptRA = true;
+              # LinkLocalAddressing = "ipv6";
+              # https://wiki.archlinux.org/title/IPv6#Privacy_extensions
+              IPv6PrivacyExtensions = "kernel";
+            };
+            # linkConfig = {
+            #   Unmanaged = "yes";
+            # };
           };
-          networkConfig = {
-            DHCP = "yes";
-            # https://wiki.archlinux.org/title/IPv6#Privacy_extensions
-            IPv6PrivacyExtensions = "kernel";
+
+          # Race condition with where iwd starts before wireless network card powers on
+          # https://wiki.archlinux.org/title/Iwd#Restarting_iwd.service_after_boot
+          networking.wireless.iwd = {
+            enable = true;
+            settings = {
+              General = {
+                EnableNetworkConfiguration = false;
+                UseDefaultInterface = false;
+                RequiredFamilyForOnline = "ipv4";
+              };
+              Network = {
+                NameResolvingService = "systemd";
+                EnableIPv6 = true;
+              };
+            };
           };
         }
         (mkIf cfg.wifi.ipTime {
@@ -223,12 +249,6 @@ in {
                 GatewayOnLink = cfg.static.ipv4.onlink;
               };
             }
-            # {
-            #   routeConfig = {
-            #     Gateway = "0.0.0.0";
-            #     Destination = cfg.static.ipv4.gateway;
-            #   };
-            # }
           ];
         };
 
@@ -251,6 +271,9 @@ in {
 
         services.resolved = {
           enable = true;
+          extraConfig = ''
+            DNSStubListenerExtra=[::1]:53
+          '';
           fallbackDns = [
             # Quad9
             "9.9.9.9"
