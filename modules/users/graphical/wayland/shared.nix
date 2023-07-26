@@ -393,7 +393,7 @@ in {
                 device = "acpi_video1";
                 format = "{percent}% {icon}";
                 format-icons = ["" ""];
-                on-scroll-up = "${pkgs.light}/bin/light -A 2";
+                on-scroll-up = "${pkgs.light}/bin/light -A 1";
                 on-scroll-down = "${pkgs.light}/bin/light -U 1";
               };
               pulseaudio = {
@@ -414,14 +414,23 @@ in {
               };
               network = {
                 interval = 60;
-                interface = "wlp*";
-                format-wifi = "{essid} ({signalStrength}%) ";
-                format-ethernet = "{ipaddr}/{cidr} ";
-                tooltip-format = "{ifname} via {gwaddr} ";
-                format-linked = "{ifname} (No IP) ";
-                format-disconnected = "Disconnected ⚠";
+                interface = "wl*";
+                format-icons = {
+                  wifi = ["󰤟" "󰤢" "󰤨"];
+                  ethernet = ["󰈀"];
+                  disconnected = [""];
+                  disabled = ["󰲜"];
+                  linked = ["󰲝"];
+                };
+                format = "{ifname}";
+                format-wifi = "{essid} {icon}";
+                format-ethernet = "{ipaddr}/{cidr} {icon}";
+                format-linked = "{ifname}: (No IP) {icon} ";
+                format-disconnected = "Disconnected {icon}";
+                format-disabled = "Disabled {icon}";
                 format-alt = "{ifname}: {ipaddr}/{cidr}";
                 tooltip = true;
+                tooltip-format = "{ifname} via {gwaddr}: {bandwidthUpBytes} 󰳘 {bandwidthDownBytes} 󰱦";
               };
               idle_inhibitor = {
                 format = "{icon}";
