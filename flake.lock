@@ -858,17 +858,14 @@
         ]
       },
       "locked": {
-        "lastModified": 1679384664,
-        "narHash": "sha256-KtlZmzLsSzAenLv59YVcLB5BvahjxPqVDRqmPntl8Yk=",
-        "owner": "jordanisaacs",
-        "repo": "jdpkgs",
-        "rev": "755fb2976b80b7f41067675e930d9de17c9267c3",
-        "type": "github"
+        "lastModified": 1686067832,
+        "narHash": "sha256-OUqFzxi7FfqJly8ALXyV4HKDxo8yloRe2QmQcKebo/E=",
+        "path": "/home/jd/Documents/dev/jdpkgs",
+        "type": "path"
       },
       "original": {
-        "owner": "jordanisaacs",
-        "repo": "jdpkgs",
-        "type": "github"
+        "path": "/home/jd/Documents/dev/jdpkgs",
+        "type": "path"
       }
     },
     "kommentary": {
@@ -1524,11 +1521,11 @@
     },
     "nixpkgs_8": {
       "locked": {
-        "lastModified": 1683286087,
-        "narHash": "sha256-xseOd7W7xwF5GOF2RW8qhjmVGrKoBz+caBlreaNzoeI=",
+        "lastModified": 1684935479,
+        "narHash": "sha256-6QMMsXMr2nhmOPHdti2j3KRHt+bai2zw+LJfdCl97Mk=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "3e313808bd2e0a0669430787fb22e43b2f4bf8bf",
+        "rev": "f91ee3065de91a3531329a674a45ddcb3467a650",
         "type": "github"
       },
       "original": {

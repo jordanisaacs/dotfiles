@@ -12,7 +12,7 @@
 
     nixpkgs-wayland.url = "github:nix-community/nixpkgs-wayland";
 
-    jdpkgs.url = "github:jordanisaacs/jdpkgs";
+    jdpkgs.url = "path:/home/jd/Documents/dev/jdpkgs";
     jdpkgs.inputs.nixpkgs.follows = "nixpkgs";
 
     # Extra nix/nixos modules
@@ -478,7 +478,8 @@
           mods = ["kvm-intel"];
         };
         laptop.enable = true;
-        core.time = "east";
+        core.time = null;
+        networking.wifi.ipTime = true;
         greetd.enable = true;
         framework = {
           enable = true;
@@ -486,8 +487,12 @@
             enable = true;
           };
         };
-        wireguard = wireguardConf;
+        # wireguard = wireguardConf;
         secrets.identityPaths = [secrets.age.framework.system.privateKeyPath];
+        firefly-iii = {
+          enable = true;
+          appKeyFile = "/var/lib/firefly-iii/firefly-iii-appkey";
+        };
       }
     ];
   in {

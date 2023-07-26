@@ -17,5 +17,6 @@
     ./microbin
     ./languagetool
     ./calibre
+    ./firefly-iii
   ];
 }
