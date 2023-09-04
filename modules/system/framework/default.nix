@@ -77,10 +77,12 @@ in {
     (mkIf (config.jd.graphical.enable) {
       boot.initrd.kernelModules = ["i915"];
 
-      environment.defaultPackages = with pkgs; [intel-gpu-tools];
+      environment.defaultPackages = with pkgs; [intel-gpu-tools vulkan-validation-layers vulkan-tools];
       hardware = {
         opengl = {
           enable = true;
+          driSupport = true;
+          driSupport32Bit = true;
           extraPackages = with pkgs; [
             intel-media-driver
             libvdpau-va-gl
