@@ -174,9 +174,9 @@ in {
               PS1+="''${__GRAY}(nix-shell) "
             fi
 
-            PS1+="''${__BLUE}''${__ITALIC}\w "
+            PS1+="''${__RESET}''${__BLUE}''${__ITALIC}\w "
 
-            PS1+="''${__ORANGE}$(__git_ps1 '(%s) ')"
+            PS1+="''${__RESET}''${__ORANGE}$(__git_ps1 '(%s) ')"
 
             PS1+="''${__RESET}''${__BOLD}"
             if [ $es -eq 0 ]
