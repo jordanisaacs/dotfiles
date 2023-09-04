@@ -33,6 +33,29 @@ with lib; let
     runtimeInputs = with pkgs; [wlr-randr];
     text = builtins.concatStringsSep "\n" (builtins.map screenNames (v: "wlr-randr --output ${v} --on"));
   };
+
+  toggleservice = pkgs.writeShellApplication {
+    name = "toggleservice";
+    runtimeInputs = with pkgs; [systemd];
+    text = ''
+      if systemctl is-active --quiet --user "$1"; then
+        systemctl stop --user "$1"
+      else
+        systemctl start --user "$1"
+      fi
+    '';
+  };
+
+  locs = {
+    pittsburgh = {
+      latitude = "40.4";
+      longitude = "-80";
+    };
+    seattle = {
+      latitude = "47.6";
+      longitude = "-122.3";
+    };
+  };
 in {
   options.jd.graphical.wayland = {
     enable = mkOption {
@@ -103,7 +126,7 @@ in {
       gamma = {
         enable = mkEnableOption "screen gamma control";
         loc = mkOption {
-          type = with types; enum ["pittsburgh"];
+          type = with types; enum (attrNames locs);
           default = "pittsburgh";
           description = "gamma control location";
         };
@@ -235,7 +258,7 @@ in {
         enable = true;
         timeouts = [
           {
-            timeout = cfg.screenlock.timeout;
+            inherit (cfg.screenlock) timeout;
             command = lockCommand;
           }
         ];
@@ -291,6 +314,7 @@ in {
         dwlModule = dispName: {
           exec = "${dwlTags}/bin/dwl-waybar '${dispName}'";
           format = "{}";
+          max-length = 75;
           return-type = "json";
         };
       in {
@@ -338,13 +362,18 @@ in {
                 tooltip = true;
                 tooltip-format = "{timeTo}";
               };
-              backlight = {
-                device = "acpi_video1";
-                format = "{percent}% {icon}";
-                format-icons = ["" ""];
-                on-scroll-up = "${pkgs.light}/bin/light -A 1";
-                on-scroll-down = "${pkgs.light}/bin/light -U 1";
-              };
+              backlight =
+                {
+                  device = "acpi_video1";
+                  format = "{percent}% {icon}";
+                  format-icons = ["" ""];
+                  on-scroll-up = "${pkgs.light}/bin/light -A 1";
+                  on-scroll-down = "${pkgs.light}/bin/light -U 1";
+                  on-click = "${toggleservice}/bin/toggleservice autobrightness.service";
+                }
+                // (optionalAttrs cfg.screen.gamma.enable {
+                  on-click-right = "${toggleservice}/bin/toggleservice wlsunset.service";
+                });
               pulseaudio = {
                 format = "{volume}% {icon} {format_source}";
                 format-bluetooth = "{volume}% {icon} {format_source}";
@@ -457,12 +486,6 @@ in {
       };
     })
     (mkIf cfg.screen.gamma.enable (let
-      locs = {
-        pittsburgh = {
-          latitude = "40.4";
-          longitude = "-80";
-        };
-      };
     in {
       services.wlsunset =
         {
