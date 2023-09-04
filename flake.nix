@@ -11,6 +11,7 @@
     nur.url = "github:nix-community/NUR";
 
     nixpkgs-wayland.url = "github:nix-community/nixpkgs-wayland";
+    nixpkgs-wayland.inputs.nixpkgs.follows = "nixpkgs";
 
     jdpkgs.url = "github:jordanisaacs/jdpkgs";
     jdpkgs.inputs.nixpkgs.follows = "nixpkgs";
