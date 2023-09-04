@@ -91,9 +91,9 @@ in {
               (buildFirefoxXpiAddon {
                 pname = "kagi-firefox";
                 addonId = "search@kagi.com";
-                version = "0.2";
-                url = "https://addons.mozilla.org/firefox/downloads/file/3942576/kagi_search_for_firefox-0.2.xpi";
-                sha256 = "04fk6j7iqsr4vsznn0a52n6630lj3jfhzpxy02y7dyij0fx4dl1z";
+                version = "0.3.3";
+                url = "https://addons.mozilla.org/firefox/downloads/file/4144699/kagi_search_for_firefox-0.3.3.xpi";
+                sha256 = "0hcw172sj4x4kawqfcxzgzdrrcivp6v6r84vxcykxd3b4nd0b2p2";
 
                 meta = with lib; {
                   description = ''
