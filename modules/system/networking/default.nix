@@ -103,6 +103,8 @@ in {
         default = false;
       };
     };
+
+    tailscale.enable = mkEnableOption "tailscale";
   };
 
   config = let
@@ -262,6 +264,9 @@ in {
           ip route add ${cfg.static.ipv4.gateway} dev ${cfg.static.interface} scope link
           ip route add default via ${cfg.static.ipv4.gateway} dev ${cfg.static.interface}
         '';
+      })
+      (mkIf cfg.tailscale.enable {
+        services.tailscale.enable = true;
       })
       # If unbound is enabled do not use systemd-resolved
       (mkIf (!config.jd.unbound.enable) {
