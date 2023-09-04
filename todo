@@ -30,11 +30,12 @@ Private Cloud:
         [-] Nginx reverse proxy
             [-] Services
                 [x] Nginx Status Page
-                [x] RSS (Miniflux)
-                [-] Firefly iii
+                [x] RSS Reader -  Miniflux
+                [x] Todo List - taskwarrior sync
+                [-] Budgeting - Firefly iii
+                [ ] Personal CRM (also todo replacement?) - monicahq/chandler
+                [ ] Recipes/Cooking - Tandoor recipes
                 [ ] Monitoring? Program TBD
-                [ ] Tandoor recipes
-                [ ] Nocodb
             [ ] Subdomains
 
 Public Cloud:
@@ -66,11 +67,10 @@ General:
     System:
         [ ] Get waydroid running
         [ ] Get windows 10 QEMU working
-        [ ] Fix xorg settype patch to work on most recent xserver
-        [ ] Systemd boot & plymouth (waiting on systemd-stage-1 - not currently feature complete)
-        [ ] Greetd/tuigreet
-            [ ] kernel logs and fprintd output make tuigreet go visually insane :(
-            [ ] fix session configurations
+        [x] Systemd boot & plymouth
+        [x] Greetd/tuigreet
+            [x] kernel logs and fprintd output make tuigreet go visually insane - fixed
+            [x] fix session configurations
         [ ] Printer/wifi secrets with agenix
 
     User:
