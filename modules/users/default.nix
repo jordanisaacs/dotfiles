@@ -10,7 +10,7 @@
     ./graphical
     ./git
     ./gpg
-    ./zsh
+    ./shell
     ./ssh
     ./office365
     ./wine
@@ -19,5 +19,6 @@
     ./secrets
     ./weechat
     ./impermanence
+    ./kernel
   ];
 }
