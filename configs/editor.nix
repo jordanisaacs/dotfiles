@@ -14,11 +14,8 @@ pkgs: neovimConfiguration: let
 
         nix.enable = true;
         markdown.enable = true;
+        bash.enable = true;
         html.enable = true;
-        sql = {
-          enable = true;
-          lsp.enable = false;
-        };
         python.enable = true;
       };
       vim.lsp = {
@@ -26,47 +23,45 @@ pkgs: neovimConfiguration: let
 
         lightbulb.enable = true;
         lspsaga.enable = false;
+        lspkind.enable = true;
         nvimCodeActionMenu.enable = true;
         trouble.enable = true;
         lspSignature.enable = true;
       };
+
       vim.visuals = {
         enable = true;
         nvimWebDevicons.enable = true;
-        lspkind.enable = true;
         indentBlankline = {
           enable = true;
-          fillChar = "";
-          eolChar = "";
+          fillChar = null;
+          eolChar = null;
           showCurrContext = true;
         };
-        cursorWordline = {
-          enable = true;
-          lineTimeout = 0;
-        };
       };
-      vim.statusline.lualine = {
-        enable = true;
-        theme = "onedark";
-      };
+      vim.statusline.lualine.enable = true;
       vim.theme = {
         enable = true;
-        name = "onedark";
-        style = "darker";
+        name = "tokyonight";
+        style = "night";
       };
       vim.autopairs.enable = true;
       vim.autocomplete = {
         enable = true;
         type = "nvim-cmp";
       };
-      vim.filetree.nvimTreeLua.enable = true;
-      vim.tabline.nvimBufferline.enable = true;
       vim.treesitter.context.enable = true;
       vim.keys = {
         enable = true;
         whichKey.enable = true;
       };
-      vim.telescope.enable = true;
+      vim.telescope = {
+        enable = true;
+        fileBrowser = {
+          enable = true;
+          hijackNetRW = true;
+        };
+      };
       vim.git = {
         enable = true;
         gitsigns.enable = true;
