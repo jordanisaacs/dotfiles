@@ -5,20 +5,11 @@
   ...
 }:
 with lib; let
-  cfg = config.jd.zsh;
+  cfg = config.jd;
 in {
   # Interesting configs:
   # https://vermaden.wordpress.com/2021/09/19/ghost-in-the-shell-part-7-zsh-setup/
-
-  options.jd.zsh = {
-    enable = mkOption {
-      description = "Enable zsh with settings";
-      type = types.bool;
-      default = false;
-    };
-  };
-
-  config = mkIf (cfg.enable) (
+  config = mkIf (cfg.shell == "zsh") (
     let
       # Remove home directory from xdg
       dotDir = builtins.substring ((builtins.stringLength config.home.homeDirectory) + 1) (builtins.stringLength config.xdg.configHome) config.xdg.configHome;

@@ -253,7 +253,7 @@
       groups = ["wheel"];
       uid = 1000;
       # Fixes assertion issue: https://github.com/NixOS/nixpkgs/pull/211603
-      shell = "${pkgs.zsh}/bin/zsh";
+      shell = pkgs.bashInteractive;
     };
 
     defaultDesktopUser =
@@ -546,13 +546,13 @@
             neomutt.enable = true;
             neovim.enable = true;
           };
+          shell = "bash";
           secrets.identityPaths = [secrets.age.framework.jd.privateKeyPath];
           gpg.enable = true;
           git = {
             enable = true;
             allowedSignerFile = builtins.toString authorizedKeyFiles;
           };
-          zsh.enable = true;
           ssh.enable = true;
           weechat.enable = true;
           office365 = {

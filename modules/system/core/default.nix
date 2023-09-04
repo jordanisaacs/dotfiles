@@ -121,7 +121,7 @@ in {
 
       shells = [pkgs.zsh pkgs.bash];
       # ZSH completions
-      pathsToLink = ["/share/zsh"];
+      pathsToLink = ["/share/zsh" "/share/bash-completion"];
       systemPackages = with pkgs; [
         # Misc.
         neofetch
