@@ -23,7 +23,7 @@ in {
     userEmail = mkOption {
       description = "Email for git";
       type = types.str;
-      default = "mail@jdisaacs.com";
+      default = "jordan@snowytrees.dev";
     };
 
     signByDefault = mkOption {
