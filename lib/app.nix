@@ -3,8 +3,7 @@
     app,
     name,
   }:
-    pkgs.writeScriptBin name ''
-      #!{pkgs.bash}/bin/bash
+    pkgs.writeBashBin name ''
       nix run ${app} $@
     '';
 }

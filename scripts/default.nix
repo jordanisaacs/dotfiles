@@ -3,7 +3,7 @@
   lib,
 }: let
   setupTools = with pkgs;
-    writeScriptBin "setup" ''
+    writeShellScriptBin "setup" ''
       DISK=$1
       RAM=$2
 
@@ -44,8 +44,7 @@
   # following script from:
   # https://github.com/wiltaylor/dotfiles/blob/master/roles/core/scripts.nix
   sysTools = with pkgs;
-    writeScriptBin "sys" ''
-      #!${runtimeShell}
+    writeShellScriptBin "sys" ''
       if [ -n "$INNIXSHELLHOME" ]; then
         echo "You are in a nix shell that redirected home!"
         echo "SYS will not work from here properly."
@@ -215,9 +214,7 @@
       esac
     '';
   bluetoothTools = with pkgs;
-    writeScriptBin "btools" ''
-      #!${runtimeShell}
-
+    writeShellScriptBin "btools" ''
       case $1 in
         "connected")
            ${bluez}/bin/bluetoothctl devices | \
@@ -236,9 +233,7 @@
       esac
     '';
   soundTools = with pkgs;
-    writeScriptBin "stools" ''
-      #!${runtimeShell}
-
+    writeShellScriptBin "stools" ''
       num_param () {
         re='^[0-9]+$'
 
@@ -357,7 +352,7 @@
     '';
 
   devTools = with pkgs;
-    writeScriptBin "dtools" ''
+    writeShellScriptBin "dtools" ''
       case $1 in
         "hubclone")
           if [ -z "$2" ]; then
@@ -377,8 +372,6 @@
           echo "Commands:"
           echo "hubclone \$1 \$2: Clone github repo (\$2) from user (\$1) in dev folder"
       esac
-
-
     '';
 in {
   overlay = final: prev: {
