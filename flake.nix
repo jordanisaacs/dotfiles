@@ -411,6 +411,7 @@
           allowDefaultSyncthing = true;
         };
         wifi.enable = true;
+        tailscale.enable = true;
       };
       kernel.watchdog = false;
       graphical = {
@@ -420,6 +421,7 @@
           enable = true;
           waylockPam = true;
         };
+        flatpak.enable = true;
       };
       ssh = {
         enable = true;
@@ -529,7 +531,10 @@
               background.enable = true;
               statusbar.enable = true;
               screenlock.enable = true;
-              screen.gamma.enable = true;
+              screen.gamma = {
+                enable = true;
+                loc = "seattle";
+              };
             };
             xorg = {
               enable = false;
@@ -565,6 +570,7 @@
           };
           keybase.enable = false;
           pijul.enable = true;
+          kernel.enable = true;
         };
         username = "jd";
       };
