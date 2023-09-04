@@ -1,15 +1,17 @@
-{
-  pkgs,
-  config,
-  lib,
-  ...
+{ pkgs
+, config
+, lib
+, ...
 }:
 with lib; let
   cfg = config.jd.graphical.applications;
-  isGraphical = let
-    cfg = config.jd.graphical;
-  in (cfg.xorg.enable == true || cfg.wayland.enable == true);
-in {
+  isGraphical =
+    let
+      cfg = config.jd.graphical;
+    in
+    cfg.xorg.enable || cfg.wayland.enable;
+in
+{
   options.jd.graphical.applications.dolphin = {
     enable = mkEnableOption "dolphin file explorer";
   };
@@ -26,7 +28,7 @@ in {
       libsForQt5.phonon
       libsForQt5.phonon-backend-vlc # TODO: package phonon-mpv
       libsForQt5.dolphin-plugins
-      (runCommand "dolphin-nokde" {} ''
+      (runCommand "dolphin-nokde" { } ''
         mkdir $out
         cp -Rsp ${libsForQt5.dolphin}/* $out
 

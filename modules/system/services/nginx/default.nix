@@ -1,12 +1,12 @@
-{
-  config,
-  lib,
-  pkgs,
-  ...
+{ config
+, lib
+, pkgs
+, ...
 }:
 with lib; let
   cfg = config.jd.proxy;
-in {
+in
+{
   options.jd.proxy = {
     enable = mkOption {
       description = "Whether to enable nginx reverse proxy";
@@ -15,7 +15,7 @@ in {
     };
 
     firewall = mkOption {
-      type = types.enum ["world" "wg" "closed"];
+      type = types.enum [ "world" "wg" "closed" ];
       default = "closed";
       description = "What level firewall to open";
     };
@@ -33,7 +33,7 @@ in {
     };
   };
 
-  config = mkIf (cfg.enable) (mkMerge [
+  config = mkIf cfg.enable (mkMerge [
     {
       services.nginx = {
         enable = true;
@@ -43,22 +43,22 @@ in {
           listen = [
             {
               addr = cfg.address;
-              port = cfg.port;
+              inherit (cfg) port;
             }
           ];
 
           locations = mkMerge [
-            (mkIf (config.jd.miniflux.enable) {
+            (mkIf config.jd.miniflux.enable {
               "/miniflux/" = {
                 proxyPass = "http://${config.jd.miniflux.address}:${builtins.toString config.jd.miniflux.port}/miniflux/";
               };
             })
-            (mkIf (config.jd.microbin.enable) {
+            (mkIf config.jd.microbin.enable {
               "/microbin/" = {
                 proxyPass = "http://${config.jd.microbin.address}:${builtins.toString config.jd.microbin.port}/";
               };
             })
-            (mkIf (config.jd.languagetool.enable) {
+            (mkIf config.jd.languagetool.enable {
               "/languagetool/" = {
                 proxyPass = "http://127.0.0.1:${builtins.toString config.jd.languagetool.port}/";
                 extraConfig = ''
@@ -81,16 +81,16 @@ in {
       };
     }
     (mkIf (cfg.firewall == "world") {
-      networking.firewall.allowedTCPPorts = [cfg.port];
+      networking.firewall.allowedTCPPorts = [ cfg.port ];
     })
     (
       let
         wgconf = config.jd.wireguard;
       in
-        mkIf
+      mkIf
         (cfg.firewall == "wg" && (assertMsg wgconf.enable "Wireguard must be enabled for wireguard ssh firewall"))
         {
-          networking.firewall.interfaces.${wgconf.interface}.allowedTCPPorts = [cfg.port];
+          networking.firewall.interfaces.${wgconf.interface}.allowedTCPPorts = [ cfg.port ];
         }
     )
   ]);

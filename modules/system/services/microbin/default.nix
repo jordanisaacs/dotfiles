@@ -1,8 +1,7 @@
-{
-  config,
-  lib,
-  pkgs,
-  ...
+{ config
+, lib
+, pkgs
+, ...
 }:
 with lib; let
   cfg = config.jd.microbin;
@@ -11,7 +10,8 @@ with lib; let
   user = name;
   group = name;
   id = 327;
-in {
+in
+{
   options.jd.microbin = {
     enable = mkOption {
       description = "Whether to enable microbin";
@@ -32,17 +32,17 @@ in {
     };
   };
 
-  config = mkIf (cfg.enable) (mkMerge [
+  config = mkIf cfg.enable (mkMerge [
     (mkIf config.jd.impermanence.enable {
       environment.persistence.${config.jd.impermanence.persistedDatasets."data".backup} = {
-        directories = ["/var/lib/private/microbin"];
+        directories = [ "/var/lib/private/microbin" ];
       };
     })
     {
       systemd.services.microbin = {
         description = "Microbin - pastebin server";
-        wantedBy = ["multi-user.target"];
-        after = ["network.target"];
+        wantedBy = [ "multi-user.target" ];
+        after = [ "network.target" ];
 
         serviceConfig = {
           ExecStart = ''

@@ -1,30 +1,31 @@
-{
-  system,
-  pkgs,
-  lib,
-  user,
-  inputs,
-  patchedPkgs,
-  utils,
+{ system
+, pkgs
+, lib
+, user
+, inputs
+, patchedPkgs
+, utils
+,
 }:
 with builtins;
 with utils; {
-  mkISO = {
-    name,
-    initrdMods,
-    kernelMods,
-    kernelParams,
-    kernelPackage,
-    systemConfig,
-  }:
+  mkISO =
+    { name
+    , initrdMods
+    , kernelMods
+    , kernelParams
+    , kernelPackage
+    , systemConfig
+    ,
+    }:
     lib.nixosSystem {
       inherit system;
 
-      specialArgs = {};
+      specialArgs = { };
 
       modules = [
         {
-          imports = [../modules/iso];
+          imports = [ ../modules/iso ];
 
           networking.hostName = "${name}";
           networking.networkmanager.enable = true;
@@ -35,42 +36,44 @@ with utils; {
       ];
     };
 
-  mkHost = {
-    name,
-    systemConfig,
-    cpuCores,
-    stateVersion,
-    wifi ? [],
-    passthru ? {},
-    gpuTempSensor ? null,
-    cpuTempSensor ? null,
-  }: let
-    enable = ["enable"];
-    impermanencePath = ["impermanence"];
-    qemuPath = ["isQemuGuest"];
-    moduleFolder = "/modules/system/";
+  mkHost =
+    { name
+    , systemConfig
+    , cpuCores
+    , stateVersion
+    , wifi ? [ ]
+    , passthru ? { }
+    , gpuTempSensor ? null
+    , cpuTempSensor ? null
+    ,
+    }:
+    let
+      enable = [ "enable" ];
+      impermanencePath = [ "impermanence" ];
+      qemuPath = [ "isQemuGuest" ];
+      moduleFolder = "/modules/system/";
 
-    systemConfigStripped =
-      removeModuleOptions
-      {
-        path = impermanencePath;
-        activate = enable;
-      }
-      (removeAttrByPath qemuPath systemConfig);
+      systemConfigStripped =
+        removeModuleOptions
+          {
+            path = impermanencePath;
+            activate = enable;
+          }
+          (removeAttrByPath qemuPath systemConfig);
 
-    systemEnableModule = enableModule systemConfig;
-    systemEnableModuleConfig = enableModuleConfig systemConfigStripped;
+      systemEnableModule = enableModule systemConfig;
+      systemEnableModuleConfig = enableModuleConfig systemConfigStripped;
 
-    userCfg = {
-      inherit name systemConfig cpuCores gpuTempSensor cpuTempSensor;
-    };
-  in
+      userCfg = {
+        inherit name systemConfig cpuCores gpuTempSensor cpuTempSensor;
+      };
+    in
     lib.nixosSystem {
       inherit system;
 
       modules =
         [
-          (import ../modules/system {inherit inputs patchedPkgs;})
+          (import ../modules/system { inherit inputs patchedPkgs; })
           {
             jd = systemConfigStripped;
 

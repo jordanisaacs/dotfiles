@@ -1,37 +1,38 @@
-{
-  pkgs,
-  home-manager,
-  lib,
-  system,
-  overlays,
-  inputs,
-  ...
+{ pkgs
+, home-manager
+, lib
+, system
+, overlays
+, inputs
+, ...
 }:
 with builtins; {
-  mkHMUser = {
-    userConfig,
-    username,
-  }: let
-    trySettings = tryEval (fromJSON (readFile /etc/hmsystemdata.json));
-    machineData =
-      if trySettings.success
-      then trySettings.value
-      else {};
+  mkHMUser =
+    { userConfig
+    , username
+    ,
+    }:
+    let
+      trySettings = tryEval (fromJSON (readFile /etc/hmsystemdata.json));
+      machineData =
+        if trySettings.success
+        then trySettings.value
+        else { };
 
-    machineModule = {
-      pkgs,
-      config,
-      lib,
-      ...
-    }: {
-      options.machineData = lib.mkOption {
-        default = {};
-        description = "Settings passed from nixos system configuration. If not present will be empty";
-      };
+      machineModule =
+        { pkgs
+        , config
+        , lib
+        , ...
+        }: {
+          options.machineData = lib.mkOption {
+            default = { };
+            description = "Settings passed from nixos system configuration. If not present will be empty";
+          };
 
-      config.machineData = machineData;
-    };
-  in
+          config.machineData = machineData;
+        };
+    in
     home-manager.lib.homeManagerConfiguration {
       inherit pkgs;
       modules = [
@@ -42,7 +43,7 @@ with builtins; {
         {
           jd = userConfig;
           nixpkgs = {
-            overlays = overlays;
+            inherit overlays;
             config = {
               permittedInsecurePackages = [
                 "electron-9.4.4"
@@ -61,31 +62,31 @@ with builtins; {
       ];
     };
 
-  mkSystemUser = {
-    name,
-    groups,
-    uid,
-    shell,
-    password ? null,
-    ...
-  }: {
-    users.users."${name}" =
-      {
-        name = name;
-        isNormalUser = true;
-        isSystemUser = false;
-        extraGroups = groups;
-        uid = uid;
-        shell = shell;
-      }
-      // (
-        if password == null
-        then {
-          initialPassword = "helloworld";
+  mkSystemUser =
+    { name
+    , groups
+    , uid
+    , shell
+    , password ? null
+    , ...
+    }: {
+      users.users."${name}" =
+        {
+          inherit name;
+          isNormalUser = true;
+          isSystemUser = false;
+          extraGroups = groups;
+          inherit uid;
+          inherit shell;
         }
-        else {
-          hashedPassword = password;
-        }
-      );
-  };
+        // (
+          if password == null
+          then {
+            initialPassword = "helloworld";
+          }
+          else {
+            hashedPassword = password;
+          }
+        );
+    };
 }

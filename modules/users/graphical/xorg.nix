@@ -1,13 +1,13 @@
-{
-  pkgs,
-  config,
-  lib,
-  ...
+{ pkgs
+, config
+, lib
+, ...
 }:
 with lib; let
   cfg = config.jd.graphical.xorg;
   systemCfg = config.machineData.systemConfig;
-in {
+in
+{
   options.jd.graphical.xorg = {
     enable = mkOption {
       description = "Enable xorg";
@@ -17,7 +17,7 @@ in {
 
     type = mkOption {
       description = ''What desktop/wm to use. Options: "dwm"'';
-      type = types.enum ["dwm"];
+      type = types.enum [ "dwm" ];
       default = null;
     };
 
@@ -58,10 +58,11 @@ in {
     };
   };
 
-  config = mkIf (cfg.enable) (
+  config = mkIf cfg.enable (
     let
       xStartCommand = "${pkgs.dwmJD}/bin/dwm";
-    in {
+    in
+    {
       assertions = [
         {
           assertion = systemCfg.graphical.xorg.enable;
@@ -146,13 +147,13 @@ in {
         user.services = {
           xss-lock = {
             Install = {
-              WantedBy = ["dwm-session.target"];
+              WantedBy = [ "dwm-session.target" ];
             };
 
             Unit = {
               Description = "XSS Lock Daemon";
-              PartOf = ["dwm-session.target"];
-              After = ["graphical-session.target"];
+              PartOf = [ "dwm-session.target" ];
+              After = [ "graphical-session.target" ];
             };
 
             Service = {
@@ -168,35 +169,37 @@ in {
         user.targets.dwm-session = {
           Unit = {
             Description = "dwm compositor session";
-            Documentation = ["man:systemd.special(7)"];
-            BindsTo = ["graphical-session.target"];
-            Wants = ["graphical-session-pre.target"];
-            After = ["graphical-session-pre.target"];
+            Documentation = [ "man:systemd.special(7)" ];
+            BindsTo = [ "graphical-session.target" ];
+            Wants = [ "graphical-session-pre.target" ];
+            After = [ "graphical-session-pre.target" ];
           };
         };
 
-        user.services.picom = let
-          configFile = pkgs.writeText "picom.conf" ''
-            backend = "glx";
-          '';
-        in {
-          Unit = {
-            Description = "Picom X11 compositor";
-            After = ["graphical-session-pre.target"];
-            PartOf = ["dwm-session.target"];
-          };
+        user.services.picom =
+          let
+            configFile = pkgs.writeText "picom.conf" ''
+              backend = "glx";
+            '';
+          in
+          {
+            Unit = {
+              Description = "Picom X11 compositor";
+              After = [ "graphical-session-pre.target" ];
+              PartOf = [ "dwm-session.target" ];
+            };
 
-          Install = {
-            WantedBy = ["dwm-session.target"];
-          };
+            Install = {
+              WantedBy = [ "dwm-session.target" ];
+            };
 
-          Service = {
-            ExecStart = "${pkgs.picom}/bin/picom --config ${configFile} --experimental-backends";
-            Restart = "always";
-            RestartSec = 3;
-            Environment = ["allow_rgb10=configs=false"];
+            Service = {
+              ExecStart = "${pkgs.picom}/bin/picom --config ${configFile} --experimental-backends";
+              Restart = "always";
+              RestartSec = 3;
+              Environment = [ "allow_rgb10=configs=false" ];
+            };
           };
-        };
       };
     }
   );

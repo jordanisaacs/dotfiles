@@ -1,13 +1,13 @@
-{
-  pkgs,
-  config,
-  lib,
-  ...
+{ pkgs
+, config
+, lib
+, ...
 }:
 with lib; let
   cfg = config.jd.secrets;
-  backup = config.jd.impermanence.persistedDatasets.root.backup;
-in {
+  inherit (config.jd.impermanence.persistedDatasets.root) backup;
+in
+{
   options.jd.secrets.identityPaths = mkOption {
     type = with types; listOf str;
     description = "The path to age identities (private key)";

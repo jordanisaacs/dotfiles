@@ -1,8 +1,7 @@
-{
-  pkgs,
-  config,
-  lib,
-  ...
+{ pkgs
+, config
+, lib
+, ...
 }:
 with lib; let
   cfg = config.jd.graphical.wayland;
@@ -13,17 +12,17 @@ with lib; let
         natscroll = systemCfg ? laptop && systemCfg.laptop.enable;
       };
       cmds = {
-        term = ["${pkgs.foot}/bin/foot"];
+        term = [ "${pkgs.foot}/bin/foot" ];
         menu = [
           "${pkgs.j4-dmenu-desktop}/bin/j4-dmenu-desktop"
           "--dmenu='${bemenuCmd}'"
           "--term='${pkgs.foot}/bin/foot'"
           "--no-generic"
         ];
-        quit = ["${wayExit}"];
-        audioup = ["${pkgs.scripts.soundTools}/bin/stools" "vol" "up" "5"];
-        audiodown = ["${pkgs.scripts.soundTools}/bin/stools" "vol" "down" "5"];
-        audiomut = ["${pkgs.scripts.soundTools}/bin/stools" "vol" "toggle"];
+        quit = [ "${wayExit}" ];
+        audioup = [ "${pkgs.scripts.soundTools}/bin/stools" "vol" "up" "5" ];
+        audiodown = [ "${pkgs.scripts.soundTools}/bin/stools" "vol" "down" "5" ];
+        audiomut = [ "${pkgs.scripts.soundTools}/bin/stools" "vol" "toggle" ];
       };
       visual.cursorSize = config.jd.graphical.cursor.size;
     };
@@ -139,10 +138,11 @@ with lib; let
   isSway = cfg.type == "sway";
   isSwayDbg = cfg.type == "sway-dbg";
   isDwl = cfg.type == "dwl";
-in {
+in
+{
   options.jd.graphical.wayland = {
     type = mkOption {
-      type = types.enum ["dwl" "sway" "sway-dbg"];
+      type = types.enum [ "dwl" "sway" "sway-dbg" ];
       description = ''What desktop/wm to use. Options: "dwl", "sway"'';
     };
   };
@@ -187,26 +187,26 @@ in {
       };
     }
     (mkIf (isSway || isSwayDbg) {
-      home.packages = [pkgs.sway];
+      home.packages = [ pkgs.sway ];
       xdg.configFile."sway/config".text = swayConfig;
 
       systemd.user.targets.sway-session = {
         Unit = {
           Description = "sway compositor session";
-          Documentation = ["man:systemd.special(7)"];
-          BindsTo = ["wayland-session.target"];
-          After = ["wayland-session.target"];
+          Documentation = [ "man:systemd.special(7)" ];
+          BindsTo = [ "wayland-session.target" ];
+          After = [ "wayland-session.target" ];
         };
       };
     })
     (mkIf isDwl {
-      home.packages = [dwlJD];
+      home.packages = [ dwlJD ];
       systemd.user.targets.dwl-session = {
         Unit = {
           Description = "dwl compositor session";
-          Documentation = ["man:systemd.special(7)"];
-          BindsTo = ["wayland-session.target"];
-          After = ["wayland-session.target"];
+          Documentation = [ "man:systemd.special(7)" ];
+          BindsTo = [ "wayland-session.target" ];
+          After = [ "wayland-session.target" ];
         };
       };
     })

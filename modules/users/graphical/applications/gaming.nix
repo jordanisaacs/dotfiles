@@ -1,14 +1,15 @@
-{
-  pkgs,
-  config,
-  lib,
-  ...
+{ pkgs
+, config
+, lib
+, ...
 }:
 with lib; let
   cfg = config.jd.graphical.applications;
-  isGraphical = let
-    cfg = config.jd.graphical;
-  in (cfg.xorg.enable == true || cfg.wayland.enable == true);
+  isGraphical =
+    let
+      cfg = config.jd.graphical;
+    in
+    cfg.xorg.enable || cfg.wayland.enable;
 
   retroArch = pkgs.retroarch.override {
     cores = with pkgs.libretro; [
@@ -16,7 +17,8 @@ with lib; let
       citra
     ];
   };
-in {
+in
+{
   options.jd.graphical.applications.gaming = {
     enable = mkOption {
       type = types.bool;

@@ -1,12 +1,12 @@
-{
-  pkgs,
-  config,
-  lib,
-  ...
+{ pkgs
+, config
+, lib
+, ...
 }:
 with lib; let
   cfg = config.jd.applications.neovim;
-in {
+in
+{
   options.jd.applications.neovim = {
     enable = mkOption {
       description = "Enable direnv";
@@ -17,7 +17,7 @@ in {
 
   config = mkIf (config.jd.applications.enable && cfg.enable) {
     home = {
-      packages = [pkgs.neovimJD];
+      packages = [ pkgs.neovimJD ];
 
       sessionVariables = {
         EDITOR = "vim";

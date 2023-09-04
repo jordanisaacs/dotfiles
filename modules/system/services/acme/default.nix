@@ -1,12 +1,12 @@
-{
-  config,
-  lib,
-  pkgs,
-  ...
+{ config
+, lib
+, pkgs
+, ...
 }:
 with lib; let
   cfg = config.jd.acme;
-in {
+in
+{
   options.jd.acme = {
     email = mkOption {
       description = "Email to register with acme";

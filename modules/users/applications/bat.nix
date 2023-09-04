@@ -1,13 +1,13 @@
-{
-  pkgs,
-  config,
-  lib,
-  ...
+{ pkgs
+, config
+, lib
+, ...
 }:
 with lib;
 with builtins; let
   cfg = config.jd.applications;
-in {
+in
+{
   options.jd.applications.bat = {
     enable = mkEnableOption "a set of common non-graphical applications";
 

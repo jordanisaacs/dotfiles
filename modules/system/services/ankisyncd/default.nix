@@ -1,8 +1,7 @@
-{
-  config,
-  lib,
-  pkgs,
-  ...
+{ config
+, lib
+, pkgs
+, ...
 }:
 with lib; let
   cfg = config.jd.ankisyncd;
@@ -11,7 +10,8 @@ with lib; let
   user = name;
   group = name;
   id = 326;
-in {
+in
+{
   options.jd.ankisyncd = {
     enable = mkOption {
       description = "Whether to enable ankisyncd";
@@ -20,7 +20,7 @@ in {
     };
 
     firewall = mkOption {
-      type = types.enum ["world" "wg" "closed"];
+      type = types.enum [ "world" "wg" "closed" ];
       default = "closed";
       description = "Open firewall to everyone or wireguard";
     };
@@ -44,10 +44,10 @@ in {
     };
   };
 
-  config = mkIf (cfg.enable) (mkMerge [
+  config = mkIf cfg.enable (mkMerge [
     {
       users = {
-        groups.${group} = {};
+        groups.${group} = { };
         users.${user} = {
           inherit group;
           isSystemUser = true;
@@ -57,9 +57,9 @@ in {
 
       systemd.services.ankisyncd = {
         description = "ankisyncd - Anki sync server";
-        wantedBy = ["multi-user.target"];
-        after = ["network.target"];
-        path = [pkgs.ankisyncd];
+        wantedBy = [ "multi-user.target" ];
+        after = [ "network.target" ];
+        path = [ pkgs.ankisyncd ];
 
         serviceConfig = {
           # Use my version of ankisyncd because the nixpkgs version is not compatible with up to date clients
@@ -82,16 +82,16 @@ in {
       };
     }
     (mkIf (cfg.firewall == "world") {
-      networking.firewall.allowedTCPPorts = [cfg.port];
+      networking.firewall.allowedTCPPorts = [ cfg.port ];
     })
     (
       let
         wgconf = config.jd.wireguard;
       in
-        mkIf
+      mkIf
         (cfg.firewall == "wg" && (assertMsg wgconf.enable "Wireguard must be enabled for wireguard ssh firewall"))
         {
-          networking.firewall.interfaces.${wgconf.interface}.allowedTCPPorts = [cfg.port];
+          networking.firewall.interfaces.${wgconf.interface}.allowedTCPPorts = [ cfg.port ];
         }
     )
   ]);

@@ -1,12 +1,12 @@
-{
-  config,
-  lib,
-  pkgs,
-  ...
+{ config
+, lib
+, pkgs
+, ...
 }:
 with lib; let
   conf = config.jd.syncthing;
-in {
+in
+{
   options.jd.syncthing = {
     relay = {
       enable = mkOption {
@@ -56,11 +56,12 @@ in {
   };
 
   config = mkMerge [
-    (let
-      cfg = conf.relay;
-    in
+    (
+      let
+        cfg = conf.relay;
+      in
       mkIf cfg.enable {
-        users.groups."syncthing-relay" = {};
+        users.groups."syncthing-relay" = { };
 
         users.users = {
           syncthing-relay = {
@@ -75,10 +76,10 @@ in {
           enable = true;
           listenAddress = cfg.address;
           statusListenAddress = cfg.address;
-          port = cfg.port;
-          statusPort = cfg.statusPort;
+          inherit (cfg) port;
+          inherit (cfg) statusPort;
 
-          pools = [""];
+          pools = [ "" ];
           extraOptions = [
             "-keys=/var/strelaysv"
           ];
@@ -91,14 +92,16 @@ in {
 
         networking.firewall.interfaces.${config.jd.wireguard.interface}.allowedTCPPorts =
           mkIf
-          (assertMsg config.jd.wireguard.enable "Wireguard must be enable for wireguard ssh firewall")
-          [cfg.port cfg.statusPort];
-      })
-    (let
-      cfg = conf.discovery;
-    in
+            (assertMsg config.jd.wireguard.enable "Wireguard must be enable for wireguard ssh firewall")
+            [ cfg.port cfg.statusPort ];
+      }
+    )
+    (
+      let
+        cfg = conf.discovery;
+      in
       mkIf cfg.enable {
-        users.groups."syncthing-discovery" = {};
+        users.groups."syncthing-discovery" = { };
 
         users.users = {
           syncthing-discovery = {
@@ -110,13 +113,13 @@ in {
 
         networking.firewall.interfaces.${config.jd.wireguard.interface}.allowedTCPPorts =
           mkIf
-          (assertMsg config.jd.wireguard.enable "Wireguard must be enable for wireguard ssh firewall")
-          [cfg.port];
+            (assertMsg config.jd.wireguard.enable "Wireguard must be enable for wireguard ssh firewall")
+            [ cfg.port ];
 
         systemd.services.syncthing-discovery = {
           description = "Syncthing relay server";
-          wantedBy = ["multi-user.target"];
-          after = ["network.target"];
+          wantedBy = [ "multi-user.target" ];
+          after = [ "network.target" ];
 
           serviceConfig = {
             ExecStart = ''
@@ -132,6 +135,7 @@ in {
             Restart = "on-failure";
           };
         };
-      })
+      }
+    )
   ];
 }

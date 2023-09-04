@@ -1,12 +1,12 @@
-{
-  pkgs,
-  config,
-  lib,
-  ...
+{ pkgs
+, config
+, lib
+, ...
 }:
 with lib; let
   cfg = config.jd.desktop;
-in {
+in
+{
   options.jd.desktop = {
     enable = mkOption {
       description = "Whether to enable desktop settings. Also tags as desktop for user settings";
@@ -15,7 +15,7 @@ in {
     };
   };
 
-  config = mkIf (cfg.enable) {
+  config = mkIf cfg.enable {
     # security.tpm2 = {
     #   enable = true;
     #   # expose /run/current-system/sw/lib/libtpm2_pkcs11.so

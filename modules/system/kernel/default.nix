@@ -1,12 +1,12 @@
-{
-  pkgs,
-  config,
-  lib,
-  ...
+{ pkgs
+, config
+, lib
+, ...
 }:
 with lib; let
   cfg = config.jd.kernel;
-in {
+in
+{
   options.jd.kernel = {
     package = mkOption {
       description = "Kernel package, may be overriden internally. eg for zfs";
@@ -16,13 +16,13 @@ in {
 
     initrdMods = mkOption {
       description = "List of initrd kernel modules";
-      default = [];
+      default = [ ];
       type = with types; listOf str;
     };
 
     mods = mkOption {
       description = "List of kernel modules";
-      default = [];
+      default = [ ];
       type = with types; listOf str;
     };
 
@@ -57,9 +57,9 @@ in {
     ];
 
     kernelParams =
-      ["boot.shell_on_fail"]
-      ++ optionals cfg.quiet ["quiet"]
+      [ "boot.shell_on_fail" ]
+      ++ optionals cfg.quiet [ "quiet" ]
       ++ optional cfg.disableBGRTRestore "video=efifb:nobgrt"
-      ++ optionals (!cfg.watchdog) ["nowatchdog" "nmi_watchdog=0"];
+      ++ optionals (!cfg.watchdog) [ "nowatchdog" "nmi_watchdog=0" ];
   };
 }

@@ -1,19 +1,20 @@
-{
-  pkgs,
-  config,
-  lib,
-  ...
+{ pkgs
+, config
+, lib
+, ...
 }:
 with lib; let
   cfg = config.jd;
-in {
+in
+{
   # Interesting configs:
   # https://vermaden.wordpress.com/2021/09/19/ghost-in-the-shell-part-7-zsh-setup/
   config = mkIf (cfg.shell == "zsh") (
     let
       # Remove home directory from xdg
       dotDir = builtins.substring ((builtins.stringLength config.home.homeDirectory) + 1) (builtins.stringLength config.xdg.configHome) config.xdg.configHome;
-    in {
+    in
+    {
       home.file."${config.xdg.configHome}/zsh/.p10k.zsh" = {
         source = ./p10k.zsh;
       };

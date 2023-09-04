@@ -1,12 +1,12 @@
-{
-  pkgs,
-  config,
-  lib,
-  ...
+{ pkgs
+, config
+, lib
+, ...
 }:
 with lib; let
   cfg = config.jd.impermanence;
-in {
+in
+{
   options.jd.impermanence = {
     enable = mkEnableOption "impermanence";
 
@@ -38,7 +38,7 @@ in {
           xdg.dataHome
           xdg.stateHome
         ]
-        // (filter (v: isString v) (attrValues xdg.userDirs));
+        // (filter isString (attrValues xdg.userDirs));
     };
   };
 }

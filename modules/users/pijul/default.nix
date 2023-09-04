@@ -1,12 +1,12 @@
-{
-  pkgs,
-  config,
-  lib,
-  ...
+{ pkgs
+, config
+, lib
+, ...
 }:
 with lib; let
   cfg = config.jd.pijul;
-in {
+in
+{
   options.jd.pijul = {
     enable = mkOption {
       description = "Enable pijul";
@@ -39,7 +39,7 @@ in {
     };
   };
 
-  config = mkIf (cfg.enable) {
+  config = mkIf cfg.enable {
     home.packages = with pkgs; [
       pijul
     ];

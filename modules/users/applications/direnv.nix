@@ -1,12 +1,12 @@
-{
-  pkgs,
-  config,
-  lib,
-  ...
+{ pkgs
+, config
+, lib
+, ...
 }:
 with lib; let
   cfg = config.jd.applications.direnv;
-in {
+in
+{
   options.jd.applications.direnv = {
     enable = mkOption {
       description = "Enable direnv";

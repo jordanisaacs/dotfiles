@@ -1,15 +1,15 @@
 # modified from: https://github.com/lucasew/nixcfg/blob/master/packages/wrapWine.nix
-{pkgs, ...}: {
-  executable,
-  name,
-  config_dir,
-  wineFlags ? "",
-  tricks ? [],
-  setupScript ? "",
-  firstRunScript ? "",
-  is64bits ? false,
-  wine ? pkgs.wineWowPackages.stable,
-}:
+{ pkgs, ... }: { executable
+               , name
+               , config_dir
+               , wineFlags ? ""
+               , tricks ? [ ]
+               , setupScript ? ""
+               , firstRunScript ? ""
+               , is64bits ? false
+               , wine ? pkgs.wineWowPackages.stable
+               ,
+               }:
 with builtins; let
   wineBin = "${wine}/bin/wine${
     if is64bits
@@ -38,10 +38,12 @@ with builtins; let
 
   tricksHook =
     if (length tricks) > 0
-    then let
-      tricksStr = concatStringsSep " " tricks;
-      tricksPkg = pkg.winetricks.override {inherit wine;};
-    in "${tricksPkg}/bin/winetricks ${tricksStr}"
+    then
+      let
+        tricksStr = concatStringsSep " " tricks;
+        tricksPkg = pkg.winetricks.override { inherit wine; };
+      in
+      "${tricksPkg}/bin/winetricks ${tricksStr}"
     else "";
 
   script = pkgs.writeShellScriptBin name ''
@@ -69,4 +71,4 @@ with builtins; let
     wineserver -w
   '';
 in
-  script
+script

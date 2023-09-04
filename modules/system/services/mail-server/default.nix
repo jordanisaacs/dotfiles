@@ -1,20 +1,18 @@
-{
-  config,
-  lib,
-  pkgs,
-  ...
+{ config
+, lib
+, pkgs
+, ...
 }:
 with lib; let
   cfg = config.jd.mailserver;
 
-  friendlyName = name:
-    lib.strings.stringAsChars (x:
+  friendlyName = lib.strings.stringAsChars
+    (x:
       if x == "@"
       then "_"
-      else x)
-    name;
+      else x);
 
-  accountConf = {...}: {
+  accountConf = _: {
     options = {
       hashedPasswordFile = mkOption {
         description = "The encrypted hashed password file";
@@ -24,7 +22,7 @@ with lib; let
       aliases = mkOption {
         description = "A list of aliases of this login account. Note: Use list entries like “@example.com” to create a catchAll that allows sending from all email addresses in these domain.";
         type = with types; listOf str;
-        default = [];
+        default = [ ];
       };
 
       sendOnly = mkOption {
@@ -34,7 +32,8 @@ with lib; let
       };
     };
   };
-in {
+in
+{
   options.jd.mailserver = {
     enable = mkOption {
       description = "Enable mailserver";
@@ -82,17 +81,17 @@ in {
     };
   };
 
-  config = mkIf (cfg.enable) {
+  config = mkIf cfg.enable {
     age.secrets = with lib;
       mapAttrs'
-      (name: value: (nameValuePair
-        "mailserver_pwd_${friendlyName name}"
-        {
-          file = value.hashedPasswordFile;
-          path = "${cfg.decryptFolder}/${friendlyName name}";
-          mode = "600";
-        }))
-      cfg.loginAccounts;
+        (name: value: (nameValuePair
+          "mailserver_pwd_${friendlyName name}"
+          {
+            file = value.hashedPasswordFile;
+            path = "${cfg.decryptFolder}/${friendlyName name}";
+            mode = "600";
+          }))
+        cfg.loginAccounts;
 
     security.acme = {
       acceptTerms = true;
@@ -106,8 +105,8 @@ in {
 
     mailserver = {
       enable = true;
-      fqdn = cfg.fqdn;
-      domains = cfg.domains;
+      inherit (cfg) fqdn;
+      inherit (cfg) domains;
 
       # You let the server create a certificate via Let’s Encrypt.
       # Note that this implies that a stripped down webserver has to be
@@ -115,23 +114,23 @@ in {
       # record to point to the IP of the server. In particular port
       # 80 on the server will be opened
       certificateScheme = 3;
-      localDnsResolver = mkIf (config.jd.unbound.enable) false;
+      localDnsResolver = mkIf config.jd.unbound.enable false;
 
       fullTextSearch.enable = false;
       openFirewall = true;
 
       hierarchySeparator = "/";
-      mailDirectory = cfg.mailDirectory;
+      inherit (cfg) mailDirectory;
       indexDir = cfg.indexDirectory;
 
       loginAccounts =
         builtins.mapAttrs
-        (name: value:
-          with value; {
-            hashedPasswordFile = "/etc/mailserver/${friendlyName name}";
-            inherit sendOnly aliases;
-          })
-        cfg.loginAccounts;
+          (name: value:
+            with value; {
+              hashedPasswordFile = "/etc/mailserver/${friendlyName name}";
+              inherit sendOnly aliases;
+            })
+          cfg.loginAccounts;
     };
   };
 }

@@ -1,12 +1,12 @@
-{
-  pkgs,
-  config,
-  lib,
-  ...
+{ pkgs
+, config
+, lib
+, ...
 }:
 with lib; let
   cfg = config.jd.connectivity;
-in {
+in
+{
   options.jd.connectivity = {
     bluetooth.enable = mkOption {
       description = "Enable bluetooth with default options";
@@ -30,10 +30,10 @@ in {
   config = {
     environment.systemPackages = with pkgs;
       optional cfg.bluetooth.enable scripts.bluetoothTools
-      ++ optionals cfg.sound.enable [pulseaudio scripts.soundTools];
+      ++ optionals cfg.sound.enable [ pulseaudio scripts.soundTools ];
 
     security.rtkit.enable = cfg.sound.enable;
-    services.pipewire = mkIf (cfg.sound.enable) {
+    services.pipewire = mkIf cfg.sound.enable {
       enable = true;
       alsa.enable = true;
       alsa.support32Bit = true;

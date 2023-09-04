@@ -1,12 +1,12 @@
-{
-  pkgs,
-  config,
-  lib,
-  ...
+{ pkgs
+, config
+, lib
+, ...
 }:
 with lib; let
   cfg = config.jd.applications.neomutt;
-in {
+in
+{
   options.jd.applications.neomutt = {
     enable = mkOption {
       description = "Enable neomutt";

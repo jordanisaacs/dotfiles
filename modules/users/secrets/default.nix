@@ -1,13 +1,13 @@
-{
-  pkgs,
-  config,
-  lib,
-  ...
+{ pkgs
+, config
+, lib
+, ...
 }:
 with lib; let
   cfg = config.jd.secrets;
   persist = config.jd.impermanence;
-in {
+in
+{
   options.jd.secrets.identityPaths = mkOption {
     type = with types; listOf str;
     description = "The path to age identities (private key)";
@@ -16,7 +16,7 @@ in {
   config = mkMerge [
     {
       homeage = {
-        identityPaths = cfg.identityPaths;
+        inherit (cfg) identityPaths;
         pkg = pkgs.rage;
       };
     }

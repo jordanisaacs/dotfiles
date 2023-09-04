@@ -1,39 +1,39 @@
-{
-  pkgs,
-  config,
-  lib,
-  ...
+{ pkgs
+, config
+, lib
+, ...
 }:
 with lib; let
   cfg = config.jd.users;
 
-  mkUser = {
-    name,
-    groups,
-    uid,
-    shell,
-    password,
-  }: {
-    inherit name;
-    value =
-      {
-        inherit name uid shell;
-        isNormalUser = true;
-        isSystemUser = false;
-        extraGroups = groups;
-      }
-      // (
-        if password == null
-        then {
-          initialPassword = "helloworld";
+  mkUser =
+    { name
+    , groups
+    , uid
+    , shell
+    , password
+    ,
+    }: {
+      inherit name;
+      value =
+        {
+          inherit name uid shell;
+          isNormalUser = true;
+          isSystemUser = false;
+          extraGroups = groups;
         }
-        else {
-          hashedPassword = password;
-        }
-      );
-  };
+        // (
+          if password == null
+          then {
+            initialPassword = "helloworld";
+          }
+          else {
+            hashedPassword = password;
+          }
+        );
+    };
 
-  user = {...}: {
+  user = _: {
     options = {
       name = mkOption {
         type = types.str;
@@ -47,7 +47,7 @@ with lib; let
       };
       groups = mkOption {
         type = with types; listOf str;
-        default = [];
+        default = [ ];
       };
       password = mkOption {
         type = with types; nullOr str;
@@ -55,11 +55,12 @@ with lib; let
       };
     };
   };
-in {
+in
+{
   options.jd.users = {
     users = mkOption {
       type = with types; listOf (submodule user);
-      default = [];
+      default = [ ];
     };
 
     mutableUsers = mkOption {
@@ -77,7 +78,7 @@ in {
 
   config = {
     users.users =
-      {root.initialHashedPassword = cfg.rootPassword;}
+      { root.initialHashedPassword = cfg.rootPassword; }
       // builtins.listToAttrs (builtins.map mkUser cfg.users);
     users.mutableUsers = cfg.mutableUsers;
   };

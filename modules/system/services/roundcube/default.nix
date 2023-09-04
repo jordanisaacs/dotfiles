@@ -1,12 +1,12 @@
-{
-  config,
-  lib,
-  pkgs,
-  ...
+{ config
+, lib
+, pkgs
+, ...
 }:
 with lib; let
   cfg = config.jd.proxy;
-in {
+in
+{
   # TODO: incomplete
   options.jd.proxy = {
     enable = mkOption {
@@ -16,7 +16,7 @@ in {
     };
 
     firewall = mkOption {
-      type = types.enum ["world" "wg" "closed"];
+      type = types.enum [ "world" "wg" "closed" ];
       default = "closed";
       description = "What level firewall to open";
     };
@@ -34,7 +34,7 @@ in {
     };
   };
 
-  config = mkIf (cfg.enable) (mkMerge [
+  config = mkIf cfg.enable (mkMerge [
     {
       services.roundcube = {
         enable = true;
@@ -44,20 +44,20 @@ in {
           $config['smtp_user'] = "%u";
           $config['smtp_pass'] = "%p";
         '';
-        dicts = with pkgs.aspellDicts; [en];
+        dicts = with pkgs.aspellDicts; [ en ];
       };
     }
     (mkIf (cfg.firewall == "world") {
-      networking.firewall.allowedTCPPorts = [cfg.port];
+      networking.firewall.allowedTCPPorts = [ cfg.port ];
     })
     (
       let
         wgconf = config.jd.wireguard;
       in
-        mkIf
+      mkIf
         (cfg.firewall == "wg" && (assertMsg wgconf.enable "Wireguard must be enabled for wireguard ssh firewall"))
         {
-          networking.firewall.interfaces.${wgconf.interface}.allowedTCPPorts = [cfg.port];
+          networking.firewall.interfaces.${wgconf.interface}.allowedTCPPorts = [ cfg.port ];
         }
     )
   ]);

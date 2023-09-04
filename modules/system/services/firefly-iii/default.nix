@@ -1,8 +1,7 @@
-{
-  config,
-  lib,
-  pkgs,
-  ...
+{ config
+, lib
+, pkgs
+, ...
 }:
 # TODO: Incomplete
 with lib; let
@@ -11,7 +10,7 @@ with lib; let
   group = "phpfpm";
 
   fireflyPkg = pkgs.jdpkgs.firefly-iii.override {
-    dataDir = cfg.dataDir;
+    inherit (cfg) dataDir;
   };
 
   dbConfig =
@@ -46,8 +45,7 @@ with lib; let
     APP_URL = "http://localhost";
   };
 
-  mailConfig = {
-  };
+  mailConfig = { };
 
   # Shell script for local administration
   artisan = pkgs.writeScriptBin "firefly-iii" ''
@@ -59,7 +57,8 @@ with lib; let
     fi
     $sudo ${pkgs.php82}/bin/php artisan $*
   '';
-in {
+in
+{
   options.jd.firefly-iii = {
     enable = mkEnableOption "Firefly III";
 
@@ -85,7 +84,7 @@ in {
     };
 
     dbType = mkOption {
-      type = types.enum ["pgsql" "mysql" "sqlite"];
+      type = types.enum [ "pgsql" "mysql" "sqlite" ];
       default = "sqlite";
       description = "Database engine to use.";
     };
@@ -93,28 +92,28 @@ in {
     config = mkOption {
       type = with types;
         attrsOf
-        (nullOr
-          (either
-            (oneOf [
-              bool
-              int
-              port
-              path
-              str
-            ])
-            (submodule {
-              options = {
-                _secret = mkOption {
-                  type = nullOr (oneOf [str path]);
-                  description = ''
-                    The path to a file containing the value the
-                    option should be set to in the final
-                    configuration file.
-                  '';
+          (nullOr
+            (either
+              (oneOf [
+                bool
+                int
+                port
+                path
+                str
+              ])
+              (submodule {
+                options = {
+                  _secret = mkOption {
+                    type = nullOr (oneOf [ str path ]);
+                    description = ''
+                      The path to a file containing the value the
+                      option should be set to in the final
+                      configuration file.
+                    '';
+                  };
                 };
-              };
-            })));
-      default = {};
+              })));
+      default = { };
       example = literalExpression ''
         {
           MAILGUN_SECRET = { _secret = "/run/keys/mailgun_secret" };
@@ -135,7 +134,7 @@ in {
     };
   };
 
-  config = mkIf (cfg.enable) {
+  config = mkIf cfg.enable {
     users = {
       users = {
         ${user} = {
@@ -143,11 +142,11 @@ in {
           isSystemUser = true;
         };
         "nginx" = {
-          extraGroups = [group];
+          extraGroups = [ group ];
         };
       };
       groups = {
-        ${group} = {};
+        ${group} = { };
       };
     };
 
@@ -222,7 +221,7 @@ in {
     jd.firefly-iii.config = appConfig // dbConfig // mailConfig;
 
     # Set-up script
-    environment.systemPackages = [artisan];
+    environment.systemPackages = [ artisan ];
 
     systemd.tmpfiles.rules =
       [
@@ -242,55 +241,57 @@ in {
 
     systemd.services."firefly-iii-setup" = {
       description = "Preparation tasks for Firefly III";
-      before = ["phpfpm-firefly-iii.service"];
-      wantedBy = ["multi-user.target"];
+      before = [ "phpfpm-firefly-iii.service" ];
+      wantedBy = [ "multi-user.target" ];
       serviceConfig = {
         Type = "oneshot";
         RemainAfterExit = true;
         User = user;
         WorkingDirectory = fireflyPkg;
       };
-      path = [pkgs.replace-secret];
-      script = let
-        isSecret = v: isAttrs v && v ? _secret && (isString v._secret || builtins.isPath v._secret);
-        fireflyEnvVars = generators.toKeyValue {
-          mkKeyValue = flip generators.mkKeyValueDefault "=" {
-            mkValueString = v:
-              with builtins;
+      path = [ pkgs.replace-secret ];
+      script =
+        let
+          isSecret = v: isAttrs v && v ? _secret && (isString v._secret || builtins.isPath v._secret);
+          fireflyEnvVars = generators.toKeyValue {
+            mkKeyValue = flip generators.mkKeyValueDefault "=" {
+              mkValueString = v:
+                with builtins;
                 if isInt v
                 then toString v
                 else if isString v
                 then v
-                else if true == v
+                else if v
                 then "true"
-                else if false == v
+                else if !v
                 then "false"
                 else if isSecret v
                 then hashString "sha256" v._secret
                 else throw "unsupported type ${typeOf v}: ${(generators.toPretty {}) v}";
+            };
           };
-        };
-        secretPaths = mapAttrsToList (_: v: v._secret) (filterAttrs (_: isSecret) cfg.config);
-        mkSecretReplacement = file: ''
-          replace-secret ${escapeShellArgs [(builtins.hashString "sha256" file) file "${cfg.dataDir}/.env"]}
-        '';
-        secretReplacements = concatMapStrings mkSecretReplacement secretPaths;
-        filteredConfig = converge (filterAttrsRecursive (_: v: ! elem v [{} null])) cfg.config;
-        fireflyEnv = pkgs.writeText "firefly-iii.env" (fireflyEnvVars filteredConfig);
-      in ''
-        set -euo pipefail
-        umask 077
+          secretPaths = mapAttrsToList (_: v: v._secret) (filterAttrs (_: isSecret) cfg.config);
+          mkSecretReplacement = file: ''
+            replace-secret ${escapeShellArgs [(builtins.hashString "sha256" file) file "${cfg.dataDir}/.env"]}
+          '';
+          secretReplacements = concatMapStrings mkSecretReplacement secretPaths;
+          filteredConfig = converge (filterAttrsRecursive (_: v: ! elem v [{ } null])) cfg.config;
+          fireflyEnv = pkgs.writeText "firefly-iii.env" (fireflyEnvVars filteredConfig);
+        in
+        ''
+          set -euo pipefail
+          umask 077
 
-        # create the .env file
-        install -T -m 0600 -o ${user} ${fireflyEnv} "${cfg.dataDir}/.env"
-        ${secretReplacements}
-        if ! grep 'APP_KEY=base64:' "${cfg.dataDir}/.env" >/dev/null; then
-            sed -i 's/APP_KEY=/APP_KEY=base64:/' "${cfg.dataDir}/.env"
-        fi
-        echo "migration"
-        # migrate db
-        ${pkgs.php82}/bin/php artisan migrate --force
-      '';
+          # create the .env file
+          install -T -m 0600 -o ${user} ${fireflyEnv} "${cfg.dataDir}/.env"
+          ${secretReplacements}
+          if ! grep 'APP_KEY=base64:' "${cfg.dataDir}/.env" >/dev/null; then
+              sed -i 's/APP_KEY=/APP_KEY=base64:/' "${cfg.dataDir}/.env"
+          fi
+          echo "migration"
+          # migrate db
+          ${pkgs.php82}/bin/php artisan migrate --force
+        '';
     };
   };
 }

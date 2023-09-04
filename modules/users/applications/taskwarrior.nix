@@ -1,12 +1,12 @@
-{
-  pkgs,
-  config,
-  lib,
-  ...
+{ pkgs
+, config
+, lib
+, ...
 }:
 with lib; let
   cfg = config.jd.applications.taskwarrior;
-in {
+in
+{
   options.jd.applications.taskwarrior = {
     enable = mkOption {
       description = "Enable taskwarrior";
@@ -55,44 +55,45 @@ in {
     };
   };
 
-  config = let
-    path = config.programs.taskwarrior.dataLocation;
-  in
+  config =
+    let
+      path = config.programs.taskwarrior.dataLocation;
+    in
     mkIf (config.jd.applications.enable && cfg.enable)
-    {
-      programs.taskwarrior = {
-        enable = true;
-        config = {
-          taskd =
-            mkIf (cfg.server.enable)
-            {
-              server = "${cfg.server.address}:${builtins.toString cfg.server.port}";
-              key = "${path}/key";
-              ca = "${path}/ca";
-              certificate = "${path}/cert";
-              credentials = "${cfg.server.credentials}";
-              trust = "strict";
-            };
+      {
+        programs.taskwarrior = {
+          enable = true;
+          config = {
+            taskd =
+              mkIf cfg.server.enable
+                {
+                  server = "${cfg.server.address}:${builtins.toString cfg.server.port}";
+                  key = "${path}/key";
+                  ca = "${path}/ca";
+                  certificate = "${path}/cert";
+                  credentials = "${cfg.server.credentials}";
+                  trust = "strict";
+                };
+          };
+        };
+
+        homeage.file = mkIf cfg.server.enable {
+          taskserver-ca = {
+            source = cfg.server.ca;
+            symlinks = [ "${path}/ca" ];
+          };
+
+          taskserver-key = {
+            source = cfg.server.key;
+            symlinks = [ "${path}/key" ];
+          };
+
+          taskserver-cert = {
+            source = cfg.server.cert;
+            symlinks = [ "${path}/cert" ];
+          };
         };
       };
-
-      homeage.file = mkIf (cfg.server.enable) {
-        taskserver-ca = {
-          source = cfg.server.ca;
-          symlinks = ["${path}/ca"];
-        };
-
-        taskserver-key = {
-          source = cfg.server.key;
-          symlinks = ["${path}/key"];
-        };
-
-        taskserver-cert = {
-          source = cfg.server.cert;
-          symlinks = ["${path}/cert"];
-        };
-      };
-    };
 }
 # Taskwarrior + timewarrior integration: https://timewarrior.net/docs/taskwarrior/
 # home.activation = {

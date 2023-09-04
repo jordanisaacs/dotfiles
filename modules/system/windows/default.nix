@@ -1,19 +1,19 @@
-{
-  pkgs,
-  config,
-  lib,
-  ...
+{ pkgs
+, config
+, lib
+, ...
 }:
 with lib; let
   cfg = config.jd.windows;
-in {
+in
+{
   options.jd.windows.enable = mkOption {
     description = "Enable windows virtualisation";
     default = false;
     type = types.bool;
   };
 
-  config = mkIf (cfg.enable) {
+  config = mkIf cfg.enable {
     virtualisation.libvirtd = {
       enable = true;
 
@@ -26,7 +26,7 @@ in {
         swtpm.enable = true;
         ovmf = {
           enable = true;
-          packages = [pkgs.OVMFFull.fd];
+          packages = [ pkgs.OVMFFull.fd ];
         };
 
         runAsRoot = true;
@@ -34,7 +34,7 @@ in {
     };
 
     environment = {
-      systemPackages = mkIf (config.jd.graphical.enable) [
+      systemPackages = mkIf config.jd.graphical.enable [
         pkgs.virt-manager
         pkgs.swtpm
       ];

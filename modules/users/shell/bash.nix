@@ -1,17 +1,18 @@
-{
-  pkgs,
-  config,
-  lib,
-  ...
+{ pkgs
+, config
+, lib
+, ...
 }:
 with lib; let
   cfg = config.jd;
-in {
+in
+{
   config = mkIf (cfg.shell == "bash") (
     let
       # Remove home directory from xdg
       dotDir = builtins.substring ((builtins.stringLength config.home.homeDirectory) + 1) (builtins.stringLength config.xdg.configHome) config.xdg.configHome;
-    in {
+    in
+    {
       # some nice info on readline: https://twobithistory.org/2019/08/22/readline.html
       programs.readline = {
         enable = true;
@@ -146,7 +147,7 @@ in {
         enable = true;
         historySize = 100;
         historyFileSize = 10000;
-        historyControl = ["ignorespace" "ignoredups"];
+        historyControl = [ "ignorespace" "ignoredups" ];
         enableCompletion = true;
         bashrcExtra = ''
 

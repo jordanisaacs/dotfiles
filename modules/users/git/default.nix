@@ -1,12 +1,12 @@
-{
-  pkgs,
-  config,
-  lib,
-  ...
+{ pkgs
+, config
+, lib
+, ...
 }:
 with lib; let
   cfg = config.jd.git;
-in {
+in
+{
   options.jd.git = {
     enable = mkOption {
       description = "Enable git";
@@ -39,11 +39,11 @@ in {
     };
   };
 
-  config = mkIf (cfg.enable) {
+  config = mkIf cfg.enable {
     programs.git = {
       enable = true;
-      userName = cfg.userName;
-      userEmail = cfg.userEmail;
+      inherit (cfg) userName;
+      inherit (cfg) userEmail;
       extraConfig = {
         commit.gpgSign = cfg.signByDefault;
         gpg = {

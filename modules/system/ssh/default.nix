@@ -1,13 +1,13 @@
-{
-  pkgs,
-  config,
-  lib,
-  ...
+{ pkgs
+, config
+, lib
+, ...
 }:
 with lib; let
   cfg = config.jd.ssh;
-  backup = config.jd.impermanence.persistedDatasets.root.backup;
-in {
+  inherit (config.jd.impermanence.persistedDatasets.root) backup;
+in
+{
   options.jd.ssh = {
     enable = mkOption {
       description = "Whether to enable ssh";
@@ -17,7 +17,7 @@ in {
 
     type = mkOption {
       description = "Whether is SSH client or server";
-      type = types.enum ["client" "server"];
+      type = types.enum [ "client" "server" ];
       default = "client";
     };
 
@@ -32,13 +32,13 @@ in {
     };
 
     ports = mkOption {
-      default = [23];
+      default = [ 23 ];
       type = with types; listOf port;
       description = "SSH ports";
     };
 
     firewall = mkOption {
-      type = types.enum ["world" "wg"];
+      type = types.enum [ "world" "wg" ];
       description = "Open firewall to everyone or wireguard";
     };
 
@@ -62,8 +62,8 @@ in {
       {
         services.openssh = {
           enable = true;
-          ports = cfg.ports;
-          hostKeys = [];
+          inherit (cfg) ports;
+          hostKeys = [ ];
           settings = {
             PasswordAuthentication = false;
           };
@@ -93,13 +93,14 @@ in {
         services.openssh.openFirewall = true;
       })
       (mkIf
-        (cfg.firewall == "wg" && (assertMsg config.jd.wireguard.enable "Wireguard must be enabled for wireguard ssh firewall")) {
+        (cfg.firewall == "wg" && (assertMsg config.jd.wireguard.enable "Wireguard must be enabled for wireguard ssh firewall"))
+        {
           services.openssh.openFirewall = false;
           networking.firewall.interfaces.${config.jd.wireguard.interface}.allowedTCPPorts = cfg.ports;
         })
-      (mkIf (let type = config.jd.boot.type; in type == "zfs" || type == "zfs-v2") (mkMerge [
+      (mkIf (let inherit (config.jd.boot) type; in type == "zfs" || type == "zfs-v2") (mkMerge [
         (mkIf config.jd.impermanence.enable {
-          environment.persistence.${backup}.directories = ["/etc/secrets/initrd"];
+          environment.persistence.${backup}.directories = [ "/etc/secrets/initrd" ];
         })
         {
           boot.initrd.network = {

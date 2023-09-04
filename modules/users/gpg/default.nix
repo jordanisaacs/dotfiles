@@ -1,12 +1,12 @@
-{
-  pkgs,
-  config,
-  lib,
-  ...
+{ pkgs
+, config
+, lib
+, ...
 }:
 with lib; let
   cfg = config.jd.gpg;
-in {
+in
+{
   options.jd.gpg = {
     enable = mkOption {
       description = "enable gpg";
@@ -15,7 +15,7 @@ in {
     };
   };
 
-  config = mkIf (cfg.enable) {
+  config = mkIf cfg.enable {
     home.packages = with pkgs; [
       pinentry-gnome
     ];

@@ -1,12 +1,12 @@
-{
-  pkgs,
-  config,
-  lib,
-  ...
+{ pkgs
+, config
+, lib
+, ...
 }:
 with lib; let
   cfg = config.jd.graphical.wayland;
-in {
+in
+{
   options.jd.graphical.wayland = {
     enable = mkOption {
       type = types.bool;
@@ -27,7 +27,7 @@ in {
     };
   };
 
-  config = mkIf (cfg.enable) {
+  config = mkIf cfg.enable {
     xdg = {
       portal = {
         enable = true;
@@ -39,7 +39,7 @@ in {
     };
 
     # security.pam.services.swaylock = mkIf (cfg.swaylockPam) {};
-    security.pam.services.swaylock = {};
-    security.pam.services.waylock = mkIf (cfg.waylockPam) {};
+    security.pam.services.swaylock = { };
+    security.pam.services.waylock = mkIf cfg.waylockPam { };
   };
 }

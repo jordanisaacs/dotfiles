@@ -1,12 +1,12 @@
-{
-  pkgs,
-  config,
-  lib,
-  ...
+{ pkgs
+, config
+, lib
+, ...
 }:
 with lib; let
   cfg = config.jd.framework;
-in {
+in
+{
   options.jd.framework = {
     enable = mkOption {
       description = "Enable framework options";
@@ -23,7 +23,7 @@ in {
     };
   };
 
-  config = mkIf (cfg.enable) (mkMerge [
+  config = mkIf cfg.enable (mkMerge [
     {
       hardware.cpu.intel.updateMicrocode = true;
       hardware.sensor.iio.enable = true;
@@ -34,7 +34,7 @@ in {
           interval = "weekly";
         };
 
-        fwupd. extraRemotes = ["lvfs-testing"];
+        fwupd. extraRemotes = [ "lvfs-testing" ];
 
         # https://community.frame.work/t/headphone-jack-intermittent-noise/5246/90
         acpid = {
@@ -74,10 +74,10 @@ in {
     (mkIf cfg.fprint.enable {
       services.fprintd.enable = true;
     })
-    (mkIf (config.jd.graphical.enable) {
-      boot.initrd.kernelModules = ["i915"];
+    (mkIf config.jd.graphical.enable {
+      boot.initrd.kernelModules = [ "i915" ];
 
-      environment.defaultPackages = with pkgs; [intel-gpu-tools vulkan-validation-layers vulkan-tools];
+      environment.defaultPackages = with pkgs; [ intel-gpu-tools vulkan-validation-layers vulkan-tools ];
       hardware = {
         opengl = {
           enable = true;

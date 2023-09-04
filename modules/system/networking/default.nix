@@ -1,22 +1,22 @@
-{
-  pkgs,
-  config,
-  lib,
-  ...
+{ pkgs
+, config
+, lib
+, ...
 }:
 with lib; let
   cfg = config.jd.networking;
-in {
+in
+{
   options.jd.networking = {
     interfaces = mkOption {
       type = with types; listOf str;
-      default = [];
+      default = [ ];
       description = "List of network interface cards, do not add wifi card";
     };
 
     allInterfaces = mkOption {
       internal = true;
-      default = [];
+      default = [ ];
       description = "List of network interface cards";
     };
 
@@ -107,22 +107,23 @@ in {
     tailscale.enable = mkEnableOption "tailscale";
   };
 
-  config = let
-    networkCfg =
-      listToAttrs
-      (map
-        (n: {
-          name = "${n}";
-          # Use builtin DHCP of iwd
-          value = {useDHCP = true;};
-        })
-        cfg.interfaces);
+  config =
+    let
+      networkCfg =
+        listToAttrs
+          (map
+            (n: {
+              name = "${n}";
+              # Use builtin DHCP of iwd
+              value = { useDHCP = true; };
+            })
+            cfg.interfaces);
 
-    interfaces =
-      cfg.interfaces
-      ++ lib.optional cfg.wifi.enable cfg.wifi.interface
-      ++ lib.optional cfg.static.enable cfg.static.interface;
-  in
+      interfaces =
+        cfg.interfaces
+        ++ lib.optional cfg.wifi.enable cfg.wifi.interface
+        ++ lib.optional cfg.static.enable cfg.static.interface;
+    in
     mkMerge [
       {
         jd.networking.allInterfaces = interfaces;
@@ -184,7 +185,7 @@ in {
           services.networkd-dispatcher = {
             enable = true;
             rules."iptime" = {
-              onState = ["routable"];
+              onState = [ "routable" ];
               script = ''
                 #!${pkgs.runtimeShell}
                 export PATH=${lib.makeBinPath (with pkgs; [systemd curl])}
@@ -205,26 +206,26 @@ in {
           enable = true;
           interfaces =
             listToAttrs
-            (map
-              (n: {
-                name = n;
-                value = mkMerge [
-                  (mkIf cfg.firewall.allowKdeconnect rec {
-                    allowedTCPPortRanges = [
-                      {
-                        from = 1714;
-                        to = 1764;
-                      }
-                    ];
-                    allowedUDPPortRanges = allowedTCPPortRanges;
-                  })
-                  (mkIf cfg.firewall.allowDefaultSyncthing {
-                    allowedTCPPorts = [2200];
-                    allowedUDPPorts = [21027 22000];
-                  })
-                ];
-              })
-              interfaces);
+              (map
+                (n: {
+                  name = n;
+                  value = mkMerge [
+                    (mkIf cfg.firewall.allowKdeconnect rec {
+                      allowedTCPPortRanges = [
+                        {
+                          from = 1714;
+                          to = 1764;
+                        }
+                      ];
+                      allowedUDPPortRanges = allowedTCPPortRanges;
+                    })
+                    (mkIf cfg.firewall.allowDefaultSyncthing {
+                      allowedTCPPorts = [ 2200 ];
+                      allowedUDPPorts = [ 21027 22000 ];
+                    })
+                  ];
+                })
+                interfaces);
         };
       })
       (mkIf cfg.static.enable {
@@ -234,8 +235,8 @@ in {
           };
 
           networkConfig = {
-            Address = [cfg.static.ipv4.addr cfg.static.ipv6.addr];
-            DNS = ["9.9.9.9" "149.112.112.112" "2620:fe::fe" "2620:fe::9"]; # quad9
+            Address = [ cfg.static.ipv4.addr cfg.static.ipv6.addr ];
+            DNS = [ "9.9.9.9" "149.112.112.112" "2620:fe::fe" "2620:fe::9" ]; # quad9
             DNSSEC = "allow-downgrade";
             # https://tldp.org/HOWTO/Linux+IPv6-HOWTO/ch06s05.html
             IPv6PrivacyExtensions = "no";
@@ -244,7 +245,7 @@ in {
           };
 
           routes = [
-            {routeConfig.Gateway = "fe80::1";}
+            { routeConfig.Gateway = "fe80::1"; }
             {
               routeConfig = {
                 Gateway = cfg.static.ipv4.gateway;

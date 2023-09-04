@@ -1,12 +1,12 @@
-{
-  config,
-  lib,
-  pkgs,
-  ...
+{ config
+, lib
+, pkgs
+, ...
 }:
 with lib; let
   cfg = config.jd.miniflux;
-in {
+in
+{
   options.jd.miniflux = {
     enable = mkOption {
       description = "Whether to enable miniflux";
@@ -26,7 +26,7 @@ in {
     };
 
     firewall = mkOption {
-      type = types.enum ["world" "wg" "closed"];
+      type = types.enum [ "world" "wg" "closed" ];
       default = "closed";
       description = "Open firewall to everyone or wireguard";
     };
@@ -44,7 +44,7 @@ in {
     };
   };
 
-  config = mkIf (cfg.enable) (mkMerge [
+  config = mkIf cfg.enable (mkMerge [
     {
       services = {
         miniflux = {
@@ -57,10 +57,11 @@ in {
             FETCH_YOUTUBE_WATCH_TIME = "1";
             # metrics_collector = 1;
             LOG_DATE_TIME = "on";
-            BASE_URL = let
-              proxy = config.jd.proxy;
-            in
-              mkIf (proxy.enable) "http://${proxy.address}:${builtins.toString proxy.port}/miniflux/";
+            BASE_URL =
+              let
+                inherit (config.jd) proxy;
+              in
+              mkIf proxy.enable "http://${proxy.address}:${builtins.toString proxy.port}/miniflux/";
           };
         };
       };
@@ -72,16 +73,16 @@ in {
       };
     }
     (mkIf (cfg.firewall == "world") {
-      networking.firewall.allowedTCPPorts = [cfg.port];
+      networking.firewall.allowedTCPPorts = [ cfg.port ];
     })
     (
       let
         wgconf = config.jd.wireguard;
       in
-        mkIf
+      mkIf
         (cfg.firewall == "wg" && (assertMsg wgconf.enable "Wireguard must be enabled for wireguard ssh firewall"))
         {
-          networking.firewall.interfaces.${wgconf.interface}.allowedTCPPorts = [cfg.port];
+          networking.firewall.interfaces.${wgconf.interface}.allowedTCPPorts = [ cfg.port ];
         }
     )
   ]);

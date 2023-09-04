@@ -1,8 +1,7 @@
-{
-  config,
-  lib,
-  pkgs,
-  ...
+{ config
+, lib
+, pkgs
+, ...
 }:
 with lib; let
   cfg = config.jd.calibre;
@@ -15,7 +14,8 @@ with lib; let
   id = 328;
 
   libraryDir = "/var/lib/calibre-lib";
-in {
+in
+{
   options.jd.calibre = {
     web = {
       enable = mkOption {
@@ -60,7 +60,7 @@ in {
 
   config = mkIf enable (mkMerge [
     {
-      users.groups."calibre" = {};
+      users.groups."calibre" = { };
 
       users.users = {
         calibre = {
@@ -72,13 +72,13 @@ in {
         };
       };
     }
-    (mkIf (cfg.web.enable) {
+    (mkIf cfg.web.enable {
       services.calibre-web = {
         enable = true;
         inherit user group;
         listen = {
           ip = cfg.web.address;
-          port = cfg.web.port;
+          inherit (cfg.web) port;
         };
         dataDir = "calibre-web";
         options = {
@@ -102,11 +102,11 @@ in {
         };
       };
     })
-    (mkIf (cfg.server.enable) {
+    (mkIf cfg.server.enable {
       systemd.services.calibre-server = {
         description = "Calibre Server";
-        after = ["network.target"];
-        wantedBy = ["multi-user.target"];
+        after = [ "network.target" ];
+        wantedBy = [ "multi-user.target" ];
         serviceConfig = {
           User = "calibre";
           Restart = "always";

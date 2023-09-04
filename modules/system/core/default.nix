@@ -1,15 +1,15 @@
-{
-  inputs,
-  patchedPkgs,
-}: {
-  pkgs,
-  config,
-  lib,
-  ...
-}:
+{ inputs
+, patchedPkgs
+,
+}: { pkgs
+   , config
+   , lib
+   , ...
+   }:
 with lib; let
   cfg = config.jd.core;
-in {
+in
+{
   options.jd.core = {
     enable = mkOption {
       description = "Enable core options";
@@ -19,7 +19,7 @@ in {
 
     time = mkOption {
       description = "Time zone (null if unmanaged)";
-      type = with types; nullOr (enum ["west" "east"]);
+      type = with types; nullOr (enum [ "west" "east" ]);
       default = "east";
     };
 
@@ -30,13 +30,13 @@ in {
     };
   };
 
-  config = mkIf (cfg.enable) {
+  config = mkIf cfg.enable {
     i18n.defaultLocale = "en_US.UTF-8";
     console = {
       earlySetup = true;
       keyMap = "us";
       font = "ter-v32n";
-      packages = with pkgs; [terminus_font];
+      packages = with pkgs; [ terminus_font ];
     };
 
     time.timeZone =
@@ -57,50 +57,52 @@ in {
     # Nix search paths/registries from:
     # https://github.com/gytis-ivaskevicius/flake-utils-plus/blob/166d6ebd9f0de03afc98060ac92cba9c71cfe550/lib/options.nix
     # Context thread: https://github.com/gytis-ivaskevicius/flake-utils-plus/blob/166d6ebd9f0de03afc98060ac92cba9c71cfe550/lib/options.nix
-    nix = let
-      flakes =
-        filterAttrs
-        (name: value: value ? outputs)
-        inputs;
-      flakesWithPkgs =
-        filterAttrs
-        (name: value:
-          value.outputs ? legacyPackages || value.outputs ? packages)
-        flakes;
-      nixRegistry = builtins.mapAttrs (name: v: {flake = v;}) flakes;
-    in {
-      registry = nixRegistry;
-      nixPath =
-        mapAttrsToList
-        (name: _: "${name}=/etc/nix/inputs/${name}")
-        flakesWithPkgs;
-      package = pkgs.nixUnstable;
-      gc = {
-        persistent = true;
-        automatic = true;
-        dates = "weekly";
-        options = "--delete-older-than 14d";
+    nix =
+      let
+        flakes =
+          filterAttrs
+            (name: value: value ? outputs)
+            inputs;
+        flakesWithPkgs =
+          filterAttrs
+            (name: value:
+              value.outputs ? legacyPackages || value.outputs ? packages)
+            flakes;
+        nixRegistry = builtins.mapAttrs (name: v: { flake = v; }) flakes;
+      in
+      {
+        registry = nixRegistry;
+        nixPath =
+          mapAttrsToList
+            (name: _: "${name}=/etc/nix/inputs/${name}")
+            flakesWithPkgs;
+        package = pkgs.nixUnstable;
+        gc = {
+          persistent = true;
+          automatic = true;
+          dates = "weekly";
+          options = "--delete-older-than 14d";
+        };
+        extraOptions = ''
+          keep-outputs = true
+          keep-derivations = true
+          experimental-features = nix-command flakes
+        '';
+        settings = {
+          auto-optimise-store = true;
+          # For nixpkgs-wayland: https://github.com/nix-community/nixpkgs-wayland#flake-usage
+          substituters = [
+            "https://cache.nixos.org"
+            "https://nixpkgs-wayland.cachix.org"
+            "https://eigenvalue.cachix.org"
+          ];
+          trusted-public-keys = [
+            "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
+            "nixpkgs-wayland.cachix.org-1:3lwxaILxMRkVhehr5StQprHdEo4IrE8sRho9R9HOLYA="
+            "eigenvalue.cachix.org-1:ykerQDDa55PGxU25CETy9wF6uVDpadGGXYrFNJA3TUs="
+          ];
+        };
       };
-      extraOptions = ''
-        keep-outputs = true
-        keep-derivations = true
-        experimental-features = nix-command flakes
-      '';
-      settings = {
-        auto-optimise-store = true;
-        # For nixpkgs-wayland: https://github.com/nix-community/nixpkgs-wayland#flake-usage
-        substituters = [
-          "https://cache.nixos.org"
-          "https://nixpkgs-wayland.cachix.org"
-          "https://eigenvalue.cachix.org"
-        ];
-        trusted-public-keys = [
-          "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
-          "nixpkgs-wayland.cachix.org-1:3lwxaILxMRkVhehr5StQprHdEo4IrE8sRho9R9HOLYA="
-          "eigenvalue.cachix.org-1:ykerQDDa55PGxU25CETy9wF6uVDpadGGXYrFNJA3TUs="
-        ];
-      };
-    };
 
     environment = {
       sessionVariables = {
@@ -108,20 +110,20 @@ in {
       };
       etc =
         mapAttrs'
-        (name: value: {
-          name = "nix/inputs/${name}";
-          value = {
-            source =
-              if name == "nixpkgs"
-              then patchedPkgs.outPath
-              else value.outPath;
-          };
-        })
-        inputs;
+          (name: value: {
+            name = "nix/inputs/${name}";
+            value = {
+              source =
+                if name == "nixpkgs"
+                then patchedPkgs.outPath
+                else value.outPath;
+            };
+          })
+          inputs;
 
-      shells = [pkgs.zsh pkgs.bash];
+      shells = [ pkgs.zsh pkgs.bash ];
       # ZSH completions
-      pathsToLink = ["/share/zsh" "/share/bash-completion"];
+      pathsToLink = [ "/share/zsh" "/share/bash-completion" ];
       systemPackages = with pkgs; [
         # Misc.
         neofetch

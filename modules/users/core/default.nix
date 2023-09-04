@@ -1,14 +1,14 @@
-{
-  pkgs,
-  config,
-  lib,
-  ...
+{ pkgs
+, config
+, lib
+, ...
 }:
 with lib;
 with builtins; let
   cfg = config.jd.core;
   persist = config.jd.impermanence;
-in {
+in
+{
   options.jd.core = {
     enable = mkOption {
       description = "Enable some core configurations";
@@ -17,7 +17,7 @@ in {
     };
   };
 
-  config = mkIf (cfg.enable) (mkMerge [
+  config = mkIf cfg.enable (mkMerge [
     (mkIf persist.enable {
       home.persistence.${persist.backupPool} = [
         "${config.xdg.userDirs.documents}/dev"
@@ -35,7 +35,7 @@ in {
       xdg.mime.enable = true;
       xdg.mimeApps.enable = true;
 
-      home.packages = with pkgs; [home-manager];
+      home.packages = with pkgs; [ home-manager ];
     }
   ]);
 }

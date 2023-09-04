@@ -1,12 +1,12 @@
-{
-  pkgs,
-  config,
-  lib,
-  ...
+{ pkgs
+, config
+, lib
+, ...
 }:
 with lib; let
   cfg = config.jd.kernel;
-in {
+in
+{
   # Based on https://josefbacik.github.io/kernel/2021/10/18/lei-and-b4.html
   options.jd.kernel.enable = mkEnableOption "kernel development workflow";
 

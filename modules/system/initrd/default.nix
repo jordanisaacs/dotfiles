@@ -1,19 +1,19 @@
-{
-  pkgs,
-  config,
-  lib,
-  ...
+{ pkgs
+, config
+, lib
+, ...
 }:
 with lib; let
   cfg = config.jd.initrd;
-in {
+in
+{
   options.jd.initrd = {
     plymouth = {
       enable = mkEnableOption "enable plymouth";
       theme = mkOption {
         description = "plymouth theme";
         default = "lone";
-        type = types.enum ["lone" "hexa_retro"];
+        type = types.enum [ "lone" "hexa_retro" ];
       };
     };
 
@@ -23,7 +23,7 @@ in {
   config = mkMerge [
     {
       boot.initrd.systemd.enable = true;
-      boot.kernelParams = optionals cfg.quiet ["rd.udev.log_level=3"];
+      boot.kernelParams = optionals cfg.quiet [ "rd.udev.log_level=3" ];
 
       # Does not matter for systemd
       # boot.initrd.verbose = mkDefault cfg.quiet;
@@ -38,13 +38,13 @@ in {
       jd.kernel.disableBGRTRestore = mkDefault true;
       jd.initrd.quiet = mkDefault true;
 
-      systemd.services.plymouth-switch-root-initramfs.wantedBy = ["halt.target" "kexec.target" "plymouth-switch-root-initramfs.service" "poweroff.target" "reboot.target"];
-      systemd.services.plymouth-switch-root-initramfs.unitConfig.After = ["generate-shutdown-ramfs.service"];
-      systemd.services.plymouth-switch-root-initramfs.unitConfig.ConditionPathExists = ["" "/run/initramfs/shutdown"];
+      systemd.services.plymouth-switch-root-initramfs.wantedBy = [ "halt.target" "kexec.target" "plymouth-switch-root-initramfs.service" "poweroff.target" "reboot.target" ];
+      systemd.services.plymouth-switch-root-initramfs.unitConfig.After = [ "generate-shutdown-ramfs.service" ];
+      systemd.services.plymouth-switch-root-initramfs.unitConfig.ConditionPathExists = [ "" "/run/initramfs/shutdown" ];
 
       boot.plymouth = {
         enable = true;
-        theme = cfg.plymouth.theme;
+        inherit (cfg.plymouth) theme;
         font = "${pkgs.bm-font}/share/fonts/truetype/BerkeleyMono-Regular.ttf";
 
         themePackages = [

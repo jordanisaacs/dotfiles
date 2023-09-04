@@ -1,7 +1,8 @@
-{
-  pkgs,
-  lib,
-}: let
+{ pkgs
+, lib
+,
+}:
+let
   setupTools = with pkgs;
     writeShellScriptBin "setup" ''
       DISK=$1
@@ -373,7 +374,8 @@
           echo "hubclone \$1 \$2: Clone github repo (\$2) from user (\$1) in dev folder"
       esac
     '';
-in {
+in
+{
   overlay = final: prev: {
     scripts.sysTools = sysTools;
     scripts.bluetoothTools = bluetoothTools;

@@ -1,12 +1,12 @@
-{
-  config,
-  lib,
-  pkgs,
-  ...
+{ config
+, lib
+, pkgs
+, ...
 }:
 with lib; let
   cfg = config.jd.taskserver;
-in {
+in
+{
   options.jd.taskserver = {
     enable = mkOption {
       description = "Whether to enable miniflux";
@@ -15,7 +15,7 @@ in {
     };
 
     firewall = mkOption {
-      type = types.enum ["world" "wg" "closed"];
+      type = types.enum [ "world" "wg" "closed" ];
       default = "closed";
       description = "Open firewall to everyone or wireguard";
     };
@@ -43,16 +43,16 @@ in {
     };
   };
 
-  config = mkIf (cfg.enable) (mkMerge [
+  config = mkIf cfg.enable (mkMerge [
     {
       services = {
         taskserver = {
           enable = true;
           trust = "strict";
-          fqdn = cfg.fqdn;
+          inherit (cfg) fqdn;
           listenHost = cfg.address;
           listenPort = cfg.port;
-          dataDir = cfg.dataDir;
+          inherit (cfg) dataDir;
           organisations."people".users = [
             "jd"
           ];
@@ -60,16 +60,16 @@ in {
       };
     }
     (mkIf (cfg.firewall == "world") {
-      networking.firewall.allowedTCPPorts = [cfg.port];
+      networking.firewall.allowedTCPPorts = [ cfg.port ];
     })
     (
       let
         wgconf = config.jd.wireguard;
       in
-        mkIf
+      mkIf
         (cfg.firewall == "wg" && (assertMsg wgconf.enable "Wireguard must be enabled for wireguard ssh firewall"))
         {
-          networking.firewall.interfaces.${wgconf.interface}.allowedTCPPorts = [cfg.port];
+          networking.firewall.interfaces.${wgconf.interface}.allowedTCPPorts = [ cfg.port ];
         }
     )
   ]);

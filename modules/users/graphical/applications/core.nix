@@ -1,13 +1,13 @@
-{
-  pkgs,
-  config,
-  lib,
-  ...
+{ pkgs
+, config
+, lib
+, ...
 }:
 with lib; let
   cfg = config.jd.graphical;
   systemCfg = config.machineData.systemConfig;
-in {
+in
+{
   options.jd.graphical.applications = {
     enable = mkEnableOption "graphical applications";
   };
@@ -58,7 +58,7 @@ in {
         # firmware-manager - need to wait for polkit support
 
         (rstudioWrapper.override {
-          packages = with rPackages; [tidyverse];
+          packages = with rPackages; [ tidyverse ];
         })
       ]
       ++ lib.optional systemCfg.networking.wifi.enable pkgs.iwgtk;
@@ -71,8 +71,8 @@ in {
         terminal = false;
         icon = "Cider";
         type = "Application";
-        categories = ["Audio" "Video"];
-        mimeType = ["x-scheme-handler/ame" "x-scheme-handler/cider" "x-scheme-handler/itms" "x-scheme-handler/itmss" "x-scheme-handler/musics" "x-scheme-handler/music"];
+        categories = [ "Audio" "Video" ];
+        mimeType = [ "x-scheme-handler/ame" "x-scheme-handler/cider" "x-scheme-handler/itms" "x-scheme-handler/itmss" "x-scheme-handler/musics" "x-scheme-handler/music" ];
       };
     };
 

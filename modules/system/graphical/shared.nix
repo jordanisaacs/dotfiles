@@ -1,12 +1,12 @@
-{
-  pkgs,
-  config,
-  lib,
-  ...
+{ pkgs
+, config
+, lib
+, ...
 }:
 with lib; let
   cfg = config.jd.graphical;
-in {
+in
+{
   options.jd.graphical = {
     enable = mkEnableOption "graphical desktop support";
 
@@ -39,17 +39,17 @@ in {
             ''
           ]
           ++ lib.optional (cfg.xorg.enable && !config.jd.greetd.enable)
-          ''
-            if [ -z "$DISPLAY" ] && [ "''${XDG_VTNR}" -eq 1 ]; then
-              exec startx
-            fi
-          ''
+            ''
+              if [ -z "$DISPLAY" ] && [ "''${XDG_VTNR}" -eq 1 ]; then
+                exec startx
+              fi
+            ''
           ++ lib.optional (cfg.wayland.enable && !config.jd.greetd.enable)
-          ''
-            if [ -z "$DISPLAY" ] && [ "''${XDG_VTNR}" -eq 2 ]; then
-              exec $HOME/.winitrc
-            fi
-          ''
+            ''
+              if [ -z "$DISPLAY" ] && [ "''${XDG_VTNR}" -eq 2 ]; then
+                exec $HOME/.winitrc
+              fi
+            ''
         );
       };
     }
@@ -60,7 +60,7 @@ in {
       programs.captive-browser = {
         enable = true;
         bindInterface = true;
-        interface = config.jd.networking.wifi.interface;
+        inherit (config.jd.networking.wifi) interface;
       };
     })
   ]);

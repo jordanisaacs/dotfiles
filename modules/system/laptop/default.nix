@@ -1,8 +1,7 @@
-{
-  pkgs,
-  config,
-  lib,
-  ...
+{ pkgs
+, config
+, lib
+, ...
 }:
 with lib; let
   cfg = config.jd.laptop;
@@ -62,7 +61,8 @@ with lib; let
         sleep $delay
     done
   '';
-in {
+in
+{
   options.jd.laptop = {
     enable = mkOption {
       description = "Whether to enable laptop settings. Also tags as laptop for user settings";
@@ -71,7 +71,7 @@ in {
     };
   };
 
-  config = mkIf (cfg.enable) {
+  config = mkIf cfg.enable {
     environment.systemPackages = with pkgs; [
       acpid
       powertop
@@ -91,7 +91,7 @@ in {
       '';
 
       user.services."autobrightness" = {
-        wantedBy = ["default.target"];
+        wantedBy = [ "default.target" ];
 
         unitConfig = {
           Description = "Automatic brightness adjustment";
@@ -202,7 +202,7 @@ in {
             "USB_AUTOSUSPEND" = 0;
           }
           // (
-            if config.jd.framework.enable == true
+            if config.jd.framework.enable
             then {
               "CPU_ENERGY_PERF_POLICY_ON_AC" = "performance";
               "CPU_ENERGY_PERF_POLICY_ON_BAT" = "power";
@@ -217,7 +217,7 @@ in {
               "INTEL_GPU_MAX_FREQ_ON_BAT" = 800;
               "INTEL_GPU_BOOST_FREQ_ON_BAT" = 1000;
             }
-            else {}
+            else { }
           );
       };
     };

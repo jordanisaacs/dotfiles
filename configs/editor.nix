@@ -1,4 +1,5 @@
-pkgs: neovimConfiguration: let
+pkgs: neovimConfiguration:
+let
   configModule = {
     # Add any custom options (and feel free to upstream them!)
     # options = ...
@@ -13,6 +14,7 @@ pkgs: neovimConfiguration: let
         enableExtraDiagnostics = true;
 
         nix.enable = true;
+        nix.format.type = "nixpkgs-fmt";
         markdown.enable = true;
         bash.enable = true;
         html.enable = true;
@@ -50,7 +52,10 @@ pkgs: neovimConfiguration: let
         enable = true;
         type = "nvim-cmp";
       };
-      vim.treesitter.context.enable = true;
+      vim.treesitter = {
+        context.enable = true;
+        fold = true;
+      };
       vim.keys = {
         enable = true;
         whichKey.enable = true;
@@ -69,14 +74,15 @@ pkgs: neovimConfiguration: let
       };
     };
   };
-in {
+in
+{
   dotfiles = neovimConfiguration {
-    modules = [configModule];
+    modules = [ configModule ];
     inherit pkgs;
   };
 
   neovimJD = neovimConfiguration {
-    modules = [configModule];
+    modules = [ configModule ];
     inherit pkgs;
   };
 }

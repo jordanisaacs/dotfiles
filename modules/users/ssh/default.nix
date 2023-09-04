@@ -1,12 +1,12 @@
-{
-  pkgs,
-  config,
-  lib,
-  ...
+{ pkgs
+, config
+, lib
+, ...
 }:
 with lib; let
   cfg = config.jd.ssh;
-in {
+in
+{
   options.jd.ssh = {
     enable = mkOption {
       description = "enable ssh";
@@ -36,7 +36,7 @@ in {
         };
       }
       (mkIf config.jd.impermanence.enable {
-        home.persistence.${config.jd.impermanence.backupPool}.directories = [".ssh"];
+        home.persistence.${config.jd.impermanence.backupPool}.directories = [ ".ssh" ];
       })
     ]);
 }

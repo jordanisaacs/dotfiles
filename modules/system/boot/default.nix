@@ -1,17 +1,17 @@
-{
-  pkgs,
-  config,
-  lib,
-  ...
+{ pkgs
+, config
+, lib
+, ...
 }:
 with lib; let
   cfg = config.jd.boot;
-in {
+in
+{
   options.jd.boot = {
     type = mkOption {
       description = "Type of boot. Default encrypted-efi";
       default = null;
-      type = types.enum ["uefi" "bios"];
+      type = types.enum [ "uefi" "bios" ];
     };
 
     grubDevice = mkOption {
@@ -22,7 +22,7 @@ in {
 
     modules = mkOption {
       description = "List of initrd modules";
-      default = [];
+      default = [ ];
       type = with types; listOf package;
     };
   };

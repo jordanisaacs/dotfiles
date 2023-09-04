@@ -1,22 +1,22 @@
-{
-  pkgs,
-  nixpkgs-stable,
-  nur,
-  dwm-flake,
-  deploy-rs,
-  neovim-flake,
-  st-flake,
-  dwl-flake,
-  scripts,
-  homeage,
-  system,
-  lib,
-  jdpkgs,
-  impermanence,
-  nixpkgs-wayland,
-  agenix,
-  secrets,
-  efi-power,
+{ pkgs
+, nixpkgs-stable
+, nur
+, dwm-flake
+, deploy-rs
+, neovim-flake
+, st-flake
+, dwl-flake
+, scripts
+, homeage
+, system
+, lib
+, jdpkgs
+, impermanence
+, nixpkgs-wayland
+, agenix
+, secrets
+, efi-power
+,
 }: {
   overlays = [
     nur.overlay
@@ -25,7 +25,7 @@
     scripts.overlay
 
     (self: super: {
-      waybar = nixpkgs-wayland.packages.${super.system}.waybar;
+      inherit (nixpkgs-wayland.packages.${super.system}) waybar;
 
       # Version of xss-lock that supports logind SetLockedHint
       xss-lock = super.xss-lock.overrideAttrs (old: {
@@ -45,19 +45,19 @@
       # };
 
       inherit (import ../configs/editor.nix super neovim-flake.lib.neovimConfiguration) neovimJD;
-      dwmJD = dwm-flake.packages.${system}.dwmJD;
-      stJD = st-flake.packages.${system}.stJD;
+      inherit (dwm-flake.packages.${system}) dwmJD;
+      inherit (st-flake.packages.${system}) stJD;
       weechatJD = super.weechat.override {
-        configure = {availablePlugins, ...}: {
+        configure = { availablePlugins, ... }: {
           scripts = with super.weechatScripts; [
             weechat-matrix
           ];
         };
       };
       agenix-cli = agenix.packages."${system}".default;
-      deploy-rs = deploy-rs.packages."${system}".deploy-rs;
+      inherit (deploy-rs.packages."${system}") deploy-rs;
       jdpkgs = jdpkgs.packages."${system}";
-      bm-font = super.callPackage (secrets + "/bm") {};
+      bm-font = super.callPackage (secrets + "/bm") { };
       inherit homeage impermanence;
     })
   ];

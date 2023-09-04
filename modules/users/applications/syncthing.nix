@@ -1,16 +1,16 @@
-{
-  pkgs,
-  config,
-  lib,
-  ...
+{ pkgs
+, config
+, lib
+, ...
 }:
 with lib; let
   cfg = config.jd.applications.syncthing;
-  isGraphical = let
-    graphical = config.jd.graphical;
-  in
-    graphical.xorg.enable == true || graphical.wayland.enable == true;
-  syncthingtrayv2 = pkgs.runCommand "syncthingtray-fixed" {} ''
+  isGraphical =
+    let
+      inherit (config.jd) graphical;
+    in
+    graphical.xorg.enable || graphical.wayland.enable;
+  syncthingtrayv2 = pkgs.runCommand "syncthingtray-fixed" { } ''
     mkdir $out
     cp -rs ${pkgs.syncthingtray}/* $out
 
@@ -48,7 +48,8 @@ with lib; let
       "-DBUILD_SHARED_LIBS=1"
     ];
   });
-in {
+in
+{
   options.jd.applications.syncthing = {
     enable = mkOption {
       description = "Enable syncthing";
@@ -64,15 +65,15 @@ in {
       tray.enable = false;
     };
 
-    home.packages = [syncthingtray];
+    home.packages = [ syncthingtray ];
 
     systemd.user.services = {
       "syncthingtray" = {
         Unit = {
           Description = "syncthingtray";
-          Requires = ["tray.target"];
-          After = ["graphical-session-pre.target" "tray.target"];
-          PartOf = ["graphical-session.target"];
+          Requires = [ "tray.target" ];
+          After = [ "graphical-session-pre.target" "tray.target" ];
+          PartOf = [ "graphical-session.target" ];
         };
 
         Service = {
@@ -83,7 +84,7 @@ in {
           ExecStart = "${syncthingtray}/bin/syncthingtray";
         };
 
-        Install = {WantedBy = ["tray.target"];};
+        Install = { WantedBy = [ "tray.target" ]; };
       };
     };
   };

@@ -1,13 +1,13 @@
-{
-  pkgs,
-  config,
-  lib,
-  ...
+{ pkgs
+, config
+, lib
+, ...
 }:
 with lib;
 with builtins; let
   cfg = config.jd.applications;
-in {
+in
+{
   imports = [
     ./taskwarrior.nix
     ./direnv.nix
@@ -22,7 +22,7 @@ in {
     enable = mkEnableOption "a set of common non-graphical applications";
   };
 
-  config = mkIf (cfg.enable) {
+  config = mkIf cfg.enable {
     # TTY compatible CLI applications
     home.packages = with pkgs; [
       # ssh mount
@@ -63,7 +63,7 @@ in {
       playerctl
 
       # A basic python environment
-      (python3.withPackages (ps: with ps; [pandas requests]))
+      (python3.withPackages (ps: with ps; [ pandas requests ]))
     ];
 
     services.playerctld.enable = true;
