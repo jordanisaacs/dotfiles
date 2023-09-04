@@ -8,11 +8,9 @@ with lib; let
   cfg = config.jd.graphical;
 in {
   options.jd.graphical = {
-    enable = mkOption {
-      type = types.bool;
-      default = false;
-      description = "Enable wayland";
-    };
+    enable = mkEnableOption "graphical desktop support";
+
+    flatpak.enable = mkEnableOption "flatpak application support";
   };
   config = mkIf cfg.enable (mkMerge [
     {
@@ -55,6 +53,9 @@ in {
         );
       };
     }
+    (mkIf cfg.flatpak.enable {
+      services.flatpak.enable = true;
+    })
     (mkIf config.jd.networking.wifi.enable {
       programs.captive-browser = {
         enable = true;
