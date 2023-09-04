@@ -12,7 +12,7 @@ in {
     enable = mkEnableOption "graphical applications";
   };
 
-  config = mkIf (cfg.applications.enable) {
+  config = mkIf cfg.applications.enable {
     home.packages = with pkgs;
       [
         xorg.xinput
@@ -62,6 +62,19 @@ in {
         })
       ]
       ++ lib.optional systemCfg.networking.wifi.enable pkgs.iwgtk;
+
+    xdg.desktopEntries = {
+      cider = {
+        name = "Cider";
+        genericName = "Music Streaming";
+        exec = "GDK_DPI_SCALE=1.3 cider --no-sandbox %U";
+        terminal = false;
+        icon = "Cider";
+        type = "Application";
+        categories = ["Audio" "Video"];
+        mimeType = ["x-scheme-handler/ame" "x-scheme-handler/cider" "x-scheme-handler/itms" "x-scheme-handler/itmss" "x-scheme-handler/musics" "x-scheme-handler/music"];
+      };
+    };
 
     xdg.configFile = {
       "discord/settings.json" = {
