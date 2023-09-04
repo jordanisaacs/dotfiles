@@ -234,6 +234,11 @@ in {
 
     services.dbus.implementation = "broker";
 
+    services.journald.extraConfig = ''
+      MaxRetentionSec=1month
+      SystemMaxUse=1G
+    '';
+
     documentation = {
       enable = true;
       dev.enable = true;
