@@ -9,6 +9,6 @@
     extraGroups = [ "wheel" "networkmanager" ];
     uid = 1000;
     initialPassword = "helloworld!";
-    shell = pkgs.zsh;
+    shell = pkgs.bash;
   };
 }

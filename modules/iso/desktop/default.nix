@@ -2,16 +2,24 @@
 , config
 , lib
 , ...
-}: {
-  sound.enable = true;
-  hardware.pulseaudio.enable = true;
+}:
+with lib;
+{
+  options.jd = {
+    sound = mkEnableOption "sound";
+  };
 
-  services.xserver = {
-    enable = true;
-    displayManager.sddm.enable = true;
+  config = {
+    sound.enable = config.jd.sound;
+    hardware.pulseaudio.enable = config.jd.sound;
 
-    desktopManager.plasma5 = {
+    services.xserver = {
       enable = true;
+      displayManager.sddm.enable = true;
+
+      desktopManager.plasma5 = {
+        enable = true;
+      };
     };
   };
 }

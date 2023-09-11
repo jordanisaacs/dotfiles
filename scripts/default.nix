@@ -132,13 +132,15 @@ let
           pushd ~/.dotfiles
           nix build ".#installMedia.$2.config.system.build.isoImage"
 
+          file=$(find $(pwd)/result/iso -type f | head -1)
+
           if [ -z "$3" ]; then
-            echo "ISO Image is located at ~/.dotfiles/result/iso/nixos.iso"
+            echo "ISO Image is located at $file"
           elif [ $3 = "--burn" ]; then
             if [ -z "$4" ]; then
               echo "Expected path to a usb drive following --burn"
             else
-              sudo dd if=./result/iso/nixos.iso of=$4 status=progress bs=1M
+              sudo dd if=$file of=$4 status=progress bs=1M
             fi
           else
             echo "Unexpected option $3. Expected --burn"

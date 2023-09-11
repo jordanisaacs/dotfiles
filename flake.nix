@@ -511,12 +511,17 @@
     {
       installMedia = {
         kde = host.mkISO {
-          name = "nixos";
-          kernelPackage = pkgs.linuxPackages_latest;
-          initrdMods = [ "xhci_pci" "ahci" "usb_storage" "sd_mod" "nvme" "usbhid" ];
-          kernelMods = [ "kvm-intel" "kvm-amd" ];
-          kernelParams = [ ];
-          systemConfig = { };
+          name = "kde-nixos";
+          systemConfig = {
+            sound = true;
+          };
+        };
+        yubikey = host.mkISO {
+          name = "yubikey-nixos";
+          systemConfig = {
+            airgap = true;
+            yubikey = true;
+          };
         };
       };
 

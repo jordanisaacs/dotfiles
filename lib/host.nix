@@ -11,12 +11,7 @@ with builtins;
 with utils; {
   mkISO =
     { name
-    , initrdMods
-    , kernelMods
-    , kernelParams
-    , kernelPackage
-    , systemConfig
-    ,
+    , systemConfig ? { }
     }:
     lib.nixosSystem {
       inherit system;
@@ -24,12 +19,12 @@ with utils; {
       specialArgs = { };
 
       modules = [
+        (import ../modules/iso)
         {
-          imports = [ ../modules/iso ];
+          jd = systemConfig;
 
           networking.hostName = "${name}";
-          networking.networkmanager.enable = true;
-          networking.useDHCP = false;
+          isoImage.isoName = "${name}";
 
           nixpkgs.pkgs = pkgs;
         }

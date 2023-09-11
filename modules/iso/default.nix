@@ -7,5 +7,6 @@
     ./core
     ./user
     ./desktop
+    ./yubikey
   ];
 }
