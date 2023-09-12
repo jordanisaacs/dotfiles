@@ -261,12 +261,12 @@ in
                 then toString v
                 else if isString v
                 then v
+                else if isSecret v
+                then hashString "sha256" v._secret
                 else if v
                 then "true"
                 else if !v
                 then "false"
-                else if isSecret v
-                then hashString "sha256" v._secret
                 else throw "unsupported type ${typeOf v}: ${(generators.toPretty {}) v}";
             };
           };
@@ -276,7 +276,7 @@ in
           '';
           secretReplacements = concatMapStrings mkSecretReplacement secretPaths;
           filteredConfig = converge (filterAttrsRecursive (_: v: ! elem v [{ } null])) cfg.config;
-          fireflyEnv = pkgs.writeText "firefly-iii.env" (fireflyEnvVars filteredConfig);
+          fireflyEnv = pkgs.writeText "firefly-iii.env" (fireflyEnvVars (builtins.trace filteredConfig filteredConfig));
         in
         ''
           set -euo pipefail
