@@ -29,7 +29,6 @@ in
       programs.dconf.enable = true;
       # Fixes the org.a11y.Bus not provided by .service file error
       services.gnome.at-spi2-core.enable = true;
-      # services.dbus.implementation = "broker";
     }
     (mkIf cfg.keyring.enable {
       environment.systemPackages = [ pkgs.libsecret ];

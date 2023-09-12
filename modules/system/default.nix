@@ -1,6 +1,5 @@
 { inputs
 , patchedPkgs
-,
 }: { pkgs
    , config
    , lib
