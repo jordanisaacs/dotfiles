@@ -67,5 +67,25 @@ in
     ];
 
     services.playerctld.enable = true;
+
+    systemd.user.timers."nix-index" = {
+      Unit = {
+        Description = "Run nix-index weekly";
+      };
+      Timer = {
+        OnCalendar = "weekly";
+        Persistent = true;
+      };
+    };
+    systemd.user.services."nix-index" = {
+      Unit = {
+        Description = "Update nix-index";
+      };
+      Service = {
+        ExecStart = "${pkgs.nix-index}/bin/nix-index";
+        Type = "oneshot";
+        Restart = "on-abort";
+      };
+    };
   };
 }

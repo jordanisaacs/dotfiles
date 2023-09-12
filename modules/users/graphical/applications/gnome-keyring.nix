@@ -8,12 +8,13 @@ with lib; let
 in
 {
   options.jd.graphical.applications.gnome-keyring = {
-    enable = mkEnableOption "gnome-keyring with ssh support";
+    enable = mkEnableOption "gnome-keyring";
+    enableSSH = mkEnableOption "ssh support";
   };
 
   config = mkIf ((cfg.xorg.enable || cfg.wayland.enable) && cfg.applications.gnome-keyring.enable) {
     home = {
-      sessionVariables = {
+      sessionVariables = mkIf cfg.applications.gnome-keyring.enableSSH {
         SSH_AUTH_SOCK = "\${XDG_RUNTIME_DIR}/keyring/ssh";
         SSH_ASKPASS = "${pkgs.gnome.seahorse}/libexec/seahorse/ssh-askpass";
       };

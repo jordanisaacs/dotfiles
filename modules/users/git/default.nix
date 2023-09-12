@@ -27,9 +27,15 @@ in
     };
 
     signByDefault = mkOption {
-      description = "GPG signing key for git";
+      description = "Sign commits by default";
       type = types.bool;
       default = true;
+    };
+
+    signWith = mkOption {
+      description = "Sign with [ssh gpg]";
+      type = types.enum [ "ssh" "gpg" ];
+      default = "gpg";
     };
 
     allowedSignerFile = mkOption {
@@ -47,7 +53,8 @@ in
       extraConfig = {
         commit.gpgSign = cfg.signByDefault;
         gpg = {
-          format = "ssh";
+          program = "${pkgs.gnupg}/bin/gpg";
+          format = mkIf (cfg.signWith == "ssh") "ssh";
           ssh = {
             defaultKeyCommand = "${pkgs.openssh}/bin/ssh-add -L";
             program = "${pkgs.openssh}/bin/ssh-keygen";

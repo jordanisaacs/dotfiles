@@ -29,8 +29,6 @@ in
         home = {
           sessionVariables = {
             QT_QPA_PLATFORMTHEME = "qt5ct";
-            SSH_AUTH_SOCK = ''''${XDG_RUNTIME_DIR}/keyring/ssh'';
-            SSH_ASKPASS = "${pkgs.gnome.seahorse}/libexec/seahorse/ssh-askpass";
           };
 
           packages = with pkgs; [

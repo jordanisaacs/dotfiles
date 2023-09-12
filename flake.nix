@@ -159,7 +159,8 @@
       };
 
       authorizedKeys = ''
-        ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPKIspidvrzy1NFoUXMEs1A2Wpx3E8nxzCKGZfBXyezV mail@jdisaacs.com
+        mail@jdisaacs.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPKIspidvrzy1NFoUXMEs1A2Wpx3E8nxzCKGZfBXyezV
+        jordan@snowytrees.dev ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPKIspidvrzy1NFoUXMEs1A2Wpx3E8nxzCKGZfBXyezV
       '';
 
       authorizedKeyFiles = pkgs.writeTextFile {
@@ -569,12 +570,12 @@
             };
             shell = "bash";
             secrets.identityPaths = [ secrets.age.framework.jd.privateKeyPath ];
+            ssh.enable = true;
             gpg.enable = true;
             git = {
               enable = true;
               allowedSignerFile = builtins.toString authorizedKeyFiles;
             };
-            ssh.enable = true;
             weechat.enable = true;
             office365 = {
               enable = false;
