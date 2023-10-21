@@ -18,6 +18,7 @@ in
     ./neomutt.nix
     ./readline.nix
     ./lnav.nix
+    ./tmux.nix
   ];
 
   options.jd.applications = {

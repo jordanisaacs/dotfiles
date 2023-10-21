@@ -569,6 +569,7 @@
               neomutt.enable = true;
               neovim.enable = true;
               lnav.enable = true;
+              tmux.enable = true;
             };
             shell = "bash";
             # secrets.identityPaths = [ secrets.age.framework.jd.privateKeyPath ];
