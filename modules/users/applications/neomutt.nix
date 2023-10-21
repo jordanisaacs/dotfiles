@@ -15,7 +15,7 @@ in
     };
   };
 
-  config = mkIf (config.jd.applications.enable && cfg.enable) {
+  config = mkIf cfg.enable {
     programs.neomutt = {
       enable = true;
     };

@@ -13,6 +13,18 @@ in
       default = false;
       description = "Enable firefox with config [firefox]";
     };
+
+    videoDownloader = mkOption {
+      type = types.bool;
+      default = true;
+      description = "Enable video downloader [vdho]";
+    };
+
+    vim.enable = mkOption {
+      type = types.bool;
+      default = true;
+      description = "Enable vim navigation [tridactyl]";
+    };
   };
 
   config = mkIf cfg.firefox.enable (mkMerge [
@@ -38,7 +50,9 @@ in
       programs.firefox = {
         enable = true;
         package = pkgs.wrapFirefox pkgs.firefox-devedition-unwrapped {
-          extraNativeMessagingHosts = with pkgs.nur.repos.wolfangaukang; [ vdhcoapp ];
+          extraNativeMessagingHosts =
+            optional cfg.firefox.videoDownloader pkgs.nur.repos.wolfangaukang.vdhcoapp
+            ++ optional cfg.firefox.vim.enable pkgs.tridactyl-native;
         };
         profiles = {
           personal = {
@@ -155,7 +169,7 @@ in
               # Youtube
               sponsorblock
               return-youtube-dislikes
-            ];
+            ] ++ optional cfg.firefox.vim.enable tridactyl;
             settings =
               let
                 newTab =

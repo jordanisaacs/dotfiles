@@ -8,14 +8,10 @@ with lib; let
 in
 {
   options.jd.applications.neovim = {
-    enable = mkOption {
-      description = "Enable direnv";
-      type = types.bool;
-      default = false;
-    };
+    enable = mkEnableOption "neovim-flake";
   };
 
-  config = mkIf (config.jd.applications.enable && cfg.enable) {
+  config = mkIf cfg.enable {
     home = {
       packages = [ pkgs.neovimJD ];
 

@@ -1,4 +1,5 @@
 { pkgs
+, secrets
 , nixpkgs-stable
 , nur
 , dwm-flake
@@ -14,9 +15,7 @@
 , impermanence
 , nixpkgs-wayland
 , agenix
-, secrets
 , efi-power
-,
 }: {
   overlays = [
     nur.overlay

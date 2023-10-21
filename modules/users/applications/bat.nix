@@ -5,7 +5,7 @@
 }:
 with lib;
 with builtins; let
-  cfg = config.jd.applications;
+  cfg = config.jd.applications.bat;
 in
 {
   options.jd.applications.bat = {
@@ -14,8 +14,8 @@ in
     man = mkEnableOption "Use bat for rendering manpages";
   };
 
-  config = mkIf (cfg.enable && cfg.bat.enable) {
-    home.sessionVariables = mkIf cfg.bat.man {
+  config = mkIf cfg.enable {
+    home.sessionVariables = mkIf cfg.man {
       MANPAGER = "sh -c 'col -bx | bat -l man -p'";
     };
 

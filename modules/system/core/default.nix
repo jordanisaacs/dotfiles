@@ -134,7 +134,6 @@ in
         zsh
 
         # Files
-        exa
         unzip
         lsof
 
@@ -169,10 +168,12 @@ in
         # secrets
         rage
         agenix-cli
+        pass
 
         # Processors
         jq
         htmlq
+        dasel
 
         ripgrep
         gawk
@@ -200,7 +201,7 @@ in
         nix-tree
         nix-diff
         nix-prefetch
-        deploy-rs
+        # deploy-rs
         manix
         comma
 

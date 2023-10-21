@@ -9,5 +9,5 @@ in
 {
   options.jd.applications.tldr.enable = mkEnableOption "tldr";
 
-  config.programs.tealdeer.enable = mkIf config.jd.applications.enable cfg.enable;
+  config.programs.tealdeer.enable = cfg.enable;
 }

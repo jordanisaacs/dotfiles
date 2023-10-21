@@ -66,6 +66,7 @@
 
   outputs =
     { self
+    , secrets
     , nixpkgs
     , nixpkgs-stable
     , jdpkgs
@@ -73,7 +74,6 @@
     , deploy-rs
     , agenix
     , nixpkgs-wayland
-    , secrets
     , home-manager
     , nur
     , neovim-flake
@@ -99,6 +99,7 @@
         (import ./overlays {
           inherit
             system
+            secrets
             pkgs
             lib
             nur
@@ -115,7 +116,6 @@
             agenix
             nixpkgs-wayland
             nixpkgs-stable
-            secrets
             ;
         })
         overlays
@@ -168,94 +168,94 @@
         text = authorizedKeys;
       };
 
-      wireguardConf = {
-        enable = true;
-        interface = "thevoid";
-        peers = {
-          intothevoid =
-            let
-              wgsecret = secrets.wireguard.intothevoid;
-            in
-            {
-              wgAddrV4 = "10.55.1.1";
-              inherit (wgsecret) publicKey;
+      # wireguardConf = {
+      #   enable = true;
+      #   interface = "thevoid";
+      #   peers = {
+      #     intothevoid =
+      #       let
+      #         wgsecret = secrets.wireguard.intothevoid;
+      #       in
+      #       {
+      #         wgAddrV4 = "10.55.1.1";
+      #         inherit (wgsecret) publicKey;
 
-              tags = [{ name = "net"; }];
-            };
+      #         tags = [{ name = "net"; }];
+      #       };
 
-          chairlift =
-            let
-              wgsecret = secrets.wireguard.chairlift;
-            in
-            {
-              wgAddrV4 = "10.55.0.2";
-              interfaceMask = 16;
-              listenPort = 51820;
+      #     chairlift =
+      #       let
+      #         wgsecret = secrets.wireguard.chairlift;
+      #       in
+      #       {
+      #         wgAddrV4 = "10.55.0.2";
+      #         interfaceMask = 16;
+      #         listenPort = 51820;
 
-              privateKeyPath = "/etc/wireguard/private_key";
-              privateKeyAge = wgsecret.secret.file;
-              inherit (wgsecret) publicKey;
-              dns = "server";
+      #         privateKeyPath = "/etc/wireguard/private_key";
+      #         privateKeyAge = wgsecret.secret.file;
+      #         inherit (wgsecret) publicKey;
+      #         dns = "server";
 
-              tags = [
-                {
-                  name = "net";
-                  ipAddr = "5.161.103.90";
-                }
-              ];
-            };
+      #         tags = [
+      #           {
+      #             name = "net";
+      #             ipAddr = "5.161.103.90";
+      #           }
+      #         ];
+      #       };
 
-          framework =
-            let
-              wgsecret = secrets.wireguard.framework;
-            in
-            {
-              wgAddrV4 = "10.55.1.2";
-              interfaceMask = 16;
-              listenPort = 51820;
+      #     framework =
+      #       let
+      #         wgsecret = secrets.wireguard.framework;
+      #       in
+      #       {
+      #         wgAddrV4 = "10.55.1.2";
+      #         interfaceMask = 16;
+      #         listenPort = 51820;
 
-              privateKeyPath = "/etc/wireguard/private_key";
-              privateKeyAge = wgsecret.secret.file;
-              inherit (wgsecret) publicKey;
-              dns = "client";
+      #         privateKeyPath = "/etc/wireguard/private_key";
+      #         privateKeyAge = wgsecret.secret.file;
+      #         inherit (wgsecret) publicKey;
+      #         dns = "client";
 
-              tags = [
-                {
-                  name = "home";
-                  ipAddr = "172.26.40.247";
-                }
-                { name = "net"; }
-              ];
-            };
+      #         tags = [
+      #           {
+      #             name = "home";
+      #             ipAddr = "172.26.40.247";
+      #           }
+      #           { name = "net"; }
+      #         ];
+      #       };
 
-          desktop =
-            let
-              wgsecret = secrets.wireguard.desktop;
-            in
-            {
-              wgAddrV4 = "10.55.0.1";
-              interfaceMask = 16;
-              listenPort = 51820;
-              dns = "client";
+      #     desktop =
+      #       let
+      #         wgsecret = secrets.wireguard.desktop;
+      #       in
+      #       {
+      #         wgAddrV4 = "10.55.0.1";
+      #         interfaceMask = 16;
+      #         listenPort = 51820;
+      #         dns = "client";
 
-              firewall = {
-                allowedTCPPorts = [ 8080 ];
-              };
+      #         firewall = {
+      #           allowedTCPPorts = [ 8080 ];
+      #         };
 
-              privateKeyPath = "/etc/wireguard/private_key";
-              privateKeyAge = wgsecret.secret.file;
-              inherit (wgsecret) publicKey;
+      #         privateKeyPath = "/etc/wireguard/private_key";
+      #         privateKeyAge = wgsecret.secret.file;
+      #         inherit (wgsecret) publicKey;
 
-              tags = [
-                {
-                  name = "home";
-                  ipAddr = "172.26.26.90";
-                }
-                { name = "net"; }
-              ];
-            };
-        };
-      };
+      #         tags = [
+      #           {
+      #             name = "home";
+      #             ipAddr = "172.26.26.90";
+      #           }
+      #           { name = "net"; }
+      #         ];
+      #       };
+      #   };
+      # };
 
       defaultUser = {
         name = "jd";
@@ -291,14 +291,14 @@
       gondolaConfig = utils.recursiveMerge [
         defaultServerConfig
         {
-          users.rootPassword = secrets.passwords.gondola;
+          # users.rootPassword = secrets.passwords.gondola;
           isQemuGuest = true;
           boot.grubDevice = "/dev/vda";
           kernel.initrdMods = [ "sr_mod" "ata_piix" "virtio_pci" "virtio_scsi" "virtio_blk" "virtio_net" ];
 
           fs.hostId = "fe120267";
 
-          secrets.identityPaths = [ secrets.age.gondola.privateKeyPath ];
+          # secrets.identityPaths = [ secrets.age.gondola.privateKeyPath ];
           networking = {
             static = {
               enable = true;
@@ -310,7 +310,7 @@
           };
           ssh = {
             firewall = "world";
-            hostKeyAge = secrets.ssh.host.gondola.secret.file;
+            # hostKeyAge = secrets.ssh.host.gondola.secret.file;
           };
         }
       ];
@@ -318,7 +318,7 @@
       chairliftConfig = utils.recursiveMerge [
         defaultServerConfig
         {
-          users.rootPassword = secrets.passwords.chairlift;
+          # users.rootPassword = secrets.passwords.chairlift;
           isQemuGuest = true;
           boot.grubDevice = "/dev/sda";
           kernel.initrd = [ "sd_mod" "sr_mod" "ahci" "xhci_pci" ];
@@ -329,8 +329,8 @@
               enable = true;
             };
           };
-          secrets.identityPaths = [ secrets.age.chairlift.privateKeyPath ];
-          wireguard = wireguardConf;
+          # secrets.identityPaths = [ secrets.age.chairlift.privateKeyPath ];
+          # wireguard = wireguardConf;
           networking = {
             static = {
               enable = true;
@@ -345,9 +345,9 @@
           };
           ssh = {
             firewall = "wg";
-            hostKeyAge = secrets.ssh.host.chairlift.secret.file;
+            # hostKeyAge = secrets.ssh.host.chairlift.secret.file;
           };
-          acme.email = secrets.acme.email;
+          # acme.email = secrets.acme.email;
           monitoring.enable = false;
           microbin.enable = true;
           calibre.web.enable = true;
@@ -356,22 +356,22 @@
             discovery.enable = false;
           };
           languagetool.enable = false;
-          mailserver = with secrets.mailserver; {
-            enable = true;
-            inherit fqdn sendingFqdn domains;
-            loginAccounts =
-              builtins.mapAttrs
-                # deadnix: skip
-                (name: value: {
-                  hashedPasswordFile = value.hashedPassword.secret.file;
-                  inherit (value) aliases;
-                  sendOnly = lib.mkIf (value ? sendOnly) value.sendOnly;
-                })
-                loginAccounts;
-          };
+          # mailserver = with secrets.mailserver; {
+          #   enable = true;
+          #   inherit fqdn sendingFqdn domains;
+          #   loginAccounts =
+          #     builtins.mapAttrs
+          #       # deadnix: skip
+          #       (name: value: {
+          #         hashedPasswordFile = value.hashedPassword.secret.file;
+          #         inherit (value) aliases;
+          #         sendOnly = lib.mkIf (value ? sendOnly) value.sendOnly;
+          #       })
+          #       loginAccounts;
+          # };
           miniflux = {
             enable = true;
-            adminCredsFile = secrets.miniflux.adminCredentials.secret.file;
+            # adminCredsFile = secrets.miniflux.adminCredentials.secret.file;
           };
           taskserver = {
             enable = true;
@@ -452,15 +452,16 @@
             hostId = "f5db52d8";
           };
 
-          core.time = "east";
+          core.time = null;
           users.mutableUsers = false;
 
           desktop.enable = true;
-          impermanence.enable = true;
           greetd.enable = true;
-          wireguard = wireguardConf;
-          waydroid.enable = true;
-          secrets.identityPaths = [ secrets.age.desktop.system.privateKeyPath ];
+          # TODO: enable impermanence again
+          impermanence.enable = false;
+          # wireguard = wireguardConf;
+          # waydroid.enable = true;
+          # secrets.identityPaths = [ secrets.age.desktop.system.privateKeyPath ];
         }
       ];
 
@@ -470,7 +471,7 @@
           boot.type = "uefi";
           fs.type = "encrypted-efi";
           laptop.enable = true;
-          secrets.identityPaths = [ "" ];
+          # secrets.identityPaths = [ "" ];
           networking.interfaces = [ "enp0s31f6" ];
           kernel.initrd = [ "xhci_pci" "nvme" "usb_storage" "sd_mod" "rtsx_pci_sdmmc" ];
           kernel.mods = [ "kvm-intel" ];
@@ -501,7 +502,8 @@
             };
           };
           # wireguard = wireguardConf;
-          secrets.identityPaths = [ secrets.age.framework.system.privateKeyPath ];
+          # secrets.identityPaths = [ secrets.age.framework.system.privateKeyPath ];
+          # secrets.identityPaths = [ "" ];
           firefly-iii = {
             enable = true;
             appKeyFile = "/var/lib/firefly-iii/firefly-iii-appkey";
@@ -561,15 +563,15 @@
             };
             applications = {
               enable = true;
-              bat.enable = true;
               direnv.enable = true;
               tldr.enable = true;
               syncthing.enable = true;
               neomutt.enable = true;
               neovim.enable = true;
+              lnav.enable = true;
             };
             shell = "bash";
-            secrets.identityPaths = [ secrets.age.framework.jd.privateKeyPath ];
+            # secrets.identityPaths = [ secrets.age.framework.jd.privateKeyPath ];
             ssh.enable = true;
             gpg.enable = true;
             git = {

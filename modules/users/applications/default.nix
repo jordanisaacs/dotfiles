@@ -16,6 +16,8 @@ in
     ./syncthing.nix
     ./neovim.nix
     ./neomutt.nix
+    ./readline.nix
+    ./lnav.nix
   ];
 
   options.jd.applications = {

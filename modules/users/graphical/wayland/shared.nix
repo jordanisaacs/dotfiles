@@ -116,7 +116,7 @@ in
         type = types.package;
         default =
           if isDwl
-          then builtins.trace "override waybar" pkgs.waybar.override { swaySupport = false; }
+          then builtins.trace "override waybar" pkgs.waybar.override { swaySupport = false; hyperlandSupport = false; }
           else builtins.trace "standard waybar" pkgs.waybar;
         description = "Waybar package";
       };

@@ -59,7 +59,7 @@ in
     let
       path = config.programs.taskwarrior.dataLocation;
     in
-    mkIf (config.jd.applications.enable && cfg.enable)
+    mkIf cfg.enable
       {
         programs.taskwarrior = {
           enable = true;
