@@ -19,6 +19,7 @@ in
     ./readline.nix
     ./lnav.nix
     ./tmux.nix
+    ./podman.nix
   ];
 
   options.jd.applications = {

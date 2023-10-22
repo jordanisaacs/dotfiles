@@ -17,5 +17,6 @@
     ./languagetool
     ./calibre
     ./firefly-iii
+    ./podman
   ];
 }

@@ -434,6 +434,10 @@
           };
           flatpak.enable = true;
         };
+        podman = {
+          enable = true;
+          users = [ "jd" ];
+        };
         ssh = {
           enable = true;
           type = "client";
