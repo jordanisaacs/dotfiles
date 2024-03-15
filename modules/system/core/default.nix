@@ -83,8 +83,9 @@ in
           dates = "weekly";
           options = "--delete-older-than 14d";
         };
+        optimise.automatic = true;
         extraOptions = ''
-          keep-outputs = true
+          keep-outputs = false
           keep-derivations = true
           experimental-features = nix-command flakes
         '';
@@ -148,7 +149,6 @@ in
 
         # Kernel
         systeroid
-        strace
 
         # Network
         gping # ping with graph

@@ -202,6 +202,8 @@ in
                 telemetry = {
                   "browser.newtabpage.activity-stream.telemetry" = false;
                   "browser.newtabpage.activity-stream.feeds.telemetry" = false;
+                  "browser.newtabpage.activity-stream.asrouter.userprefs.cfr.addons" = false;
+                  "browser.newtabpage.activity-stream.asrouter.userprefs.cfr.features" = false;
                   "browser.ping-centre.telemetry" = false;
                   "toolkit.telemetry.reportingpolicy.firstRun" = false;
                   "toolkit.telemetry.unified" = false;
@@ -247,9 +249,6 @@ in
                   "widget.use-xdg-desktop-portal.file-picker" = 2;
                   "widget.use-xdg-desktop-portal.mime-handler" = 2;
                   "browser.aboutConfig.showWarning" = false;
-                  "browser.tabs.warnOnClose" = true;
-                  "browser.tabs.warnOnCloseOtherTabs" = true;
-                  "browser.warnOnQuit" = true;
                   "browser.shell.checkDefaultBrowser" = false;
                   "extensions.htmlaboutaddons.inline-options.enabled" = false;
                   "extensions.htmlaboutaddons.recommendations.enabled" = false;
@@ -258,6 +257,15 @@ in
                   "browser.contentblocking.category" = "standard";
                   # "browser.display.use_document_fonts" = 0; Using enable-browser-fonts extension instead
                   "xpinstall.signatures.required" = false; # for bypass-payawlls
+                  # Open links in same tab
+                  # https://www.reddit.com/r/firefox/comments/10mms5y/is_there_any_way_to_make_it_where_links_dont_open/
+                  "browser.link.open_newwindow" = 1;
+                  "browser.link.open_newwindow.override.external" = 3;
+                  # warn on quit
+                  "browser.warnOnQuit" = true;
+                  "browser.warnOnQuitShortcut" = true;
+                  "browser.tabs.warnOnClose" = true;
+                  "browser.tabs.warnOnCloseOtherTabs" = true;
                 };
 
                 toolbars = {
@@ -267,6 +275,7 @@ in
                 };
 
                 passwords = {
+                  "extensions.formautofill.addresses.enabled" = false;
                   "signon.rememberSignons" = false;
                   "signon.autofillForms" = false;
                   "signon.generation.enabled" = false;
@@ -276,6 +285,11 @@ in
                 downloads = {
                   "browser.download.useDownloadDir" = false;
                   "browser.download.always_ask_before_handling_new_types" = true;
+                };
+
+                cookies = {
+                  "cookiebanners.service.mode" = 1;
+                  "cookiebanners.service.mode.privateBrowsing" = 1;
                 };
               in
               generalSettings
@@ -288,7 +302,8 @@ in
               // telemetry
               // graphics
               // downloads
-              // toolbars;
+              // toolbars
+              // cookies;
           };
         };
       };

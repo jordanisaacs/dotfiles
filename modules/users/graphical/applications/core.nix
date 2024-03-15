@@ -49,10 +49,8 @@ in
         pavucontrol
         pasystray
 
-        # music
-        cider
-
         # kdeconnect
+        tlaplusToolbox
 
         # Utilities
         # firmware-manager - need to wait for polkit support

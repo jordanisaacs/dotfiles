@@ -17,6 +17,7 @@
     jdpkgs.inputs.nixpkgs.follows = "nixpkgs";
 
     # Extra nix/nixos modules
+    dwarffs.url = "github:edolstra/dwarffs";
     impermanence.url = "github:nix-community/impermanence";
 
     disko.url = "github:nix-community/disko";
@@ -62,6 +63,9 @@
 
     efi-power.url = "github:jordanisaacs/efi-power";
     efi-power.inputs.nixpkgs.follows = "nixpkgs";
+
+    emacs-config.url = "github:jordanisaacs/emacs-config";
+    emacs-config.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs =
@@ -443,6 +447,7 @@
           type = "client";
         };
         extraContainer.enable = false;
+        debug.enable = true;
       };
 
       desktopConfig = utils.recursiveMerge [

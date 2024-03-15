@@ -68,6 +68,9 @@ in
 
       # A basic python environment
       (python3.withPackages (ps: with ps; [ pandas requests ]))
+
+      # accounting
+      beancount
     ];
 
     services.playerctld.enable = true;

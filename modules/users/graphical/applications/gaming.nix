@@ -12,6 +12,9 @@ with lib; let
     cfg.xorg.enable || cfg.wayland.enable;
 
   retroArch = pkgs.retroarch.override {
+    # retroarch = pkgs.retroarchBare.override {
+    #   withGamemode = false;
+    # };
     cores = with pkgs.libretro; [
       dolphin
       citra
@@ -25,6 +28,7 @@ with lib; let
         additionalLibs = with pkgs;
           if stdenv.hostPlatform.is64bit
           then [ pkgs.mesa.drivers ] ++ [
+            # todo match better with system config
             intel-media-driver
             libvdpau-va-gl
             vaapiIntel
@@ -49,7 +53,7 @@ in
 
   config = mkIf (isGraphical && cfg.enable && cfg.gaming.enable) {
     home.packages = [
-      retroArch
+      # retroArch [was coredumping :(]
       steam
       steam.run
       pkgs.gamescope

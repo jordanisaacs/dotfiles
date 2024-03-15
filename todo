@@ -11,32 +11,15 @@ Flake Refactors:
 Overall: 
     [ ] Systemd service hardening
         - https://bertptrs.nl/2021/09/05/securely-passing-secrets-to-dynamicuser-systemd-services.html
-    [ ] Systemd stage 1 (blocked on networking support)
-        - Stage 1 status - https://github.com/NixOS/nixpkgs/projects/51
     [!] DynamicUser=yes and reading files for systemd - breaks syncthing services
         - Switch to dynamic users with systemd credentials
 
 Private Cloud:
     Network:
-        [ ] Switch to knot resolver
-            [ ] Blocklists module
-            [ ] Wireguard module - see wanted programs
         [ ] Vector.dev topology
     Gondola:
         [ ] Grafana instance that pulls from vector logs
     Chairlift:
-        [x] Public mailserver (simple-nixos-mailserver)
-        [x] Private recursing DNS with domains (unbound)
-        [-] Nginx reverse proxy
-            [-] Services
-                [x] Nginx Status Page
-                [x] RSS Reader -  Miniflux
-                [x] Todo List - taskwarrior sync
-                [-] Budgeting - Firefly iii
-                [ ] Personal CRM (also todo replacement?) - monicahq/chandler
-                [ ] Recipes/Cooking - Tandoor recipes
-                [ ] Monitoring? Program TBD
-            [ ] Subdomains
 
 Public Cloud:
     Gondola:
@@ -67,10 +50,6 @@ General:
     System:
         [ ] Get waydroid running
         [ ] Get windows 10 QEMU working
-        [x] Systemd boot & plymouth
-        [x] Greetd/tuigreet
-            [x] kernel logs and fprintd output make tuigreet go visually insane - fixed
-            [x] fix session configurations
         [ ] Printer/wifi secrets with agenix
 
     User:
@@ -84,7 +63,6 @@ General:
             [ ] valid-before/after SSH signing file
             [ ] Bitwarden ssh-agent python script
         [ ] Eww widgets
-
 
 Programs I want:
     [ ] CLI libsecret

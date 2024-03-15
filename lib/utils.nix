@@ -42,13 +42,30 @@ with lib; rec {
   optionIsTrue = config: path: (attrByPath path false config);
 
   # Enable a module if attribute exists and is activated, along with importing the respective config
-  enableModuleConfig = config: module: folder: { path, activate }:
-    if (attrByPath (path ++ activate) false config)
-    then [
-      module
-      (import (self + folder + (lib.concatStringsSep "/" path)))
-    ]
-    else [{ }];
+  enableModuleConfig = { module ? null, config ? null, attrPath, enable ? [ ], keepAttr ? true }: input:
+    let
+      isEnabled = attrByPath (attrPath ++ enable) false input.config;
+      outConfig =
+        if (!isEnabled || !keepAttr) then
+          removeAttrByPath attrPath input.config
+        else
+          input.config;
+
+      outModules =
+        if isEnabled then
+          optional (module != null) module ++
+          optional (config != null) (
+            if (isString config) then
+              (import (self + "/" + config))
+            else config
+          )
+        else
+          [ ];
+    in
+    {
+      config = outConfig;
+      extraModules = input.extraModules ++ outModules;
+    };
 
   # Remove the module options from systemConfig if the module is not activated
   removeModuleOptions = { path, activate }: config:

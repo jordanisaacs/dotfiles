@@ -36,7 +36,6 @@ with utils; {
     , systemConfig
     , cpuCores
     , stateVersion
-    , wifi ? [ ]
     , passthru ? { }
     , gpuTempSensor ? null
     , cpuTempSensor ? null
@@ -44,20 +43,42 @@ with utils; {
     }:
     let
       enable = [ "enable" ];
-      impermanencePath = [ "impermanence" ];
-      qemuPath = [ "isQemuGuest" ];
-      moduleFolder = "/modules/system/";
+      moduleFolder = "modules/system/";
 
-      systemConfigStripped =
-        removeModuleOptions
-          {
-            path = impermanencePath;
-            activate = enable;
-          }
-          (removeAttrByPath qemuPath systemConfig);
+      toplevelModules = [
+        {
+          attrPath = [ "isQemuGuest" ];
+          module = import (inputs.nixpkgs + "/nixos/modules/profiles/qemu-guest.nix");
+          config = {
+            services.qemuGuest.enable = true;
+          };
+        }
+        {
+          attrPath = [ "impermanence" ];
+          inherit enable;
+        }
+        {
+          attrPath = [ "debug" ];
+          inherit enable;
+          module = inputs.dwarffs.nixosModules.dwarffs;
+          config = moduleFolder + "debug";
+        }
+      ];
 
-      systemEnableModule = enableModule systemConfig;
-      systemEnableModuleConfig = enableModuleConfig systemConfigStripped;
+      finalConfig = foldl'
+        (accum: toplevel:
+          enableModuleConfig toplevel accum
+        )
+        {
+          config = systemConfig;
+          extraModules = [
+            inputs.agenix.nixosModules.age
+            inputs.simple-nixos-mailserver.nixosModule
+            inputs.impermanence.nixosModule
+            passthru
+          ];
+        }
+        toplevelModules;
 
       userCfg = {
         inherit name systemConfig cpuCores gpuTempSensor cpuTempSensor;
@@ -70,9 +91,7 @@ with utils; {
         [
           (import ../modules/system { inherit inputs patchedPkgs; })
           {
-            jd = systemConfigStripped;
-
-            services.qemuGuest.enable = lib.mkIf (optionIsTrue systemConfig qemuPath) true;
+            jd = finalConfig.config;
 
             system.stateVersion = stateVersion;
 
@@ -85,11 +104,7 @@ with utils; {
             nixpkgs.pkgs = pkgs;
             nix.settings.max-jobs = lib.mkDefault cpuCores;
           }
-          inputs.agenix.nixosModules.age
-          inputs.simple-nixos-mailserver.nixosModule
-          inputs.impermanence.nixosModule
-          passthru
         ]
-        ++ (systemEnableModule (import (inputs.nixpkgs + "/nixos/modules/profiles/qemu-guest.nix")) qemuPath);
+        ++ finalConfig.extraModules;
     };
 }
