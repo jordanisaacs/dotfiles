@@ -15,6 +15,8 @@ in
 
   config = mkMerge [
     {
+      services.pcscd.enable = true;
+      services.udev.packages = [ pkgs.ccid-udev ];
       age.identityPaths = cfg.identityPaths;
     }
     (mkIf config.jd.impermanence.enable {

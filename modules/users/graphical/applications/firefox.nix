@@ -5,6 +5,7 @@
 }:
 with lib; let
   cfg = config.jd.graphical.applications;
+  firefoxPkg = if cfg.firefox.useDevEdition then pkgs.firefox-devedition-unwrapped else pkgs.firefox-unwrapped;
 in
 {
   options.jd.graphical.applications.firefox = {
@@ -12,6 +13,12 @@ in
       type = types.bool;
       default = false;
       description = "Enable firefox with config [firefox]";
+    };
+
+    useDevEdition = mkOption {
+      type = types.bool;
+      default = false;
+      description = "Use firefox dev edition [firefox]";
     };
 
     videoDownloader = mkOption {
@@ -22,7 +29,7 @@ in
 
     vim.enable = mkOption {
       type = types.bool;
-      default = true;
+      default = false;
       description = "Enable vim navigation [tridactyl]";
     };
   };
@@ -49,8 +56,8 @@ in
 
       programs.firefox = {
         enable = true;
-        package = pkgs.wrapFirefox pkgs.firefox-devedition-unwrapped {
-          extraNativeMessagingHosts =
+        package = pkgs.wrapFirefox firefoxPkg {
+          nativeMessagingHosts =
             optional cfg.firefox.videoDownloader pkgs.nur.repos.wolfangaukang.vdhcoapp
             ++ optional cfg.firefox.vim.enable pkgs.tridactyl-native;
         };
@@ -90,7 +97,6 @@ in
                   });
             in
             [
-              firefoxTheme
               (buildFirefoxXpiAddon {
                 pname = "cookie-quick-manager";
                 addonId = "{60f82f00-9ad5-4de5-b31c-b16a47c51558}";
@@ -148,14 +154,37 @@ in
                   platforms = platforms.all;
                 };
               })
+              (buildFirefoxXpiAddon {
+                pname = "kagi-firefox";
+                addonId = "search@kagi.com";
+                version = "0.3.3";
+                url = "https://addons.mozilla.org/firefox/downloads/file/4144699/kagi_search_for_firefox-0.3.3.xpi";
+                sha256 = "0hcw172sj4x4kawqfcxzgzdrrcivp6v6r84vxcykxd3b4nd0b2p2";
+
+                meta = with lib; {
+                  description = ''
+                    A simple helper extension for setting Kagi as a default search engine, and automatically logging in to Kagi in private browsing windows.
+                  '';
+                  license = licenses.mpl20;
+                  platforms = platforms.all;
+                };
+              })
+              (buildFirefoxXpiAddon {
+                pname = "bypass-paywalls";
+                addonId = "magnolia@12.34";
+                version = "master";
+                url = "https://gitlab.com/magnolia1234/bpc-uploads/-/raw/master/bypass_paywalls_clean-latest.xpi";
+                sha256 = "+S2WV/X9dnxa9JVlVKtoFehGFIqv5QCycbF9dvWnlXY=";
+                meta = with lib; {
+                  description = "A paywall bypasser";
+                  license = licenses.mit;
+                  platforms = platforms.all;
+                };
+              })
+              firefoxTheme
 
               # Rycee NUR: https://nur.nix-community.org/repos/rycee/
               user-agent-string-switcher
-              (bypass-paywalls-clean.override {
-                addonId = "magnolia@12.34";
-                url = "https://gitlab.com/magnolia1234/bpc-uploads/-/raw/master/bypass_paywalls_clean-3.2.5.0.xpi";
-                sha256 = "sha256-m1BVji6Ka3+vRlfdulfN+Ffi81pSzlQObgwrSkbr0IU=";
-              })
               redirector
               rust-search-extension
               bitwarden
@@ -170,6 +199,10 @@ in
               sponsorblock
               return-youtube-dislikes
             ] ++ optional cfg.firefox.vim.enable tridactyl;
+            userChrome = ''
+              .titlebar-spacer{ display: none !important }
+              .titlebar-buttonbox-container{ display: none !important }
+            '';
             settings =
               let
                 newTab =
@@ -266,10 +299,17 @@ in
                   "browser.warnOnQuitShortcut" = true;
                   "browser.tabs.warnOnClose" = true;
                   "browser.tabs.warnOnCloseOtherTabs" = true;
+                  # allow userchrome.css
+                  "toolkit.legacyUserProfileCustomizations.stylesheets" = true;
+                  "devtools.chrome.enabled" = true;
+                  "devtools.debugger.remote-enabled" = true;
+                  # instead of alt menu, use windows key
+                  "ui.key.menuAccessKey" = 91;
                 };
 
                 toolbars = {
                   "browser.tabs.firefox-view" = false;
+                  "browser.tabs.cardPreview.enabled" = true;
                   "browser.toolbars.bookmarks.visibility" = "newtab";
                   "browser.download.autohideButton" = false;
                 };

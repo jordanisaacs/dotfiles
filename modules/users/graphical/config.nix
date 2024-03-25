@@ -16,11 +16,6 @@ with lib; {
         pkg = mkDefault pkgs.swaybg;
       };
 
-      statusbar = {
-        enable = mkDefault false;
-        pkg = mkDefault pkgs.waybar;
-      };
-
       screenlock = {
         enable = mkDefault false;
       };

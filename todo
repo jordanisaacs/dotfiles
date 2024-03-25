@@ -41,9 +41,6 @@ Public Cloud:
 
 
 General:
-    Gondola:
-        [ ] Get IPv6 working
-
     Chairlift:
         [ ] Re-enable broken services (syncthing-* & ankisyncd)
 
@@ -53,17 +50,10 @@ General:
         [ ] Printer/wifi secrets with agenix
 
     User:
-        [ ] Desktop theming
-            [ ] Waybar indicators, colors, etc
-            [ ] foot coloring
-            [ ] bemenu coloring & font size
-        [ ] SSH-Agent
-            [x] Working gnome-keyring
-            [ ] Setup auto-login bitwarden-cli using gnome-keyring
-            [ ] valid-before/after SSH signing file
-            [ ] Bitwarden ssh-agent python script
+        [ ] Sequioia PGP Keystore
+            [ ] SSH-Agent
+            [ ] git signing
+            [ ] cryptsetup + systemd support
         [ ] Eww widgets
-
-Programs I want:
-    [ ] CLI libsecret
-    [ ] Wireguard NAT traversal - module for knot dns
+        [ ] Switch to rivercarro layout
+        [ ] Activitywatch

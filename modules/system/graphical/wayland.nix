@@ -28,16 +28,6 @@ in
   };
 
   config = mkIf cfg.enable {
-    xdg = {
-      portal = {
-        enable = true;
-        wlr.enable = true;
-        extraPortals = with pkgs; [
-          xdg-desktop-portal-gtk
-        ];
-      };
-    };
-
     # security.pam.services.swaylock = mkIf (cfg.swaylockPam) {};
     security.pam.services.swaylock = { };
     security.pam.services.waylock = mkIf cfg.waylockPam { };

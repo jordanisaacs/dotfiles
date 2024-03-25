@@ -12,10 +12,6 @@ in
   };
 
   config = mkIf cfg.enable {
-    home.packages = with pkgs; [
-      pinentry-gnome
-    ];
-
     programs.gpg = {
       enable = true;
       homedir = "${config.xdg.dataHome}/gnupg";
@@ -45,7 +41,7 @@ in
 
     services.gpg-agent = {
       enable = true;
-      pinentryFlavor = "gnome3";
+      pinentryPackage =  pkgs.pinentry-gnome3;
       enableExtraSocket = true;
       enableSshSupport = true;
       enableBashIntegration = true;

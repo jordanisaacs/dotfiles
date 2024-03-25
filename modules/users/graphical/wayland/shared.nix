@@ -7,7 +7,8 @@ with lib; let
   cfg = config.jd.graphical.wayland;
   systemCfg = config.machineData.systemConfig;
   isLaptop = systemCfg ? framework && systemCfg.framework.enable;
-  isDwl = config.jd.graphical.wayland.type == "dwl";
+  isDwl = cfg.type == "dwl";
+  isRiver = cfg.type == "river";
 
   dwlTags = pkgs.writeShellApplication {
     name = "dwl-waybar";
@@ -115,9 +116,9 @@ in
       pkg = mkOption {
         type = types.package;
         default =
-          if isDwl
-          then builtins.trace "override waybar" pkgs.waybar.override { swaySupport = false; hyperlandSupport = false; }
-          else builtins.trace "standard waybar" pkgs.waybar;
+          if (isDwl || isRiver)
+          then builtins.trace "override waybar" pkgs.waybar-master.override { swaySupport = false; hyprlandSupport = false; }
+          else builtins.trace "standard waybar" pkgs.waybar-master;
         description = "Waybar package";
       };
     };
@@ -153,6 +154,12 @@ in
         libappindicator-gtk3
         mako
       ];
+
+      xdg.portal = {
+        enable = true;
+        extraPortals = [ pkgs.xdg-desktop-portal-wlr pkgs.xdg-desktop-portal-gtk ];
+        config.dwl.default = [ "wlr" "gtk" ];
+      };
 
       xdg.mimeApps = {
         associations.added = {
@@ -330,132 +337,140 @@ in
           enable = true;
           package = cfg.statusbar.pkg;
           settings = [
-            {
-              layer = "bottom";
-              output = [ primaryDisplay ];
+            (mkMerge [
+              {
+                layer = "bottom";
+                output = [ primaryDisplay ];
 
-              modules-left = [ "custom/dwl" ];
-              modules-center = [ "clock" ];
-              modules-right = [ "cpu" "memory" "temperature" "battery" "backlight" "custom/media" "pulseaudio" "network" "idle_inhibitor" "tray" ];
+                modules-center = [ "clock" ];
+                modules-right = [ "cpu" "memory" "temperature" "battery" "backlight" "custom/media" "pulseaudio" "network" "idle_inhibitor" "tray" ];
 
-              gtk-layer-shell = true;
-              modules = {
-                clock = {
-                  format = "{:%I:%M %p}";
-                  tooltip = true;
-                  tooltip-format = "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>";
-                };
-                cpu = {
-                  interval = 10;
-                  format = "{usage}% ";
-                  tooltip = true;
-                };
-                memory = {
-                  interval = 30;
-                  format = "{used:0.1f}G/{total:0.1f}G ";
-                  tooltip = true;
-                };
-                temperature = { };
-                battery = {
-                  bat = "BAT1";
-                  states = {
-                    good = 80;
-                    warning = 30;
-                    critical = 15;
+                gtk-layer-shell = true;
+                modules = {
+                  clock = {
+                    format = "{:%I:%M %p}";
+                    tooltip = true;
+                    tooltip-format = "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>";
                   };
-                  format = "{capacity}% {icon}";
-                  format-charging = "{capacity}% ";
-                  format-plugged = "{capacity}% ";
-                  format-alt = "{time} {icon}";
-                  format-icons = [ "" "" "" "" "" ];
-                  tooltip = true;
-                  tooltip-format = "{timeTo}";
-                };
-                backlight =
-                  {
-                    device = "acpi_video1";
-                    format = "{percent}% {icon}";
-                    format-icons = [ "" "" ];
-                    on-scroll-up = "${pkgs.light}/bin/light -A 1";
-                    on-scroll-down = "${pkgs.light}/bin/light -U 1";
-                    on-click = "${toggleservice}/bin/toggleservice autobrightness.service";
-                  }
-                  // (optionalAttrs cfg.screen.gamma.enable {
-                    on-click-right = "${toggleservice}/bin/toggleservice wlsunset.service";
-                  });
-                pulseaudio = {
-                  format = "{volume}% {icon} {format_source}";
-                  format-bluetooth = "{volume}% {icon} {format_source}";
-                  format-bluetooth-muted = "{volume}%  {format_source}";
-                  format-muted = "{volume}%  {format_source}";
-                  format-source = "{volume}% ";
-                  format-source-muted = "{volume}% ";
-                  format-icons = {
-                    "default" = [ "" "" "" ];
+                  cpu = {
+                    interval = 10;
+                    format = "{usage}% ";
+                    tooltip = true;
                   };
-                  on-scroll-up = "${pkgs.scripts.soundTools}/bin/stools vol up 1";
-                  on-scroll-down = "${pkgs.scripts.soundTools}/bin/stools vol down 1";
-                  on-click-right = "${pkgs.scripts.soundTools}/bin/stools vol toggle";
-                  on-click = "${pkgs.pavucontrol}/bin/pavucontrol";
-                  tooltip = true;
-                };
-                network = {
-                  interval = 60;
-                  interface = "wl*";
-                  format-icons = {
-                    wifi = [ "󰤟" "󰤢" "󰤨" ];
-                    ethernet = [ "󰈀" ];
-                    disconnected = [ "" ];
-                    disabled = [ "󰲜" ];
-                    linked = [ "󰲝" ];
+                  memory = {
+                    interval = 30;
+                    format = "{used:0.1f}G/{total:0.1f}G ";
+                    tooltip = true;
                   };
-                  format = "{ifname}";
-                  format-wifi = "{essid} {icon}";
-                  format-ethernet = "{ipaddr}/{cidr} {icon}";
-                  format-linked = "{ifname}: (No IP) {icon} ";
-                  format-disconnected = "Disconnected {icon}";
-                  format-disabled = "Disabled {icon}";
-                  format-alt = "{ifname}: {ipaddr}/{cidr}";
-                  tooltip = true;
-                  tooltip-format = "{ifname} via {gwaddr}: {bandwidthUpBytes} 󰳘 {bandwidthDownBytes} 󰱦";
-                };
-                idle_inhibitor = {
-                  format = "{icon}";
-                  format-icons = {
-                    activated = "";
-                    deactivated = "";
+                  temperature = { };
+                  battery = {
+                    bat = "BAT1";
+                    states = {
+                      good = 80;
+                      warning = 30;
+                      critical = 15;
+                    };
+                    format = "{capacity}% {icon}";
+                    format-charging = "{capacity}% 󱎗";
+                    format-plugged = "{capacity}% ";
+                    format-alt = "{time} {icon}";
+                    format-icons = [ "" "" "" "" "" ];
+                    tooltip = true;
+                    tooltip-format = "{timeTo}";
+                  };
+                  backlight =
+                    {
+                      device = "acpi_video1";
+                      format = "{percent}% {icon}";
+                      format-icons = [ "" "" ];
+                      on-scroll-up = "${pkgs.light}/bin/light -A 1";
+                      on-scroll-down = "${pkgs.light}/bin/light -U 1";
+                      on-click = "${toggleservice}/bin/toggleservice autobrightness.service";
+                    }
+                    // (optionalAttrs cfg.screen.gamma.enable {
+                      on-click-right = "${toggleservice}/bin/toggleservice wlsunset.service";
+                    });
+                  pulseaudio = {
+                    format = "{volume}% {icon} {format_source}";
+                    format-bluetooth = "{volume}% {icon} {format_source}";
+                    format-bluetooth-muted = "{volume}%  {format_source}";
+                    format-muted = "{volume}%  {format_source}";
+                    format-source = "{volume}% ";
+                    format-source-muted = "{volume}% ";
+                    format-icons = {
+                      "default" = [ "" "" "" ];
+                    };
+                    on-scroll-up = "${pkgs.scripts.soundTools}/bin/stools vol up 1";
+                    on-scroll-down = "${pkgs.scripts.soundTools}/bin/stools vol down 1";
+                    on-click-right = "${pkgs.scripts.soundTools}/bin/stools vol toggle";
+                    on-click = "${pkgs.pavucontrol}/bin/pavucontrol";
+                    tooltip = true;
+                  };
+                  network = {
+                    interval = 60;
+                    interface = "wl*";
+                    format-icons = {
+                      wifi = [ "󰤟" "󰤢" "󰤨" ];
+                      ethernet = [ "󰈀" ];
+                      disconnected = [ "" ];
+                      disabled = [ "󰲜" ];
+                      linked = [ "󰲝" ];
+                    };
+                    format = "{ifname}";
+                    format-wifi = "{essid} {icon}";
+                    format-ethernet = "{ipaddr}/{cidr} {icon}";
+                    format-linked = "{ifname}: (No IP) {icon} ";
+                    format-disconnected = "Disconnected {icon}";
+                    format-disabled = "Disabled {icon}";
+                    format-alt = "{ifname}: {ipaddr}/{cidr}";
+                    tooltip = true;
+                    tooltip-format = "{ifname} via {gwaddr}: {bandwidthUpBytes} 󰳘 {bandwidthDownBytes} 󰱦";
+                  };
+                  idle_inhibitor = {
+                    format = "{icon}";
+                    format-icons = {
+                      activated = "";
+                      deactivated = "";
+                    };
+                  };
+                  tray = {
+                    spacing = 10;
+                  };
+                  "custom/media" = {
+                    format = "{icon}{}";
+                    return-type = "json";
+                    format-icons = {
+                      Playing = " ";
+                      Paused = " ";
+                    };
+                    max-length = 30;
+                    exec = "${pkgs.playerctl}/bin/playerctl -a metadata --format '{\"text\": \"{{playerName}}: {{artist}} - {{markup_escape(title)}}\", \"tooltip\": \"{{playerName}} : {{markup_escape(title)}}\", \"alt\": \"{{status}}\", \"class\": \"{{status}}\"}' -F";
+                    on-click = "${pkgs.playerctl}/bin/playerctl play-pause";
+                    smooth-scrolling-threshold =
+                      if isLaptop
+                      then 10
+                      else 5;
+                    on-scroll-up = "${pkgs.playerctl}/bin/playerctl next";
+                    on-scroll-down = "${pkgs.playerctl}/bin/playerctl previous";
                   };
                 };
-                tray = {
-                  spacing = 10;
-                };
-                "custom/dwl" = dwlModule primaryDisplay;
-                "custom/media" = {
-                  format = "{icon}{}";
-                  return-type = "json";
-                  format-icons = {
-                    Playing = " ";
-                    Paused = " ";
+              }
+              (mkIf (cfg.type == "river")
+                {
+                  modules-left = [ "river/tags" "river/mode" "river/layout" "river/window" ];
+                }
+              )
+            ])
+            (mkIf (!isLaptop)
+              (mkMerge [
+                (mkIf isDwl {
+                  output = "HDMI-A-1";
+                  modules-left = [ "custom/dwl" ];
+                  modules = {
+                    "custom/dwl" = dwlModule "HDMI-A-1";
                   };
-                  max-length = 30;
-                  exec = "${pkgs.playerctl}/bin/playerctl -a metadata --format '{\"text\": \"{{playerName}}: {{artist}} - {{markup_escape(title)}}\", \"tooltip\": \"{{playerName}} : {{markup_escape(title)}}\", \"alt\": \"{{status}}\", \"class\": \"{{status}}\"}' -F";
-                  on-click = "${pkgs.playerctl}/bin/playerctl play-pause";
-                  smooth-scrolling-threshold =
-                    if isLaptop
-                    then 10
-                    else 5;
-                  on-scroll-up = "${pkgs.playerctl}/bin/playerctl next";
-                  on-scroll-down = "${pkgs.playerctl}/bin/playerctl previous";
-                };
-              };
-            }
-            (mkIf (cfg.type == "dwl" && !isLaptop) {
-              modules-left = [ "custom/dwl" ];
-              output = "HDMI-A-1";
-              modules = {
-                "custom/dwl" = dwlModule "HDMI-A-1";
-              };
-            })
+                })
+              ]))
           ];
           style = ''
             * {

@@ -65,7 +65,12 @@
     efi-power.inputs.nixpkgs.follows = "nixpkgs";
 
     emacs-config.url = "github:jordanisaacs/emacs-config";
-    emacs-config.inputs.nixpkgs.follows = "nixpkgs";
+
+    river-src.url = "git+https://github.com/riverwm/river?submodules=1";
+    river-src.flake = false;
+
+    rivercarro-src.url = "git+https://git.sr.ht/~novakane/rivercarro?submodules=1";
+    rivercarro-src.flake = false;
   };
 
   outputs =
@@ -121,6 +126,10 @@
             nixpkgs-wayland
             nixpkgs-stable
             ;
+          inherit (inputs)
+            river-src
+            rivercarro-src
+            emacs-config;
         })
         overlays
         ;
@@ -265,8 +274,6 @@
         name = "jd";
         groups = [ "wheel" ];
         uid = 1000;
-        # Fixes assertion issue: https://github.com/NixOS/nixpkgs/pull/211603
-        shell = pkgs.bashInteractive;
       };
 
       defaultDesktopUser =
@@ -436,7 +443,9 @@
             enable = true;
             waylockPam = true;
           };
-          flatpak.enable = true;
+          # portals moved to home-manager so can't use nixos option
+          # see https://github.com/nix-community/home-manager/issues/4621
+          # flatpak.enable = true;
         };
         podman = {
           enable = true;
@@ -555,7 +564,7 @@
               };
               wayland = {
                 enable = true;
-                type = "dwl";
+                type = "river";
                 background.enable = true;
                 statusbar.enable = true;
                 screenlock.enable = true;
@@ -617,7 +626,7 @@
           name = "framework";
           systemConfig = frameworkConfig;
           cpuCores = 8;
-          stateVersion = "21.11";
+          stateVersion = "23.11";
         };
 
         desktop = host.mkHost {

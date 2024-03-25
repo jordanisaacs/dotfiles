@@ -6,6 +6,15 @@
 with lib; let
   cfg = config.jd.graphical.wayland;
   systemCfg = config.machineData.systemConfig;
+  bemenuCmd = pkgs.writeShellScript "bemenu-wrapper" ''
+    BEMENU_SCALE=2 ${pkgs.bemenu}/bin/bemenu -i -l 8 --scrollbar autohide
+  '';
+  menuCmd = [
+    "${pkgs.j4-dmenu-desktop}/bin/j4-dmenu-desktop"
+    "--dmenu='${bemenuCmd}'"
+    "--term='${pkgs.foot}/bin/foot'"
+    "--no-generic"
+  ];
   dwlJD = pkgs.dwlBuilder {
     config = {
       input = {
@@ -13,12 +22,7 @@ with lib; let
       };
       cmds = {
         term = [ "${pkgs.foot}/bin/foot" ];
-        menu = [
-          "${pkgs.j4-dmenu-desktop}/bin/j4-dmenu-desktop"
-          "--dmenu='${bemenuCmd}'"
-          "--term='${pkgs.foot}/bin/foot'"
-          "--no-generic"
-        ];
+        menu = menuCmd;
         quit = [ "${wayExit}" ];
         audioup = [ "${pkgs.scripts.soundTools}/bin/stools" "vol" "up" "5" ];
         audiodown = [ "${pkgs.scripts.soundTools}/bin/stools" "vol" "down" "5" ];
@@ -39,10 +43,7 @@ with lib; let
     done
 
     ${optionalString (isSway || isSwayDbg) "swaymsg exit"}
-  '';
-
-  bemenuCmd = pkgs.writeShellScript "bemenu-wrapper" ''
-    BEMENU_SCALE=2 ${pkgs.bemenu}/bin/bemenu -i -l 8 --scrollbar autohide
+    ${optionalString isRiver "riverctl exit"}
   '';
 
   swayConfig = ''
@@ -124,7 +125,7 @@ with lib; let
     ## https://bbs.archlinux.org/viewtopic.php?id=224652
     # Need QT theme for syncthing tray
     systemctl import-environment --user DISPLAY WAYLAND_DISPLAY XDG_SESSION_TYPE DBUS_SESSION_BUS_ADDRESS \
-      QT_QPA_PLATFORMTHEME PATH
+      QT_QPA_PLATFORMTHEME PATH XCURSOR_SIZE XCURSOR_THEME
 
     ${optionalString isDwl ''
       wlr-randr --output "HDMI-A-1" --transform 90 --pos 0,0
@@ -132,17 +133,23 @@ with lib; let
       systemctl --user start dwl-session.target
       exec cp /dev/stdin $XDG_CACHE_HOME/dwltags
     ''}
-    ${optionalString (isSway || isSwayDbg) "systemctl --user start sway-session.target"}
+    ${optionalString (isSway || isSwayDbg) ''
+      systemctl --user start sway-session.target
+    ''}
+    ${optionalString isRiver ''
+      systemctl --user start river-session.target
+    ''}
   '';
 
   isSway = cfg.type == "sway";
   isSwayDbg = cfg.type == "sway-dbg";
   isDwl = cfg.type == "dwl";
+  isRiver = cfg.type == "river";
 in
 {
   options.jd.graphical.wayland = {
     type = mkOption {
-      type = types.enum [ "dwl" "sway" "sway-dbg" ];
+      type = types.enum [ "dwl" "sway" "sway-dbg" "river" ];
       description = ''What desktop/wm to use. Options: "dwl", "sway"'';
     };
   };
@@ -182,6 +189,9 @@ in
               mkdir -p ${config.xdg.stateHome}/sway
               ${pkgs.sway}/bin/sway --debug > ${config.xdg.stateHome}/sway/sway.log 2>&1
             ''}
+            ${optionalString isRiver ''
+              ${pkgs.river-master}/bin/river
+            ''}
           '';
         };
       };
@@ -204,6 +214,102 @@ in
       systemd.user.targets.dwl-session = {
         Unit = {
           Description = "dwl compositor session";
+          Documentation = [ "man:systemd.special(7)" ];
+          BindsTo = [ "wayland-session.target" ];
+          After = [ "wayland-session.target" ];
+        };
+      };
+    })
+    (mkIf isRiver {
+      home.packages = [ pkgs.rivercarro-master ];
+      wayland.windowManager.river =
+        let
+          layout = "rivercarro";
+        in
+        {
+          enable = true;
+          package = pkgs.river-master;
+          settings =
+            let
+              all_tags = "$(((1 << 32) - 1))";
+              mod_key = "Alt";
+            in
+            zipAttrs ([{
+              map.normal."${mod_key}+Shift Return".spawn = "foot";
+              map.normal."${mod_key} P".spawn = "\"" + (concatStringsSep " " menuCmd) + "\"";
+
+              map.normal."${mod_key}+Shift C" = "close";
+              map.normal."${mod_key}+Shift Q".spawn = "${wayExit}";
+              map.normal."${mod_key} J".focus-view = "next";
+              map.normal."${mod_key} K".focus-view = "previous";
+              map.normal."${mod_key}+Shift J".swap = "next";
+              map.normal."${mod_key}+Shift K".swap = "previous";
+              map.normal."${mod_key} Period".focus-output = "next";
+              map.normal."${mod_key} Comma".focus-output = "previous";
+              map.normal."${mod_key}+Shift Period".send-to-output = "next";
+              map.normal."${mod_key}+Shift Comma".send-to-output = "previous";
+              map.normal."${mod_key} Return" = "zoom";
+
+              left-pointer.normal."${mod_key} BTN_LEFT" = "move-view";
+              map-pointer.normal."${mod_key} BTN_RIGHT" = "resize-view";
+              map-pointer.normal."${mod_key} BTN_MIDDLE" = "move-view";
+
+              map.normal."${mod_key} 0".set-focused-tags = all_tags;
+              map.normal."${mod_key}+Shift 0".set-view-tags = all_tags;
+
+              map.normal."${mod_key} Space" = "toggle-float";
+              map.normal."${mod_key} F" = "toggle-fullscreen";
+
+              declare-mode = "passthrough";
+              map.normal."${mod_key} F11".enter-mode = "passthrough";
+              map.passthrough."${mod_key} F11".enter-mode = "normal";
+
+              input."'*Touchpad'".tap = "enabled";
+              input."'*Touchpad'".natural-scroll = "enabled";
+              set-repeat = "50 300";
+              xcursor-theme.${config.home.pointerCursor.name} = toString config.jd.graphical.cursor.size;
+              focus-follows-cursor = "normal";
+
+              default-layout = layout;
+            }] ++
+            (map
+              (index:
+                let
+                  i = toString index;
+                  tags = "$((1 << (${i} - 1)))";
+                in
+                {
+                  map.normal."${mod_key} ${i}".set-focused-tags = tags;
+                  map.normal."${mod_key}+Shift ${i}".set-view-tags = tags;
+                  map.normal."${mod_key}+Control ${i}".toggle-focus-tags = tags;
+                  map.normal."Shift+${mod_key}+Control ${i}".toggle-view-tags = tags;
+                })
+              (range 1 9)) ++
+            (optional (layout == "rivercarro" || layout == "rivertile") {
+              map.normal."${mod_key} H".send-layout-cmd.${layout} = "'main-ratio -0.05'";
+              map.normal."${mod_key} L".send-layout-cmd.${layout} = "'main-ratio +0.05'";
+              map.normal."${mod_key} I".send-layout-cmd.${layout} = "'main-count +1'";
+              map.normal."${mod_key} D".send-layout-cmd.${layout} = "'main-count -1'";
+              map.normal."${mod_key} Up".send-layout-cmd.${layout} = "'main-location top'";
+              map.normal."${mod_key} Right".send-layout-cmd.${layout} = "'main-location right'";
+              map.normal."${mod_key} Down".send-layout-cmd.${layout} = "'main-location bottom'";
+              map.normal."${mod_key} Left".send-layout-cmd.${layout} = "'main-location left'";
+            }) ++
+            (optional (layout == "rivercarro") {
+              map.normal."${mod_key} M".send-layout-cmd.${layout} = "'main-location monocle'";
+              map.normal."${mod_key} T".send-layout-cmd.${layout} = "'main-location left'";
+            }));
+          extraConfig = ''
+            ${layout} &
+            ${compositorStartup}/bin/compositor-setup
+          '';
+          # Do custom systemd instead
+          systemd.enable = false;
+        };
+
+      systemd.user.targets.river-session = {
+        Unit = {
+          Description = "river compositor session";
           Documentation = [ "man:systemd.special(7)" ];
           BindsTo = [ "wayland-session.target" ];
           After = [ "wayland-session.target" ];

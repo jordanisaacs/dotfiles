@@ -10,14 +10,13 @@ with lib; let
     { name
     , groups
     , uid
-    , shell
     , password
     ,
     }: {
       inherit name;
       value =
         {
-          inherit name uid shell;
+          inherit name uid;
           isNormalUser = true;
           isSystemUser = false;
           extraGroups = groups;
@@ -40,10 +39,6 @@ with lib; let
       };
       uid = mkOption {
         type = types.int;
-      };
-      shell = mkOption {
-        # TODO: remove when assertion of shells is removed
-        type = with types; either package str;
       };
       groups = mkOption {
         type = with types; listOf str;

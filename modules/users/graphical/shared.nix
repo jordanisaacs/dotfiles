@@ -39,7 +39,8 @@ in
             xdg-utils
 
             # Fonts
-            (nerdfonts.override { fonts = [ "JetBrainsMono" ]; })
+            (nerdfonts.override { fonts = [ "JetBrainsMono" "Monaspace"]; })
+            emacs-all-the-icons-fonts
             noto-fonts-emoji
             roboto
             bm-font
@@ -60,9 +61,9 @@ in
         };
 
         home.pointerCursor = {
-          # installed in profile earlier
           package = pkgs.volantes-cursors;
           name = "volantes_cursors";
+          size = cfg.cursor.size;
           # Pass through config to gtk
           # https://github.com/nix-community/home-manager/blob/693d76eeb84124cc3110793ff127aeab3832f95c/modules/config/home-cursor.nix#L152
           gtk.enable = true;
@@ -97,7 +98,7 @@ in
         };
 
         # https://github.com/nix-community/home-manager/issues/2064
-        systemd.user.targets.tray = {
+        systemd.user.targets.tray = lib.mkForce {
           Unit = {
             Description = "Home manager system tray";
             Requires = [ "graphical-session-pre.target" ];

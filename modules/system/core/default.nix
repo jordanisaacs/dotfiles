@@ -212,6 +212,9 @@ in
         bc
         bitwise
 
+        # finders
+        fd
+
         # Scripts
         scripts.sysTools
 

@@ -22,6 +22,9 @@ in
         # jdpkgs.texstudioWrapper
         ungoogled-chromium
 
+        # my emacs - see emacs-config on gh
+        emacs-jd
+
         # updated version with wayland/grim backend
         jdpkgs.flameshot
         libsixel
