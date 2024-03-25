@@ -198,7 +198,9 @@ in
               # Youtube
               sponsorblock
               return-youtube-dislikes
-            ] ++ optional cfg.firefox.vim.enable tridactyl;
+            ]
+            ++ optional cfg.firefox.vim.enable tridactyl
+            ++ optional config.jd.applications.activitywatch.enable aw-watcher-web;
             userChrome = ''
               .titlebar-spacer{ display: none !important }
               .titlebar-buttonbox-container{ display: none !important }
@@ -299,12 +301,12 @@ in
                   "browser.warnOnQuitShortcut" = true;
                   "browser.tabs.warnOnClose" = true;
                   "browser.tabs.warnOnCloseOtherTabs" = true;
-                  # allow userchrome.css
+                  # allow userchrome.css & debugging
                   "toolkit.legacyUserProfileCustomizations.stylesheets" = true;
                   "devtools.chrome.enabled" = true;
                   "devtools.debugger.remote-enabled" = true;
                   # instead of alt menu, use windows key
-                  "ui.key.menuAccessKey" = 91;
+                  # "ui.key.menuAccessKey" = 91;
                 };
 
                 toolbars = {

@@ -20,6 +20,7 @@ in
     ./lnav.nix
     ./tmux.nix
     ./podman.nix
+    ./activitywatch.nix
   ];
 
   options.jd.applications = {

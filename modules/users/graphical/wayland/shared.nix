@@ -116,9 +116,10 @@ in
       pkg = mkOption {
         type = types.package;
         default =
-          if (isDwl || isRiver)
-          then builtins.trace "override waybar" pkgs.waybar-master.override { swaySupport = false; hyprlandSupport = false; }
-          else builtins.trace "standard waybar" pkgs.waybar-master;
+          if (isDwl || isRiver) then
+            pkgs.waybar-master.override { swaySupport = false; hyprlandSupport = false; }
+          else
+            pkgs.waybar-master;
         description = "Waybar package";
       };
     };

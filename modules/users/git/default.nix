@@ -66,6 +66,7 @@ in
         #     pkgs.git.override { withLibsecret = true; }
         #   }/bin/git-credential-libsecret";
         init.defaultBranch = "main";
+        pull.ff = "true";
         pull.rebase = "true";
         # https://blog.nilbus.com/take-the-pain-out-of-git-conflict-resolution-use-diff3/
         # https://stackoverflow.com/questions/27417656/should-diff3-be-default-conflictstyle-on-git

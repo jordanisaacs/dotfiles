@@ -16,6 +16,7 @@
 , nixpkgs-wayland
 , agenix
 , efi-power
+, inputs
 , emacs-config
 , river-src
 , rivercarro-src
@@ -28,6 +29,27 @@
 
     (self: super: {
       waybar-master = nixpkgs-wayland.packages.${super.system}.waybar;
+
+      awatcher = super.rustPlatform.buildRustPackage rec {
+        pname = "awatcher";
+        version = "main";
+        src = inputs.awatcher-src;
+
+        cargoLock = {
+           lockFile = "${inputs.awatcher-src}/Cargo.lock";
+           outputHashes = {
+             "aw-client-rust-0.1.0" = "sha256-fCjVfmjrwMSa8MFgnC8n5jPzdaqSmNNdMRaYHNbs8Bo=";
+           };
+        };
+
+        nativeBuildInputs = [
+          super.pkg-config
+        ];
+
+        buildInputs = [
+          super.openssl
+        ];
+      };
 
       river-master = super.river.overrideAttrs
         (oa: {

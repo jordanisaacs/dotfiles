@@ -71,6 +71,9 @@
 
     rivercarro-src.url = "git+https://git.sr.ht/~novakane/rivercarro?submodules=1";
     rivercarro-src.flake = false;
+
+    awatcher-src.url = "github:2e3s/awatcher";
+    awatcher-src.flake = false;
   };
 
   outputs =
@@ -127,9 +130,11 @@
             nixpkgs-stable
             ;
           inherit (inputs)
-            river-src
-            rivercarro-src
-            emacs-config;
+              river-src
+              rivercarro-src
+              emacs-config
+            ;
+            inherit inputs;
         })
         overlays
         ;
@@ -583,9 +588,9 @@
               enable = true;
               direnv.enable = true;
               tldr.enable = true;
-              syncthing.enable = true;
+              activitywatch.enable = true;
               neomutt.enable = true;
-              neovim.enable = true;
+              neovim.enable = false;
               lnav.enable = true;
               tmux.enable = true;
             };

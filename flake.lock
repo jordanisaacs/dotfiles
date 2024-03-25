@@ -22,6 +22,22 @@
         "type": "github"
       }
     },
+    "awatcher-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1709780495,
+        "narHash": "sha256-HjPA+sZ4lYerWS6lrqAwO7T+4xhJvRzFj6NOFqOrwf0=",
+        "owner": "2e3s",
+        "repo": "awatcher",
+        "rev": "a21b917b265dbb70f33cfbd3b8bee8f10e884a3d",
+        "type": "github"
+      },
+      "original": {
+        "owner": "2e3s",
+        "repo": "awatcher",
+        "type": "github"
+      }
+    },
     "blobs": {
       "flake": false,
       "locked": {
@@ -446,11 +462,11 @@
         "twist": "twist"
       },
       "locked": {
-        "lastModified": 1711175004,
-        "narHash": "sha256-S3Q4IvGXDftRdGW4tVyohb7uLWq9g0KxoAPLtblCMQ0=",
+        "lastModified": 1711353873,
+        "narHash": "sha256-lSzNaDuDSCXdbkKHJ1jXwBHEwVi1yjiCITMYTaEmcKo=",
         "owner": "jordanisaacs",
         "repo": "emacs-config",
-        "rev": "2d736e01a6816fafc0a3465a72db9ba3936157b7",
+        "rev": "fd70e6fb1d6bf586085ac06f767b7afa2bf088e6",
         "type": "github"
       },
       "original": {
@@ -834,11 +850,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1710452332,
-        "narHash": "sha256-+lKOoQ89fD6iz6Ro7Adml4Sx6SqQcTWII4t1rvVtdjs=",
+        "lastModified": 1711133180,
+        "narHash": "sha256-WJOahf+6115+GMl3wUfURu8fszuNeJLv9qAWFQl3Vmo=",
         "owner": "nix-community",
         "repo": "home-manager",
-        "rev": "096d9c04b3e9438855aa65e24129b97a998bd3d9",
+        "rev": "1c2c5e4cabba4c43504ef0f8cc3f3dfa284e2dbb",
         "type": "github"
       },
       "original": {
@@ -3123,6 +3139,7 @@
     "root": {
       "inputs": {
         "agenix": "agenix",
+        "awatcher-src": "awatcher-src",
         "deploy-rs": "deploy-rs",
         "disko": "disko",
         "dwarffs": "dwarffs",

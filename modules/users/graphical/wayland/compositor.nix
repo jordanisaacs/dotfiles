@@ -232,7 +232,7 @@ in
           settings =
             let
               all_tags = "$(((1 << 32) - 1))";
-              mod_key = "Alt";
+              mod_key = "Super";
             in
             zipAttrs ([{
               map.normal."${mod_key}+Shift Return".spawn = "foot";
