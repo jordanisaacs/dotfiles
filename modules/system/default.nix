@@ -33,5 +33,6 @@
     ./android
     ./windows
     ./users
+    ./debug
   ];
 }

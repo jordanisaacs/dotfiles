@@ -3,7 +3,6 @@
   inputs = {
     # Package repositories
     nixpkgs.url = "nixpkgs/nixos-unstable";
-    nixpkgs-stable.url = "nixpkgs/nixos-22.11";
 
     home-manager.url = "github:nix-community/home-manager";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
@@ -23,7 +22,8 @@
     disko.url = "github:nix-community/disko";
     disko.inputs.nixpkgs.follows = "nixpkgs";
 
-    simple-nixos-mailserver.url = "gitlab:simple-nixos-mailserver/nixos-mailserver";
+    simple-nixos-mailserver.url =
+      "gitlab:simple-nixos-mailserver/nixos-mailserver";
     simple-nixos-mailserver.inputs.nixpkgs.follows = "nixpkgs";
     simple-nixos-mailserver.inputs.utils.follows = "flake-utils";
 
@@ -65,79 +65,34 @@
     efi-power.inputs.nixpkgs.follows = "nixpkgs";
 
     emacs-config.url = "github:jordanisaacs/emacs-config";
+    nixd.url = "github:nix-community/nixd";
 
     river-src.url = "git+https://github.com/riverwm/river?submodules=1";
     river-src.flake = false;
 
-    rivercarro-src.url = "git+https://git.sr.ht/~novakane/rivercarro?submodules=1";
+    rivercarro-src.url =
+      "git+https://git.sr.ht/~novakane/rivercarro?submodules=1";
     rivercarro-src.flake = false;
 
     awatcher-src.url = "github:2e3s/awatcher";
     awatcher-src.flake = false;
   };
 
-  outputs =
-    { self
-    , secrets
-    , nixpkgs
-    , nixpkgs-stable
-    , jdpkgs
-    , impermanence
-    , deploy-rs
-    , agenix
-    , nixpkgs-wayland
-    , home-manager
-    , nur
-    , neovim-flake
-    , efi-power
-    , st-flake
-    , dwm-flake
-    , dwl-flake
-    , homeage
-    , ...
-    } @ inputs:
+  outputs = { self, secrets, nixpkgs, home-manager, ... }@inputs:
     let
       inherit (nixpkgs) lib;
 
       util = import ./lib {
-        inherit system nixpkgs pkgs home-manager lib overlays patchedPkgs inputs;
+        inherit system nixpkgs pkgs home-manager lib overlays patchedPkgs
+          inputs;
       };
 
-      scripts = import ./scripts {
-        inherit pkgs lib;
-      };
+      scripts = import ./scripts { inherit pkgs lib; };
 
-      inherit
-        (import ./overlays {
-          inherit
-            system
-            secrets
-            pkgs
-            lib
-            nur
-            neovim-flake
-            st-flake
-            dwm-flake
-            efi-power
-            homeage
-            scripts
-            jdpkgs
-            dwl-flake
-            impermanence
-            deploy-rs
-            agenix
-            nixpkgs-wayland
-            nixpkgs-stable
-            ;
-          inherit (inputs)
-              river-src
-              rivercarro-src
-              emacs-config
-            ;
-            inherit inputs;
-        })
-        overlays
-        ;
+      inherit (import ./overlays {
+        inherit system pkgs lib scripts secrets inputs;
+      })
+        overlays;
 
       inherit (util) user;
       inherit (util) host;
@@ -169,9 +124,7 @@
       pkgs = import patchedPkgs {
         inherit system overlays;
         config = {
-          permittedInsecurePackages = [
-            "electron-9.4.4"
-          ];
+          permittedInsecurePackages = [ "electron-9.4.4" ];
           allowUnfree = true;
         };
       };
@@ -281,11 +234,9 @@
         uid = 1000;
       };
 
-      defaultDesktopUser =
-        defaultUser
-        // {
-          groups = defaultUser.groups ++ [ "video" "libvirtd" ];
-        };
+      defaultDesktopUser = defaultUser // {
+        groups = defaultUser.groups ++ [ "video" "libvirtd" ];
+      };
 
       defaultServerConfig = {
         core.enable = true;
@@ -298,9 +249,7 @@
           authorizedKeys = [ (builtins.toString authorizedKeys) ];
           initrdKeys = [ authorizedKeys ];
         };
-        networking = {
-          firewall.enable = true;
-        };
+        networking = { firewall.enable = true; };
         impermanence.enable = true;
       };
 
@@ -310,7 +259,14 @@
           # users.rootPassword = secrets.passwords.gondola;
           isQemuGuest = true;
           boot.grubDevice = "/dev/vda";
-          kernel.initrdMods = [ "sr_mod" "ata_piix" "virtio_pci" "virtio_scsi" "virtio_blk" "virtio_net" ];
+          kernel.initrdMods = [
+            "sr_mod"
+            "ata_piix"
+            "virtio_pci"
+            "virtio_scsi"
+            "virtio_blk"
+            "virtio_net"
+          ];
 
           fs.hostId = "fe120267";
 
@@ -422,9 +378,7 @@
         users.users = [ defaultDesktopUser ];
         gnome = {
           enable = true;
-          keyring = {
-            enable = true;
-          };
+          keyring = { enable = true; };
         };
         connectivity = {
           bluetooth.enable = true;
@@ -461,14 +415,18 @@
           type = "client";
         };
         extraContainer.enable = false;
-        debug.enable = true;
+        debug = {
+          enable = true;
+          nixseparatedebuginfod.enable = true;
+        };
       };
 
       desktopConfig = utils.recursiveMerge [
         defaultClientConfig
         {
           boot.type = "uefi";
-          kernel.initrdMods = [ "nvme" "xhci_pci" "ahci" "usb_storage" "usbhid" "sd_mod" ];
+          kernel.initrdMods =
+            [ "nvme" "xhci_pci" "ahci" "usb_storage" "usbhid" "sd_mod" ];
           kernel.mods = [ "kvm-amd" ];
           fs = {
             type = "zfs-v2";
@@ -496,7 +454,8 @@
           laptop.enable = true;
           # secrets.identityPaths = [ "" ];
           networking.interfaces = [ "enp0s31f6" ];
-          kernel.initrd = [ "xhci_pci" "nvme" "usb_storage" "sd_mod" "rtsx_pci_sdmmc" ];
+          kernel.initrd =
+            [ "xhci_pci" "nvme" "usb_storage" "sd_mod" "rtsx_pci_sdmmc" ];
           kernel.mods = [ "kvm-intel" ];
         }
       ];
@@ -511,7 +470,8 @@
             theme = "hexa_retro";
           };
           kernel = {
-            initrdMods = [ "xhci_pci" "thunderbolt" "nvme" "usb_storage" "sd_mod" ];
+            initrdMods =
+              [ "xhci_pci" "thunderbolt" "nvme" "usb_storage" "sd_mod" ];
             mods = [ "kvm-intel" ];
           };
           laptop.enable = true;
@@ -520,9 +480,7 @@
           greetd.enable = true;
           framework = {
             enable = true;
-            fprint = {
-              enable = true;
-            };
+            fprint = { enable = true; };
           };
           # wireguard = wireguardConf;
           # secrets.identityPaths = [ secrets.age.framework.system.privateKeyPath ];
@@ -533,14 +491,11 @@
           };
         }
       ];
-    in
-    {
+    in {
       installMedia = {
         kde = host.mkISO {
           name = "kde-nixos";
-          systemConfig = {
-            sound = true;
-          };
+          systemConfig = { sound = true; };
         };
         yubikey = host.mkISO {
           name = "yubikey-nixos";
@@ -665,7 +620,8 @@
           system = {
             sshUser = "root";
             user = "root";
-            path = deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations.chairlift;
+            path = inputs.deploy-rs.lib.${system}.activate.nixos
+              self.nixosConfigurations.chairlift;
           };
         };
       };
@@ -679,15 +635,15 @@
           system = {
             sshUser = "root";
             user = "root";
-            path = deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations.gondola;
+            path = inputs.deploy-rs.lib.${system}.activate.nixos
+              self.nixosConfigurations.gondola;
           };
         };
       };
 
-      checks =
-        builtins.mapAttrs
-          # deadnix: skip
-          (system: deployLib: deployLib.deployChecks self.deploy)
-          deploy-rs.lib;
+      checks = builtins.mapAttrs
+        # deadnix: skip
+        (system: deployLib: deployLib.deployChecks self.deploy)
+        inputs.deploy-rs.lib;
     };
 }

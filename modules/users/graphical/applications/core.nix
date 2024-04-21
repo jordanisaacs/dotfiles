@@ -1,13 +1,9 @@
-{ pkgs
-, config
-, lib
-, ...
-}:
-with lib; let
+{ pkgs, config, lib, ... }:
+with lib;
+let
   cfg = config.jd.graphical;
   systemCfg = config.machineData.systemConfig;
-in
-{
+in {
   options.jd.graphical.applications = {
     enable = mkEnableOption "graphical applications";
   };
@@ -31,7 +27,6 @@ in
 
         # Password manager
         bitwarden
-        jdpkgs.authy
 
         # Messaging
         slack
@@ -58,11 +53,8 @@ in
         # Utilities
         # firmware-manager - need to wait for polkit support
 
-        (rstudioWrapper.override {
-          packages = with rPackages; [ tidyverse ];
-        })
-      ]
-      ++ lib.optional systemCfg.networking.wifi.enable pkgs.iwgtk;
+        (rstudioWrapper.override { packages = with rPackages; [ tidyverse ]; })
+      ] ++ lib.optional systemCfg.networking.wifi.enable pkgs.iwgtk;
 
     xdg.desktopEntries = {
       cider = {
@@ -73,7 +65,14 @@ in
         icon = "Cider";
         type = "Application";
         categories = [ "Audio" "Video" ];
-        mimeType = [ "x-scheme-handler/ame" "x-scheme-handler/cider" "x-scheme-handler/itms" "x-scheme-handler/itmss" "x-scheme-handler/musics" "x-scheme-handler/music" ];
+        mimeType = [
+          "x-scheme-handler/ame"
+          "x-scheme-handler/cider"
+          "x-scheme-handler/itms"
+          "x-scheme-handler/itmss"
+          "x-scheme-handler/musics"
+          "x-scheme-handler/music"
+        ];
       };
     };
 

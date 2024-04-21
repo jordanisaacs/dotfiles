@@ -207,6 +207,7 @@ in
 
         # Text editor
         vim
+        neovim
 
         # Calculator
         bc

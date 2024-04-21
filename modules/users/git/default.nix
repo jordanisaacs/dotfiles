@@ -1,12 +1,7 @@
-{ pkgs
-, config
-, lib
-, ...
-}:
-with lib; let
-  cfg = config.jd.git;
-in
-{
+{ pkgs, config, lib, ... }:
+with lib;
+let cfg = config.jd.git;
+in {
   options.jd.git = {
     enable = mkOption {
       description = "Enable git";
@@ -74,8 +69,6 @@ in
       };
     };
 
-    home.packages = with pkgs; [
-      scripts.devTools
-    ];
+    home.packages = with pkgs; [ delta scripts.devTools ];
   };
 }

@@ -1,22 +1,16 @@
-{ pkgs
-, config
-, lib
-, ...
-}:
-with lib; let
+{ pkgs, config, lib, ... }:
+with lib;
+let
   cfg = config.jd.initrd;
 
   systemd = config.systemd.package;
 
   gpgService = {
     description = "GPG agent";
-    after = [
-      "systemd-modules-load.service"
-      "systemd-ask-password-console.service"
-    ];
+    after =
+      [ "systemd-modules-load.service" "systemd-ask-password-console.service" ];
   };
-in
-{
+in {
   options.jd.initrd = {
     plymouth = {
       enable = mkEnableOption "enable plymouth";
@@ -38,8 +32,8 @@ in
       # boot.initrd.verbose = mkDefault cfg.quiet;
 
       # Debug, needs bashInteractive due to how services are generated
-      boot.initrd.systemd.additionalUpstreamUnits = [ "debug-shell.service" ];
-      boot.kernelParams = (optional cfg.quiet "rd.udev.log_level=3") ++ [ "rd.systemd.debug_shell=1" ];
+      boot.kernelParams = (optional cfg.quiet "rd.udev.log_level=3")
+        ++ [ "rd.systemd.debug_shell=1" ];
       boot.initrd.systemd.storePaths = [ "${pkgs.bashInteractive}/bin/bash" ];
     }
     # (mkIf cfg.gpg.enable {
@@ -54,9 +48,14 @@ in
         initrd.quiet = mkDefault true;
       };
 
-
       systemd.services.plymouth-switch-root-initramfs = {
-        wantedBy = [ "halt.target" "kexec.target" "plymouth-switch-root-initramfs.service" "poweroff.target" "reboot.target" ];
+        wantedBy = [
+          "halt.target"
+          "kexec.target"
+          "plymouth-switch-root-initramfs.service"
+          "poweroff.target"
+          "reboot.target"
+        ];
         unitConfig.After = [ "generate-shutdown-ramfs.service" ];
         unitConfig.ConditionPathExists = [ "" "/run/initramfs/shutdown" ];
       };

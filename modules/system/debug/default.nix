@@ -1,17 +1,16 @@
-{ pkgs
-, config
-, lib
-, ...
-}:
-with lib; let
-  cfg = config.jd.debug;
-in
-{
+{ pkgs, config, lib, ... }:
+with lib;
+let cfg = config.jd.debug;
+in {
   options.jd.debug = {
-    enable = mkEnableOption "debug tools";
+    enable = mkEnableOption "debug";
+    nixseparatedebuginfod.enable = mkEnableOption "nix separate debug infod";
   };
 
-  config = mkIf cfg.enable {
-    environment.systemPackages = with pkgs; [ gdb strace elfutils bpftrace ];
-  };
+  config = mkIf cfg.enable (mkMerge [
+    { environment.systemPackages = with pkgs; [ gdb strace elfutils bpftrace ]; }
+    (mkIf cfg.nixseparatedebuginfod.enable {
+      services.nixseparatedebuginfod.enable = true;
+    })
+  ]);
 }

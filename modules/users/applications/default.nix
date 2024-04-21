@@ -69,9 +69,19 @@ in
 
       # A basic python environment
       (python3.withPackages (ps: with ps; [ pandas requests ]))
+      ruff
+      nodePackages.pyright
+
+      # basic bash tools
+      nodePackages.bash-language-server
+      shfmt
 
       # accounting
       beancount
+
+      # language tools
+      nixd
+      nixfmt
     ];
 
     services.playerctld.enable = true;
