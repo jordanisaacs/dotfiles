@@ -325,6 +325,7 @@ in {
               toolbars = {
                 "browser.tabs.firefox-view" = false;
                 "browser.tabs.cardPreview.enabled" = true;
+                "browser.tabs.tabMinWidth" = 120;
                 "browser.toolbars.bookmarks.visibility" = "newtab";
                 "browser.download.autohideButton" = false;
               };
