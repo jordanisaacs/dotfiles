@@ -1,17 +1,12 @@
-{ config
-, pkgs
-, lib
-, modulesPath
-, ...
-}:
-with lib;
-{
+{ config, pkgs, lib, modulesPath, ... }:
+with lib; {
   # Make this config a iso config
-  imports = [ "${modulesPath}/installer/cd-dvd/iso-image.nix" ];
+  imports = [
+    "${modulesPath}/profiles/all-hardware.nix"
+    "${modulesPath}/installer/cd-dvd/iso-image.nix"
+  ];
 
-  options.jd = {
-    airgap = mkEnableOption "networking";
-  };
+  options.jd = { airgap = mkEnableOption "networking"; };
 
   config = mkMerge [
     (mkIf config.jd.airgap {
@@ -27,11 +22,9 @@ with lib;
       networking.wireless.enable = false;
       networking.networkmanager.enable = lib.mkForce false;
     })
-    (mkIf (!config.jd.airgap) {
-      networking.networkmanager.enable = true;
-    })
+    (mkIf (!config.jd.airgap) { networking.networkmanager.enable = true; })
     {
-      system.stateVersion = "23.11";
+      system.stateVersion = "24.05";
 
       nix = {
         extraOptions = "experimental-features = nix-command flakes";
@@ -39,7 +32,7 @@ with lib;
           automatic = true;
           options = "--delete-older-than 5d";
         };
-        package = pkgs.nixFlakes;
+        package = pkgs.nixVersions.stable;
       };
 
       # Always copytoram so that, if the image is booted from, e.g., a
@@ -51,59 +44,61 @@ with lib;
       # https://www.suse.com/support/kb/doc/?id=000020545
       boot.kernel.sysctl = { "kernel.unprivileged_bpf_disabled" = 1; };
 
-      boot.kernelPackages = config.boot.zfs.package.latestCompatibleLinuxPackages;
+      boot.kernelPackages = pkgs.linuxPackages_latest;
 
-      boot.initrd.availableKernelModules = [ "xhci_pci" "ahci" "usb_storage" "sd_mod" "nvme" "usbhid" ];
       boot.kernelModules = [ "kvm-intel" "kvm-amd" ];
 
-      boot.supportedFilesystems = [ "zfs" ];
+      # boot.supportedFilesystems = [ "zfs" ];
       networking.hostId = "f6734914";
 
-      isoImage.makeEfiBootable = true;
-      isoImage.makeUsbBootable = true;
+      isoImage = {
+        squashfsCompression = "zstd";
+        makeEfiBootable = true;
+        makeUsbBootable = true;
+      };
 
       powerManagement.cpuFreqGovernor = lib.mkDefault "performance";
       hardware.enableRedistributableFirmware = lib.mkDefault true;
 
-      environment.systemPackages = with pkgs;
-        [
-          wget
-          pciutils
-          curl
-          bind
-          killall
-          dmidecode
-          neofetch
-          htop
-          bat
-          unzip
-          file
-          zip
-          p7zip
-          strace
-          ltrace
+      environment.systemPackages = with pkgs; [
+        wget
+        pciutils
+        curl
+        bind
+        killall
+        dmidecode
+        neofetch
+        htop
+        bat
+        unzip
+        file
+        zip
+        p7zip
+        strace
+        ltrace
 
-          # Setup script(s)
-          scripts.setupTools
+        # Setup script(s)
+        scripts.setupTools
 
-          # text editor
-          neovimJD
+        # text editor
+        neovim
+        emacs-jd
 
-          # vcs tools
-          git
-          git-crypt
+        # vcs tools
+        git
+        git-crypt
 
-          # File tools
-          cryptsetup
-          gptfdisk
-          zsh
-          iotop
-          nvme-cli
+        # File tools
+        cryptsetup
+        gptfdisk
+        zsh
+        iotop
+        nvme-cli
 
-          pstree
-          acpi
-          nix-index
-        ];
+        pstree
+        acpi
+        nix-index
+      ];
     }
   ];
 }

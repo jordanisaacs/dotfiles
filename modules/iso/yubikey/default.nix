@@ -18,23 +18,11 @@ let
   };
   gpg-conf = "${drduhConfig}/gpg.conf";
 
-  xserverCfg = config.services.xserver;
-
-  pinentryFlavour =
-    if xserverCfg.desktopManager.lxqt.enable || xserverCfg.desktopManager.plasma5.enable then
-      "qt"
-    else if xserverCfg.desktopManager.xfce.enable then
-      "gtk2"
-    else if xserverCfg.enable || config.programs.sway.enable then
-      "gnome3"
-    else
-      "curses";
-
   # Instead of hard-coding the pinentry program, chose the appropriate one
   # based on the environment of the image the user has chosen to build.
   gpg-agent-conf = pkgs.runCommand "gpg-agent.conf" { } ''
     sed '/pinentry-program/d' ${drduhConfig}/gpg-agent.conf > $out
-    echo "pinentry-program ${pkgs.pinentry.${pinentryFlavour}}/bin/pinentry" >> $out
+    echo "pinentry-program ${pkgs.pinentry.curses}/bin/pinentry" >> $out
   '';
 
   view-yubikey-guide = pkgs.writeShellScriptBin "view-yubikey-guide" ''
@@ -60,21 +48,81 @@ let
     paths = [ view-yubikey-guide shortcut ];
   };
 
-in
-{
-  options.jd = {
-    yubikey = mkEnableOption "yubikey tools";
+  dicewareAddress = "localhost";
+  dicewarePort = 8080;
+  dicewareScript = pkgs.writeShellScriptBin "diceware-webapp" ''
+    viewer="$(type -P xdg-open || true)"
+    if [ -z "$viewer" ]; then
+      viewer="firefox"
+    fi
+    exec $viewer "http://"${lib.escapeShellArg dicewareAddress}":${
+      toString dicewarePort
+    }/index.html"
+  '';
+  dicewarePage = pkgs.stdenv.mkDerivation {
+    name = "diceware-page";
+    src = pkgs.fetchFromGitHub {
+      owner = "grempe";
+      repo = "diceware";
+      rev = "9ef886a2a9699f73ae414e35755fd2edd69983c8";
+      sha256 = "44rpK8svPoKx/e/5aj0DpEfDbKuNjroKT4XUBpiOw2g=";
+    };
+    patches = [
+      # Include changes published on https://secure.research.vt.edu/diceware/
+      ./diceware-vt.patch
+    ];
+    buildPhase = ''
+      cp -a . $out
+    '';
   };
+  dicewareWebApp = pkgs.makeDesktopItem {
+    name = "diceware";
+    icon = "${dicewarePage}/favicon.ico";
+    desktopName = "Diceware Passphrase Generator";
+    genericName = "Passphrase Generator";
+    comment = "Open the passphrase generator in a web browser";
+    categories = [ "Utility" ];
+    exec = "${dicewareScript}/bin/${dicewareScript.name}";
+  };
+
+in {
+  options.jd = { yubikey = mkEnableOption "yubikey tools"; };
 
   config = mkIf config.jd.yubikey {
     services.pcscd.enable = true;
     services.udev.packages = [ pkgs.yubikey-personalization ];
+    services.nginx = {
+      # Host the `https://secure.research.vt.edu/diceware/` website offline
+      enable = true;
+      virtualHosts."diceware.local" = {
+        listen = [{
+          addr = dicewareAddress;
+          port = dicewarePort;
+        }];
+        root = "${dicewarePage}";
+      };
+    };
 
     programs = {
-      ssh.startAgent = false;
-      gnupg.agent = {
+      # Add firefox for running the diceware web app
+      firefox = {
         enable = true;
-        enableSSHSupport = true;
+        preferences = {
+          # Disable data reporting confirmation dialogue
+          "datareporting.policy.dataSubmissionEnabled" = false;
+          # Disable welcome tab
+          "browser.aboutwelcome.enabled" = false;
+        };
+        # Make preferences appear as user-defined values
+        preferencesStatus = "user";
+      };
+      ssh.startAgent = false;
+      gnupg = {
+        dirmngr.enable = true;
+        agent = {
+          enable = true;
+          enableSSHSupport = true;
+        };
       };
     };
 
@@ -95,11 +143,12 @@ in
 
       # Testing
       ent
-      # (haskell.lib.justStaticExecutables haskellPackages.hopenpgp-tools)
 
       # Password generation tools
       diceware
+      dicewareWebApp
       pwgen
+      rng-tools
 
       # Miscellaneous tools that might be useful beyond the scope of the guide
       cfssl
@@ -108,6 +157,9 @@ in
       # This guide itself (run `view-yubikey-guide` on the terminal to open it
       # in a non-graphical environment).
       yubikey-guide
+
+      # PDF viewer
+      okular
     ];
 
     # Unset history so it's never stored
@@ -128,19 +180,18 @@ in
     # Copy the contents of contrib to the home directory, add a shortcut to
     # the guide on the desktop, and link to the whole repo in the documents
     # folder.
-    system.activationScripts.yubikeyGuide =
-      let
-        homeDir = "/home/nixos/";
-        desktopDir = homeDir + "Desktop/";
-        documentsDir = homeDir + "Documents/";
-      in
-      ''
-        mkdir -p ${desktopDir} ${documentsDir}
-        chown nixos ${homeDir} ${desktopDir} ${documentsDir}
+    system.activationScripts.yubikeyGuide = let
+      homeDir = "/home/nixos/";
+      desktopDir = homeDir + "Desktop/";
+      documentsDir = homeDir + "Documents/";
+    in ''
+      mkdir -p ${desktopDir} ${documentsDir}
+      chown nixos ${homeDir} ${desktopDir} ${documentsDir}
 
-        cp -R ${contrib}/* ${homeDir}
-        ln -sf ${yubikey-guide}/share/applications/yubikey-guide.desktop ${desktopDir}
-        ln -sfT ${src} ${documentsDir}/YubiKey-Guide
-      '';
+      cp -R ${contrib}/* ${homeDir}
+      ln -sf ${yubikey-guide}/share/applications/yubikey-guide.desktop ${desktopDir}
+      ln -sf ${dicewareWebApp}/share/applications/${dicewareWebApp.name} ${desktopDir}
+      ln -sfT ${src} ${documentsDir}/YubiKey-Guide
+    '';
   };
 }

@@ -1,9 +1,6 @@
-{ pkgs
-, config
-, lib
-, ...
-}:
-with lib; let
+{ pkgs, config, lib, ... }:
+with lib;
+let
   cfg = config.jd.graphical.wayland;
   systemCfg = config.machineData.systemConfig;
   bemenuCmd = pkgs.writeShellScript "bemenu-wrapper" ''
@@ -15,18 +12,33 @@ with lib; let
     "--term='${pkgs.foot}/bin/foot'"
     "--no-generic"
   ];
+  audioUpCmd = [ "${pkgs.scripts.soundTools}/bin/stools" "vol" "up" "5" ];
+  audioDownCmd = [ "${pkgs.scripts.soundTools}/bin/stools" "vol" "down" "5" ];
+  audioMutCmd = [ "${pkgs.scripts.soundTools}/bin/stools" "vol" "toggle" ];
+  captureDisplays = pkgs.writeShellScriptBin "wl-capture-displays" ''
+    ${pkgs.grim}/bin/grim - | ${pkgs.wl-clipboard}/bin/wl-copy
+  '';
+  captureDisplay = pkgs.writeShellScriptBin "wl-capture-display" ''
+    ${pkgs.grim}/bin/grim -o "$(${pkgs.slurp}/bin/slurp -o -f "%o")" - | ${pkgs.wl-clipboard}/bin/wl-copy
+  '';
+  captureRegion = pkgs.writeShellScriptBin "wl-capture-region" ''
+    ${pkgs.grim}/bin/grim -g "$(${pkgs.slurp}/bin/slurp)" - | ${pkgs.wl-clipboard}/bin/wl-copy
+  '';
+  captureBins = pkgs.symlinkJoin {
+    name = "wl-capture-bins";
+    paths = [ captureDisplays captureDisplay captureRegion ];
+  };
+
   dwlJD = pkgs.dwlBuilder {
     config = {
-      input = {
-        natscroll = systemCfg ? laptop && systemCfg.laptop.enable;
-      };
+      input = { natscroll = systemCfg ? laptop && systemCfg.laptop.enable; };
       cmds = {
         term = [ "${pkgs.foot}/bin/foot" ];
         menu = menuCmd;
         quit = [ "${wayExit}" ];
-        audioup = [ "${pkgs.scripts.soundTools}/bin/stools" "vol" "up" "5" ];
-        audiodown = [ "${pkgs.scripts.soundTools}/bin/stools" "vol" "down" "5" ];
-        audiomut = [ "${pkgs.scripts.soundTools}/bin/stools" "vol" "toggle" ];
+        audioup = audioUpCmd;
+        audiodown = audioDownCmd;
+        audiomut = audioMutCmd;
       };
       visual.cursorSize = config.jd.graphical.cursor.size;
     };
@@ -145,8 +157,7 @@ with lib; let
   isSwayDbg = cfg.type == "sway-dbg";
   isDwl = cfg.type == "dwl";
   isRiver = cfg.type == "river";
-in
-{
+in {
   options.jd.graphical.wayland = {
     type = mkOption {
       type = types.enum [ "dwl" "sway" "sway-dbg" "river" ];
@@ -156,12 +167,12 @@ in
 
   config = mkIf cfg.enable (mkMerge [
     {
-      assertions = [
-        {
-          assertion = systemCfg.graphical.wayland.enable;
-          message = "To enable wayland for user, it must be enabled for system";
-        }
-      ];
+      assertions = [{
+        assertion = systemCfg.graphical.wayland.enable;
+        message = "To enable wayland for user, it must be enabled for system";
+      }];
+
+      home.packages = [ captureBins ];
 
       home.file = {
         ".winitrc" = {
@@ -222,90 +233,104 @@ in
     })
     (mkIf isRiver {
       home.packages = [ pkgs.rivercarro-master ];
-      wayland.windowManager.river =
-        let
-          layout = "rivercarro";
-        in
-        {
-          enable = true;
-          package = pkgs.river-master;
-          settings =
-            let
-              all_tags = "$(((1 << 32) - 1))";
-              mod_key = "Super";
-            in
-            zipAttrs ([{
-              map.normal."${mod_key}+Shift Return".spawn = "foot";
-              map.normal."${mod_key} P".spawn = "\"" + (concatStringsSep " " menuCmd) + "\"";
+      wayland.windowManager.river = let layout = "rivercarro";
+      in {
+        enable = true;
+        package = pkgs.river-master;
+        settings = let
+          num_tags = 9;
+          all_tags = "$(((1 << ${toString num_tags}) - 1))";
+          mod_key = "Super";
+        in zipAttrs ([{
+          map.normal."${mod_key}+Shift Return".spawn = "foot";
+          map.normal."${mod_key} P".spawn = ''"''
+            + (concatStringsSep " " menuCmd) + ''"'';
 
-              map.normal."${mod_key}+Shift C" = "close";
-              map.normal."${mod_key}+Shift Q".spawn = "${wayExit}";
-              map.normal."${mod_key} J".focus-view = "next";
-              map.normal."${mod_key} K".focus-view = "previous";
-              map.normal."${mod_key}+Shift J".swap = "next";
-              map.normal."${mod_key}+Shift K".swap = "previous";
-              map.normal."${mod_key} Period".focus-output = "next";
-              map.normal."${mod_key} Comma".focus-output = "previous";
-              map.normal."${mod_key}+Shift Period".send-to-output = "next";
-              map.normal."${mod_key}+Shift Comma".send-to-output = "previous";
-              map.normal."${mod_key} Return" = "zoom";
+          map.normal."None Print".spawn =
+            ''"${captureRegion}/bin/wl-capture-region"'';
+          map.normal."${mod_key} Print".spawn =
+            ''"${captureDisplay}/bin/wl-capture-display"'';
+          map.normal."${mod_key}+Shift Print".spawn =
+            ''"${captureDisplays}/bin/wl-capture-displays"'';
 
-              left-pointer.normal."${mod_key} BTN_LEFT" = "move-view";
-              map-pointer.normal."${mod_key} BTN_RIGHT" = "resize-view";
-              map-pointer.normal."${mod_key} BTN_MIDDLE" = "move-view";
+          map.normal."${mod_key}+Shift C" = "close";
+          map.normal."${mod_key}+Shift Q".spawn = "${wayExit}";
+          map.normal."${mod_key} J".focus-view = "next";
+          map.normal."${mod_key} K".focus-view = "previous";
+          map.normal."${mod_key}+Shift J".swap = "next";
+          map.normal."${mod_key}+Shift K".swap = "previous";
+          map.normal."${mod_key} Period".focus-output = "next";
+          map.normal."${mod_key} Comma".focus-output = "previous";
+          map.normal."${mod_key}+Shift Period".send-to-output = "next";
+          map.normal."${mod_key}+Shift Comma".send-to-output = "previous";
+          map.normal."${mod_key} Return" = "zoom";
 
-              map.normal."${mod_key} 0".set-focused-tags = all_tags;
-              map.normal."${mod_key}+Shift 0".set-view-tags = all_tags;
+          left-pointer.normal."${mod_key} BTN_LEFT" = "move-view";
+          map-pointer.normal."${mod_key} BTN_RIGHT" = "resize-view";
+          map-pointer.normal."${mod_key} BTN_MIDDLE" = "move-view";
 
-              map.normal."${mod_key} Space" = "toggle-float";
-              map.normal."${mod_key} F" = "toggle-fullscreen";
+          map.normal."${mod_key} 0".set-focused-tags = all_tags;
+          map.normal."${mod_key}+Shift 0".set-view-tags = all_tags;
 
-              declare-mode = "passthrough";
-              map.normal."${mod_key} F11".enter-mode = "passthrough";
-              map.passthrough."${mod_key} F11".enter-mode = "normal";
+          map.normal."${mod_key} Space" = "toggle-float";
+          map.normal."${mod_key} F" = "toggle-fullscreen";
 
-              input."'*Touchpad'".tap = "enabled";
-              input."'*Touchpad'".natural-scroll = "enabled";
-              set-repeat = "50 300";
-              xcursor-theme.${config.home.pointerCursor.name} = toString config.jd.graphical.cursor.size;
-              focus-follows-cursor = "normal";
+          declare-mode = "passthrough";
+          map.normal."${mod_key} F11".enter-mode = "passthrough";
+          map.passthrough."${mod_key} F11".enter-mode = "normal";
 
-              default-layout = layout;
-            }] ++
-            (map
-              (index:
-                let
-                  i = toString index;
-                  tags = "$((1 << (${i} - 1)))";
-                in
-                {
-                  map.normal."${mod_key} ${i}".set-focused-tags = tags;
-                  map.normal."${mod_key}+Shift ${i}".set-view-tags = tags;
-                  map.normal."${mod_key}+Control ${i}".toggle-focus-tags = tags;
-                  map.normal."Shift+${mod_key}+Control ${i}".toggle-view-tags = tags;
-                })
-              (range 1 9)) ++
-            (optional (layout == "rivercarro" || layout == "rivertile") {
-              map.normal."${mod_key} H".send-layout-cmd.${layout} = "'main-ratio -0.05'";
-              map.normal."${mod_key} L".send-layout-cmd.${layout} = "'main-ratio +0.05'";
-              map.normal."${mod_key} I".send-layout-cmd.${layout} = "'main-count +1'";
-              map.normal."${mod_key} D".send-layout-cmd.${layout} = "'main-count -1'";
-              map.normal."${mod_key} Up".send-layout-cmd.${layout} = "'main-location top'";
-              map.normal."${mod_key} Right".send-layout-cmd.${layout} = "'main-location right'";
-              map.normal."${mod_key} Down".send-layout-cmd.${layout} = "'main-location bottom'";
-              map.normal."${mod_key} Left".send-layout-cmd.${layout} = "'main-location left'";
-            }) ++
-            (optional (layout == "rivercarro") {
-              map.normal."${mod_key} M".send-layout-cmd.${layout} = "'main-location monocle'";
-              map.normal."${mod_key} T".send-layout-cmd.${layout} = "'main-location left'";
-            }));
-          extraConfig = ''
-            ${layout} &
-            ${compositorStartup}/bin/compositor-setup
-          '';
-          # Do custom systemd instead
-          systemd.enable = false;
-        };
+          input."'*Touchpad'".tap = "enabled";
+          input."'*Touchpad'".natural-scroll = "enabled";
+          set-repeat = "50 300";
+          xcursor-theme.${config.home.pointerCursor.name} =
+            toString config.jd.graphical.cursor.size;
+          focus-follows-cursor = "normal";
+
+          default-layout = layout;
+        }] ++ (map (index:
+          let
+            i = toString index;
+            tags = "$((1 << (${i} - 1)))";
+          in {
+            map.normal."${mod_key} ${i}".set-focused-tags = tags;
+            map.normal."${mod_key}+Shift ${i}".set-view-tags = tags;
+            map.normal."${mod_key}+Control ${i}".toggle-focused-tags = tags;
+            map.normal."${mod_key}+Shift+Control ${i}".toggle-view-tags = tags;
+          }) (range 1 num_tags))
+          ++ (optional (layout == "rivercarro" || layout == "rivertile") ({
+            map.normal."${mod_key} H".send-layout-cmd.${layout} =
+              "'main-ratio -0.05'";
+            map.normal."${mod_key} L".send-layout-cmd.${layout} =
+              "'main-ratio +0.05'";
+            map.normal."${mod_key} I".send-layout-cmd.${layout} =
+              "'main-count +1'";
+            map.normal."${mod_key} D".send-layout-cmd.${layout} =
+              "'main-count -1'";
+          }) ++ (map (keys: {
+            map.normal."${mod_key}${elemAt keys 0}".send-layout-cmd.${layout} =
+              "'main-location top'";
+            map.normal."${mod_key}${elemAt keys 1}".send-layout-cmd.${layout} =
+              "'main-location left'";
+            map.normal."${mod_key}${elemAt keys 2}".send-layout-cmd.${layout} =
+              "'main-location bottom'";
+            map.normal."${mod_key}${elemAt keys 3}".send-layout-cmd.${layout} =
+              "'main-location right'";
+          }) [
+            [ " Up" " Left" " Down" " Right" ]
+            [ "+Shift W" "+Shift A" "+Shift S" "+Shift D" ]
+          ])) ++ (optional (layout == "rivercarro") {
+            map.normal."${mod_key} M".send-layout-cmd.${layout} =
+              "'main-location monocle'";
+            map.normal."${mod_key} T".send-layout-cmd.${layout} =
+              "'main-location left'";
+          }));
+        extraConfig = ''
+          ${layout} &
+          ${compositorStartup}/bin/compositor-setup
+        '';
+        # Do custom systemd instead
+        systemd.enable = false;
+      };
 
       systemd.user.targets.river-session = {
         Unit = {

@@ -184,9 +184,9 @@ in {
                   addonId = "magnolia@12.34";
                   version = "master";
                   url =
-                    "https://github.com/bpc-clone/bpc_updates/releases/download/latest/bypass_paywalls_clean-3.6.4.0.xpi";
+                    "https://gitflic.ru/project/magnolia1234/bpc_uploads/blob/raw?file=bypass_paywalls_clean-3.9.0.0.xpi&inline=false&commit=0532b9830d43992b2f2e63e5335d58d1a8681704";
                   sha256 =
-                    "1jrdrvyx5x19cs7haz8ki29xhn39x8rnxzn7ydggf8csa85y98lk";
+                    "sha256-DLhryk7rdglguLEUscvZgveC2adyTDTyC0mp2eTuvBs=";
                   meta = with lib; {
                     description = "A paywall bypasser";
                     license = licenses.mit;
@@ -332,6 +332,7 @@ in {
 
               passwords = {
                 "extensions.formautofill.addresses.enabled" = false;
+                "extensions.formautofill.creditCards.enabled" = false;
                 "signon.rememberSignons" = false;
                 "signon.autofillForms" = false;
                 "signon.generation.enabled" = false;

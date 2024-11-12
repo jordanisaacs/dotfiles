@@ -1,25 +1,12 @@
-{ pkgs
-, config
-, lib
-, ...
-}:
-with lib;
-{
-  options.jd = {
-    sound = mkEnableOption "sound";
-  };
+{ pkgs, config, lib, ... }:
+with lib; {
+  options.jd = { sound = mkEnableOption "sound"; };
 
   config = {
-    sound.enable = config.jd.sound;
     hardware.pulseaudio.enable = config.jd.sound;
 
-    services.xserver = {
-      enable = true;
-      displayManager.sddm.enable = true;
-
-      desktopManager.plasma5 = {
-        enable = true;
-      };
-    };
+    services.displayManager.sddm.enable = true;
+    services.displayManager.sddm.wayland.enable = true;
+    services.desktopManager.plasma6.enable = true;
   };
 }

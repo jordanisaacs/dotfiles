@@ -9,6 +9,8 @@ in {
   };
 
   config = mkIf cfg.applications.enable {
+    home.sessionVariables = { CALIBRE_USE_SYSTEM_THEME = "true"; };
+
     home.packages = with pkgs;
       [
         xorg.xinput
@@ -54,6 +56,9 @@ in {
         # firmware-manager - need to wait for polkit support
 
         (rstudioWrapper.override { packages = with rPackages; [ tidyverse ]; })
+
+        # Logitech
+        solaar
       ] ++ lib.optional systemCfg.networking.wifi.enable pkgs.iwgtk;
 
     xdg.desktopEntries = {

@@ -1,12 +1,7 @@
-{ pkgs
-, config
-, lib
-, ...
-}:
-with lib; let
-  cfg = config.jd.framework;
-in
-{
+{ pkgs, config, lib, ... }:
+with lib;
+let cfg = config.jd.framework;
+in {
   options.jd.framework = {
     enable = mkOption {
       description = "Enable framework options";
@@ -16,7 +11,7 @@ in
 
     fprint = {
       enable = mkOption {
-        description = "Enable fingeprint";
+        description = "Enable fingerprint";
         type = types.bool;
         default = false;
       };
@@ -34,7 +29,7 @@ in
           interval = "weekly";
         };
 
-        fwupd. extraRemotes = [ "lvfs-testing" ];
+        fwupd.extraRemotes = [ "lvfs-testing" ];
 
         # https://community.frame.work/t/headphone-jack-intermittent-noise/5246/90
         acpid = {
@@ -42,11 +37,13 @@ in
           handlers = {
             headphone-power-save-off = {
               event = "jack/headphone HEADPHONE plug";
-              action = "echo 0 >/sys/module/snd_hda_intel/parameters/power_save";
+              action =
+                "echo 0 >/sys/module/snd_hda_intel/parameters/power_save";
             };
             headphone-power-save-on = {
               event = "jack/headphone HEADPHONE unplug";
-              action = "echo 1 >/sys/module/snd_hda_intel/parameters/power_save";
+              action =
+                "echo 1 >/sys/module/snd_hda_intel/parameters/power_save";
             };
           };
         };
@@ -71,18 +68,19 @@ in
         '';
       };
     }
-    (mkIf cfg.fprint.enable {
-      services.fprintd.enable = true;
-    })
+    (mkIf cfg.fprint.enable { services.fprintd.enable = true; })
     (mkIf config.jd.graphical.enable {
       boot.initrd.kernelModules = [ "i915" ];
 
-      environment.defaultPackages = with pkgs; [ intel-gpu-tools vulkan-validation-layers vulkan-tools ];
+      environment.defaultPackages = with pkgs; [
+        intel-gpu-tools
+        vulkan-validation-layers
+        vulkan-tools
+      ];
       hardware = {
-        opengl = {
+        graphics = {
           enable = true;
-          driSupport = true;
-          driSupport32Bit = true;
+          enable32Bit = true;
           extraPackages = with pkgs; [
             intel-media-driver
             libvdpau-va-gl

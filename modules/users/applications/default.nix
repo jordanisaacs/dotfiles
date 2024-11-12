@@ -1,13 +1,8 @@
-{ pkgs
-, config
-, lib
-, ...
-}:
+{ pkgs, config, lib, ... }:
 with lib;
-with builtins; let
-  cfg = config.jd.applications;
-in
-{
+with builtins;
+let cfg = config.jd.applications;
+in {
   imports = [
     ./taskwarrior.nix
     ./direnv.nix
@@ -70,7 +65,7 @@ in
       # A basic python environment
       (python3.withPackages (ps: with ps; [ pandas requests ]))
       ruff
-      nodePackages.pyright
+      pyright
 
       # basic bash tools
       nodePackages.bash-language-server
@@ -82,23 +77,22 @@ in
       # language tools
       nixd
       nixfmt
+
+      # Keyboard
+      qmk
     ];
 
     services.playerctld.enable = true;
 
     systemd.user.timers."nix-index" = {
-      Unit = {
-        Description = "Run nix-index weekly";
-      };
+      Unit = { Description = "Run nix-index weekly"; };
       Timer = {
         OnCalendar = "weekly";
         Persistent = true;
       };
     };
     systemd.user.services."nix-index" = {
-      Unit = {
-        Description = "Update nix-index";
-      };
+      Unit = { Description = "Update nix-index"; };
       Service = {
         ExecStart = "${pkgs.nix-index}/bin/nix-index";
         Type = "oneshot";

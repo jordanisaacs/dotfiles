@@ -25,7 +25,6 @@
     simple-nixos-mailserver.url =
       "gitlab:simple-nixos-mailserver/nixos-mailserver";
     simple-nixos-mailserver.inputs.nixpkgs.follows = "nixpkgs";
-    simple-nixos-mailserver.inputs.utils.follows = "flake-utils";
 
     flake-utils.url = "github:numtide/flake-utils";
 
@@ -235,7 +234,8 @@
       };
 
       defaultDesktopUser = defaultUser // {
-        groups = defaultUser.groups ++ [ "video" "libvirtd" ];
+        # Move plugdev to be auto-enabled
+        groups = defaultUser.groups ++ [ "video" "libvirtd" "plugdev" ];
       };
 
       defaultServerConfig = {
@@ -419,6 +419,8 @@
           enable = true;
           nixseparatedebuginfod.enable = true;
         };
+        logitech.enable = true;
+        qmk.enable = true;
       };
 
       desktopConfig = utils.recursiveMerge [

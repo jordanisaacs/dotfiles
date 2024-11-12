@@ -8,7 +8,10 @@ in {
   };
 
   config = mkIf cfg.enable (mkMerge [
-    { environment.systemPackages = with pkgs; [ gdb strace elfutils bpftrace ]; }
+    {
+      environment.systemPackages = with pkgs; [ gdb strace elfutils bpftrace ];
+      systemd.coredump.enable = true;
+    }
     (mkIf cfg.nixseparatedebuginfod.enable {
       services.nixseparatedebuginfod.enable = true;
     })

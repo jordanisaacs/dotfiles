@@ -18,7 +18,7 @@
           lockFile = "${inputs.awatcher-src}/Cargo.lock";
           outputHashes = {
             "aw-client-rust-0.1.0" =
-              "sha256-fCjVfmjrwMSa8MFgnC8n5jPzdaqSmNNdMRaYHNbs8Bo=";
+              "sha256-M4I4knIMXsyih5Hqo+3BXCAhLKfWQXZF+9kJt88BAZQ=";
           };
         };
 
@@ -27,22 +27,8 @@
         buildInputs = [ super.openssl ];
       };
 
-      river-master = super.river.overrideAttrs (oa: {
-        version = "master";
-
-        src = inputs.river-src;
-
-        buildInputs = with super; [
-          scdoc
-          udev
-          libevdev
-          libinput
-          pixman
-          wlroots
-          wayland-protocols
-          libxkbcommon
-        ];
-      });
+      # Back to using upstream river.
+      river-master = super.river;
 
       # Version of xss-lock that supports logind SetLockedHint
       xss-lock = super.xss-lock.overrideAttrs (oa: {
@@ -54,10 +40,22 @@
         };
       });
 
-      rivercarro-master = super.rivercarro.overrideAttrs (oa: {
-        version = "master";
-        src = inputs.rivercarro-src;
-      });
+      rivercarro-master =
+        let deps = super.callPackage ./rivercarro.zig.zon.nix { };
+        in super.rivercarro.overrideAttrs (oa: {
+          version = "master";
+          src = inputs.rivercarro-src;
+          inherit deps;
+          nativeBuildInputs = with super; [
+            pkg-config
+            river-master
+            wayland
+            wayland-protocols
+            wayland-scanner
+            zig_0_13.hook
+          ];
+          zigBuildFlags = [ "--system" "${deps}" ];
+        });
 
       # Commented out because need to update the patch
       # xorg = prev.xorg // {

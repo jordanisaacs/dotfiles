@@ -1,13 +1,7 @@
-{ pkgs
-, config
-, lib
-, ...
-}:
+{ pkgs, config, lib, ... }:
 with lib;
-let
-  cfg = config.jd.applications.readline;
-in
-{
+let cfg = config.jd.applications.readline;
+in {
   options.jd.applications.readline.enable = mkEnableOption "readline";
 
   config = mkIf cfg.enable {
@@ -17,18 +11,27 @@ in
       includeSystemConfig = true;
       variables = {
         "keyseq-timeout" = 250;
-        "editing-mode" = "vi";
+        "editing-mode" = "emacs";
+        "bell-style" = "none";
 
         # display all possible matches for an ambiguous pattern at first tab
         "show-all-if-ambiguous" = true;
+        "show-all-if-unmodified" = true;
+
+        # don't duplicate single match insert
+        "skip-completed-text" = true;
 
         # append char to indicate type
         "visible-stats" = true;
+        # marking files
+        "mark-directories" = true;
+        "mark-modified-lines" = true;
+        "mark-symlinked-directories" = true;
+        "menu-complete-display-prefix" = true;
+
         # color files by types
         "colored-stats" = true;
-        "mark-symlinked-directories" = true;
         "colored-completion-prefix" = true;
-        "menu-complete-display-prefix" = true;
       };
 
       extraConfig =
@@ -36,11 +39,9 @@ in
         ''
           tab: menu-complete
           "\e[Z": menu-complete-backward
-        ''
-        +
+        '' +
         # https://wiki.archlinux.org/title/readline#Different_cursor_shapes_for_each_mode
         ''
-          set show-mode-in-prompt on
           $if lnav
           	set vi-ins-mode-string "I"
           	set vi-cmd-mode-string "N"
@@ -54,9 +55,17 @@ in
           $endif
           $endif
         ''
-        # from http://www.usenix.org.uk/content/bash.html#input
+        # emacs mode
+        + ''
+          $if mode=emacs
+          "\C-u": universal-argument
+          "\C-x\C-r": re-read-init-file
+          $endif
+        ''
+        # VI mode from http://www.usenix.org.uk/content/bash.html#input
         + ''
           $if mode=vi
+          set show-mode-in-prompt on
 
           set keymap vi-command
           Control-l: clear-screen
