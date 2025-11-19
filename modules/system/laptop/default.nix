@@ -1,4 +1,9 @@
-{ pkgs, config, lib, ... }:
+{
+  pkgs,
+  config,
+  lib,
+  ...
+}:
 with lib;
 let
   cfg = config.jd.laptop;
@@ -58,24 +63,31 @@ let
         sleep $delay
     done
   '';
-in {
+in
+{
   options.jd.laptop = {
-    enable =
-      mkEnableOption "Laptop settings. Also tags as laptop for user settings.";
+    enable = mkEnableOption "Laptop settings. Also tags as laptop for user settings.";
 
     manager = mkOption {
-      type = types.enum [ "tlp" "auto-cpufreq" ];
-      description =
-        "Whether this wireguard interface has a dns server, should be a client of the dns servers, or nothing";
+      type = types.enum [
+        "tlp"
+        "auto-cpufreq"
+      ];
+      description = "Whether this wireguard interface has a dns server, should be a client of the dns servers, or nothing";
       default = "auto-cpufreq";
     };
   };
 
   config = mkIf cfg.enable (mkMerge [
     {
-      environment.systemPackages = with pkgs; [ acpid powertop ];
+      environment.systemPackages = with pkgs; [
+        acpid
+        powertop
+      ];
 
-      programs = { light.enable = true; };
+      programs = {
+        light.enable = true;
+      };
 
       systemd = {
         # Replace suspend mode with hybrid-sleep. So can do hybrid-sleep then hibernate
@@ -89,7 +101,9 @@ in {
         user.services."autobrightness" = {
           wantedBy = [ "default.target" ];
 
-          unitConfig = { Description = "Automatic brightness adjustment"; };
+          unitConfig = {
+            Description = "Automatic brightness adjustment";
+          };
 
           serviceConfig = {
             ExecStart = brightnessScript;
@@ -115,14 +129,16 @@ in {
           # idleaction with startx: https://bbs.archlinux.org/viewtopic.php?id=207536
           # <LeftMouse>https://wiki.archlinux.org/title/Power_management
           # Options: ttps://www.freedesktop.org/software/systemd/man/logind.conf.html
-          extraConfig = ''
-            HandleLidSwitch=suspend-then-hibernate
-            HandleLidSwitchExternalPower=suspend-then-hibernate
-            HandleLidSwitchDocked=ignore
-            HandlePowerKey=suspend-then-hibernate
-            IdleAction=suspend-then-hibernate
-            IdleActionSec=5min
-          '';
+          settings = {
+            Login = {
+              HandleLidSwitch = "suspend-then-hibernate";
+              HandleLidSwitchExternalPower = "suspend-then-hibernate";
+              HandleLidSwitchDocked = "ignore";
+              HandlePowerKey = "suspend-then-hibernate";
+              IdleAction = "suspend-then-hibernate";
+              IdleActionSec = "5min";
+            };
+          };
         };
 
         acpid = {
@@ -198,21 +214,26 @@ in {
           "PCIE_ASPM_ON_AC" = "default";
           "PCIE_ASPM_ON_BAT" = "powersupersave";
           "USB_AUTOSUSPEND" = 0;
-        } // (if config.jd.framework.enable then {
-          "CPU_ENERGY_PERF_POLICY_ON_AC" = "performance";
-          "CPU_ENERGY_PERF_POLICY_ON_BAT" = "power";
-          "PLATFORM_PROFILE_ON_AC" = "performance";
-          "PLATFORM_PROFILE_ON_BAT" = "power";
-          "CPU_HWP_DYN_BOOST_ON_AC" = 1;
-          "CPU_HWP_DYN_BOOST_ON_BAT" = 0;
-          "INTEL_GPU_MIN_FREQ_ON_AC" = 100;
-          "INTEL_GPU_MAX_FREQ_ON_AC" = 1300;
-          "INTEL_GPU_BOOST_FREQ_ON_AC" = 1300;
-          "INTEL_GPU_MIN_FREQ_ON_BAT" = 100;
-          "INTEL_GPU_MAX_FREQ_ON_BAT" = 800;
-          "INTEL_GPU_BOOST_FREQ_ON_BAT" = 1000;
-        } else
-          { });
+        }
+        // (
+          if config.jd.framework.enable then
+            {
+              "CPU_ENERGY_PERF_POLICY_ON_AC" = "performance";
+              "CPU_ENERGY_PERF_POLICY_ON_BAT" = "power";
+              "PLATFORM_PROFILE_ON_AC" = "performance";
+              "PLATFORM_PROFILE_ON_BAT" = "power";
+              "CPU_HWP_DYN_BOOST_ON_AC" = 1;
+              "CPU_HWP_DYN_BOOST_ON_BAT" = 0;
+              "INTEL_GPU_MIN_FREQ_ON_AC" = 100;
+              "INTEL_GPU_MAX_FREQ_ON_AC" = 1300;
+              "INTEL_GPU_BOOST_FREQ_ON_AC" = 1300;
+              "INTEL_GPU_MIN_FREQ_ON_BAT" = 100;
+              "INTEL_GPU_MAX_FREQ_ON_BAT" = 800;
+              "INTEL_GPU_BOOST_FREQ_ON_BAT" = 1000;
+            }
+          else
+            { }
+        );
       };
     })
   ]);

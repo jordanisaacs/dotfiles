@@ -1,17 +1,26 @@
-{ pkgs, config, lib, ... }:
+{
+  pkgs,
+  config,
+  lib,
+  ...
+}:
 with lib;
 let
   cfg = config.jd.graphical;
   systemCfg = config.machineData.systemConfig;
-in {
+in
+{
   options.jd.graphical.applications = {
     enable = mkEnableOption "graphical applications";
   };
 
   config = mkIf cfg.applications.enable {
-    home.sessionVariables = { CALIBRE_USE_SYSTEM_THEME = "true"; };
+    home.sessionVariables = {
+      CALIBRE_USE_SYSTEM_THEME = "true";
+    };
 
-    home.packages = with pkgs;
+    home.packages =
+      with pkgs;
       [
         xorg.xinput
 
@@ -24,11 +33,11 @@ in {
         emacs-jd
 
         # updated version with wayland/grim backend
-        jdpkgs.flameshot
+        flameshot
         libsixel
 
         # Password manager
-        bitwarden
+        bitwarden-desktop
 
         # Messaging
         slack
@@ -52,6 +61,9 @@ in {
         # kdeconnect
         tlaplusToolbox
 
+        # GUI disk usage
+        kdePackages.filelight
+
         # Utilities
         # firmware-manager - need to wait for polkit support
 
@@ -59,7 +71,8 @@ in {
 
         # Logitech
         solaar
-      ] ++ lib.optional systemCfg.networking.wifi.enable pkgs.iwgtk;
+      ]
+      ++ lib.optional systemCfg.networking.wifi.enable pkgs.iwgtk;
 
     xdg.desktopEntries = {
       cider = {
@@ -69,7 +82,10 @@ in {
         terminal = false;
         icon = "Cider";
         type = "Application";
-        categories = [ "Audio" "Video" ];
+        categories = [
+          "Audio"
+          "Video"
+        ];
         mimeType = [
           "x-scheme-handler/ame"
           "x-scheme-handler/cider"

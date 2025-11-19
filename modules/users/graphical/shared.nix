@@ -1,10 +1,22 @@
-{ pkgs, config, lib, ... }:
+{
+  pkgs,
+  config,
+  lib,
+  ...
+}:
 with lib;
-let cfg = config.jd.graphical;
-in {
+let
+  cfg = config.jd.graphical;
+in
+{
   options.jd.graphical = {
     theme = mkOption {
-      type = with types; enum [ "arc-dark" "materia-dark" ];
+      type =
+        with types;
+        enum [
+          "arc-dark"
+          "materia-dark"
+        ];
       description = "Enable wayland";
       default = "arc-dark";
     };
@@ -20,24 +32,29 @@ in {
 
   config = mkIf (cfg.xorg.enable || cfg.wayland.enable) {
     home = {
-      sessionVariables = { QT_QPA_PLATFORMTHEME = "qt5ct"; };
+      sessionVariables = {
+        QT_QPA_PLATFORMTHEME = "qt6ct";
+      };
 
       packages = with pkgs; [
         # qt
-        libsForQt5.qtstyleplugin-kvantum
-        libsForQt5.qt5ct
+        kdePackages.qtstyleplugin-kvantum
+        kdePackages.qt6ct
 
         xdg-utils
 
         # Fonts
-        (nerdfonts.override { fonts = [ "JetBrainsMono" "Monaspace" ]; })
+        nerd-fonts.jetbrains-mono
+        nerd-fonts.monaspace
         emacs-all-the-icons-fonts
-        noto-fonts-emoji
+        noto-fonts-color-emoji
         roboto
         bm-font
+        bm-variable-font
         noto-fonts-cjk-sans # Chinese
         dejavu_fonts
         liberation_ttf
+        symbols-nerd-font # for emacs nerd-icons
         corefonts # microsoft
         carlito
 
@@ -104,25 +121,29 @@ in {
       ];
 
       configFile = {
-        "fontconfig/conf.d/04-font-priority.conf" = let
-          fcBool = x: "<bool>" + (boolToString x) + "</bool>";
-          renderConf = ''
-            <?xml version='1.0'?>
-            <!DOCTYPE fontconfig SYSTEM 'urn:fontconfig:fonts.dtd'>
-            <fontconfig>
-              <!-- Default rendering settings -->
-              <alias>
-                <family>Berkeley Mono Variable</family>
-                <prefer>
+        "fontconfig/conf.d/04-font-priority.conf" =
+          let
+            fcBool = x: "<bool>" + (boolToString x) + "</bool>";
+            renderConf = ''
+              <?xml version='1.0'?>
+              <!DOCTYPE fontconfig SYSTEM 'urn:fontconfig:fonts.dtd'>
+              <fontconfig>
+                <!-- Default rendering settings -->
+                <alias>
                   <family>Berkeley Mono Variable</family>
-                  <family>JetbrainsMonoNL NFM</family>
-                </prefer>
-              </alias>
-            </fontconfig>
-          '';
-        in { text = renderConf; };
+                  <prefer>
+                    <family>Berkeley Mono Variable</family>
+                    <family>JetbrainsMonoNL NFM</family>
+                  </prefer>
+                </alias>
+              </fontconfig>
+            '';
+          in
+          {
+            text = renderConf;
+          };
 
-        "qt5ct/qt5ct.conf" = {
+        "qt6ct/qt6ct.conf" = {
           text = ''
             [Appearance]
             icon_theme=la-capitaine-icon-theme
@@ -143,7 +164,9 @@ in {
           source = "${pkgs.materia-kde-theme}/share/Kvantum/MateriaDark";
         };
 
-        "wallpapers" = { source = ./wallpapers; };
+        "wallpapers" = {
+          source = ./wallpapers;
+        };
 
         "kdeglobals" = {
           # TODO: this is a wayland only terminal
@@ -166,25 +189,25 @@ in {
       "org/gnome/desktop/interface" = {
         # https://askubuntu.com/questions/1404764/how-to-use-hdystylemanagercolor-scheme
         color-scheme = "prefer-dark";
-        text-scaling-factor = 1.25;
+        text-scaling-factor = 1.5;
         cursor-size = cfg.cursor.size;
       };
     };
 
-    systemd.user.services.gnome-keyring =
-      mkIf config.machineData.systemConfig.gnome.keyring.enable {
-        Unit = {
-          Description = "GNOME Keyring";
-          PartOf = [ "graphical-session-pre.target" ];
-        };
-
-        Service = {
-          ExecStart =
-            "/run/wrappers/bin/gnome-keyring-daemon --start --foreground";
-          Restart = "on-abort";
-        };
-
-        Install = { WantedBy = [ "graphical-session-pre.target" ]; };
+    systemd.user.services.gnome-keyring = mkIf config.machineData.systemConfig.gnome.keyring.enable {
+      Unit = {
+        Description = "GNOME Keyring";
+        PartOf = [ "graphical-session-pre.target" ];
       };
+
+      Service = {
+        ExecStart = "/run/wrappers/bin/gnome-keyring-daemon --start --foreground";
+        Restart = "on-abort";
+      };
+
+      Install = {
+        WantedBy = [ "graphical-session-pre.target" ];
+      };
+    };
   };
 }

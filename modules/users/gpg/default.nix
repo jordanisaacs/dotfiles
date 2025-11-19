@@ -1,15 +1,8 @@
-{ pkgs
-, config
-, lib
-, ...
-}:
-with lib; let
-  cfg = config.jd.gpg;
-in
-{
-  options.jd.gpg = {
-    enable = mkEnableOption "gpg";
-  };
+{ pkgs, config, lib, ... }:
+with lib;
+let cfg = config.jd.gpg;
+in {
+  options.jd.gpg = { enable = mkEnableOption "gpg"; };
 
   config = mkIf cfg.enable {
     programs.gpg = {
@@ -41,14 +34,12 @@ in
 
     services.gpg-agent = {
       enable = true;
-      pinentryPackage =  pkgs.pinentry-gnome3;
+      pinentry.package = pkgs.pinentry-gnome3;
       enableExtraSocket = true;
       enableSshSupport = true;
       enableBashIntegration = true;
       enableScDaemon = true;
-      sshKeys = [
-        "6B49022AD16FF1DEC5B9D2323855582D31C91076"
-      ];
+      sshKeys = [ "6B49022AD16FF1DEC5B9D2323855582D31C91076" ];
       defaultCacheTtl = 60;
       maxCacheTtl = 120;
     };

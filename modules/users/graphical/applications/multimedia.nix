@@ -1,17 +1,10 @@
-{ pkgs
-, config
-, lib
-, ...
-}:
-with lib; let
+{ pkgs, config, lib, ... }:
+with lib;
+let
   cfg = config.jd.graphical.applications;
-  isGraphical =
-    let
-      cfg = config.jd.graphical;
-    in
-    cfg.xorg.enable || cfg.wayland.enable;
-in
-{
+  isGraphical = let cfg = config.jd.graphical;
+  in cfg.xorg.enable || cfg.wayland.enable;
+in {
   options.jd.graphical.applications.multimedia = {
     enable = mkOption {
       type = types.bool;
@@ -35,7 +28,7 @@ in
       gimp
 
       # pdf viewer
-      okular
+      kdePackages.okular
 
       # image viewer
       vimiv-qt
@@ -44,7 +37,7 @@ in
       obs-studio
 
       # video editing
-      kdenlive
+      kdePackages.kdenlive
 
       # audio
       ardour
@@ -56,12 +49,13 @@ in
         profile = "gpu-hq";
         vo = "gpu";
         hwdec = "auto-safe";
-        ytdl-format = "ytdl-format=bestvideo[height<=?1920][fps<=?30][vcodec!=?vp9]+bestaudio/best";
+        ytdl-format =
+          "ytdl-format=bestvideo[height<=?1920][fps<=?30][vcodec!=?vp9]+bestaudio/best";
       };
     };
 
     xdg = {
-      mimeApps. defaultApplications = {
+      mimeApps.defaultApplications = {
         "image/bmp" = "vimiv.desktop";
         "image/gif" = "vimiv.desktop";
         "image/jpeg" = "vimiv.desktop";

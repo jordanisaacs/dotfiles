@@ -201,7 +201,7 @@ in {
               ${pkgs.sway}/bin/sway --debug > ${config.xdg.stateHome}/sway/sway.log 2>&1
             ''}
             ${optionalString isRiver ''
-              ${pkgs.river-master}/bin/river
+              ${pkgs.river-classic}/bin/river
             ''}
           '';
         };
@@ -236,7 +236,7 @@ in {
       wayland.windowManager.river = let layout = "rivercarro";
       in {
         enable = true;
-        package = pkgs.river-master;
+        package = pkgs.river-classic;
         settings = let
           num_tags = 9;
           all_tags = "$(((1 << ${toString num_tags}) - 1))";

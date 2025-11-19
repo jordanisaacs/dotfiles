@@ -1,9 +1,11 @@
-{ pkgs
-, config
-, lib
-, ...
+{
+  pkgs,
+  config,
+  lib,
+  ...
 }:
-with lib; let
+with lib;
+let
   cfg = config.jd.greetd;
 in
 {
@@ -17,16 +19,17 @@ in
     services.greetd = {
       enable = true;
       restart = true;
+      useTextGreeter = true;
       settings = {
         terminal.vt = 1;
         default_session =
           let
-            swaySession = pkgs.writeTextFile {
-              name = "sway-session.desktop";
-              destination = "/sway-session.desktop";
+            waylandSession = pkgs.writeTextFile {
+              name = "wayland-session.desktop";
+              destination = "/wayland-session.desktop";
               text = ''
                 [Desktop Entry]
-                Name=Sway
+                Name=Wayland
                 Exec=$HOME/.winitrc
               '';
             };
@@ -54,20 +57,19 @@ in
             # First session is used by default
             sessionDirs = builtins.concatStringsSep ":" (
               (
-                if (config.jd.graphical.enable && config.jd.graphical.wayland.enable)
-                then [ swaySession ]
-                else [ ]
+                if (config.jd.graphical.enable && config.jd.graphical.wayland.enable) then
+                  [ waylandSession ]
+                else
+                  [ ]
               )
               ++ [ zshSession ]
               ++ (
-                if (config.jd.graphical.enable && config.jd.graphical.xorg.enable)
-                then [ xorgSession ]
-                else [ ]
+                if (config.jd.graphical.enable && config.jd.graphical.xorg.enable) then [ xorgSession ] else [ ]
               )
             );
           in
           {
-            command = "${pkgs.greetd.tuigreet}/bin/tuigreet --time --sessions ${sessionDirs} --remember --remember-user-session";
+            command = "${pkgs.tuigreet}/bin/tuigreet --time --sessions ${sessionDirs} --remember --remember-user-session";
             user = "greeter";
           };
       };

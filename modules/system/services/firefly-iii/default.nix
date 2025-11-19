@@ -1,10 +1,12 @@
-{ config
-, lib
-, pkgs
-, ...
+{
+  config,
+  lib,
+  pkgs,
+  ...
 }:
 # TODO: Incomplete
-with lib; let
+with lib;
+let
   cfg = config.jd.firefly-iii;
   user = "firefly-iii";
   group = "phpfpm";
@@ -13,17 +15,16 @@ with lib; let
     inherit (cfg) dataDir;
   };
 
-  dbConfig =
-    {
-      DB_CONNECTION = cfg.dbType;
-    }
-    // (optionalAttrs (cfg.dbType != "sqlite") {
-      # DB_HOST = cfg.host;
-      # DB_PORT = cfg.port;
-      # DB_DATABASE = cfg.database;
-      # DB_USERNAME = cfg.username;
-      # DB_PASSWORD._secret = db.passwordFile;
-    });
+  dbConfig = {
+    DB_CONNECTION = cfg.dbType;
+  }
+  // (optionalAttrs (cfg.dbType != "sqlite") {
+    # DB_HOST = cfg.host;
+    # DB_PORT = cfg.port;
+    # DB_DATABASE = cfg.database;
+    # DB_USERNAME = cfg.username;
+    # DB_PASSWORD._secret = db.passwordFile;
+  });
 
   appConfig = {
     # APP_URL = cfg.appURL;
@@ -84,16 +85,21 @@ in
     };
 
     dbType = mkOption {
-      type = types.enum [ "pgsql" "mysql" "sqlite" ];
+      type = types.enum [
+        "pgsql"
+        "mysql"
+        "sqlite"
+      ];
       default = "sqlite";
       description = "Database engine to use.";
     };
 
     config = mkOption {
-      type = with types;
-        attrsOf
-          (nullOr
-            (either
+      type =
+        with types;
+        attrsOf (
+          nullOr (
+            either
               (oneOf [
                 bool
                 int
@@ -104,7 +110,10 @@ in
               (submodule {
                 options = {
                   _secret = mkOption {
-                    type = nullOr (oneOf [ str path ]);
+                    type = nullOr (oneOf [
+                      str
+                      path
+                    ]);
                     description = ''
                       The path to a file containing the value the
                       option should be set to in the final
@@ -112,7 +121,9 @@ in
                     '';
                   };
                 };
-              })));
+              })
+          )
+        );
       default = { };
       example = literalExpression ''
         {
@@ -223,21 +234,20 @@ in
     # Set-up script
     environment.systemPackages = [ artisan ];
 
-    systemd.tmpfiles.rules =
-      [
-        "d ${cfg.dataDir}                            0710 ${user} ${group} - -"
-        "d ${cfg.dataDir}/storage                    0700 ${user} ${group} - -"
-        "d ${cfg.dataDir}/storage/app                0700 ${user} ${group} - -"
-        "d ${cfg.dataDir}/storage/database           0700 ${user} ${group} - -"
-        "d ${cfg.dataDir}/storage/export             0700 ${user} ${group} - -"
-        "d ${cfg.dataDir}/storage/framework          0700 ${user} ${group} - -"
-        "d ${cfg.dataDir}/storage/framework/cache    0700 ${user} ${group} - -"
-        "d ${cfg.dataDir}/storage/framework/sessions 0700 ${user} ${group} - -"
-        "d ${cfg.dataDir}/storage/framework/views    0700 ${user} ${group} - -"
-        "d ${cfg.dataDir}/storage/logs               0700 ${user} ${group} - -"
-        "d ${cfg.dataDir}/storage/upload             0700 ${user} ${group} - -"
-      ]
-      ++ optional (cfg.dbType == "sqlite") "f ${cfg.dataDir}/database.sqlite  0700 ${user} ${group} - -";
+    systemd.tmpfiles.rules = [
+      "d ${cfg.dataDir}                            0710 ${user} ${group} - -"
+      "d ${cfg.dataDir}/storage                    0700 ${user} ${group} - -"
+      "d ${cfg.dataDir}/storage/app                0700 ${user} ${group} - -"
+      "d ${cfg.dataDir}/storage/database           0700 ${user} ${group} - -"
+      "d ${cfg.dataDir}/storage/export             0700 ${user} ${group} - -"
+      "d ${cfg.dataDir}/storage/framework          0700 ${user} ${group} - -"
+      "d ${cfg.dataDir}/storage/framework/cache    0700 ${user} ${group} - -"
+      "d ${cfg.dataDir}/storage/framework/sessions 0700 ${user} ${group} - -"
+      "d ${cfg.dataDir}/storage/framework/views    0700 ${user} ${group} - -"
+      "d ${cfg.dataDir}/storage/logs               0700 ${user} ${group} - -"
+      "d ${cfg.dataDir}/storage/upload             0700 ${user} ${group} - -"
+    ]
+    ++ optional (cfg.dbType == "sqlite") "f ${cfg.dataDir}/database.sqlite  0700 ${user} ${group} - -";
 
     systemd.services."firefly-iii-setup" = {
       description = "Preparation tasks for Firefly III";
@@ -255,28 +265,42 @@ in
           isSecret = v: isAttrs v && v ? _secret && (isString v._secret || builtins.isPath v._secret);
           fireflyEnvVars = generators.toKeyValue {
             mkKeyValue = flip generators.mkKeyValueDefault "=" {
-              mkValueString = v:
+              mkValueString =
+                v:
                 with builtins;
-                if isInt v
-                then toString v
-                else if isString v
-                then v
-                else if isSecret v
-                then hashString "sha256" v._secret
-                else if v
-                then "true"
-                else if !v
-                then "false"
-                else throw "unsupported type ${typeOf v}: ${(generators.toPretty {}) v}";
+                if isInt v then
+                  toString v
+                else if isString v then
+                  v
+                else if isSecret v then
+                  hashString "sha256" v._secret
+                else if v then
+                  "true"
+                else if !v then
+                  "false"
+                else
+                  throw "unsupported type ${typeOf v}: ${(generators.toPretty { }) v}";
             };
           };
           secretPaths = mapAttrsToList (_: v: v._secret) (filterAttrs (_: isSecret) cfg.config);
           mkSecretReplacement = file: ''
-            replace-secret ${escapeShellArgs [(builtins.hashString "sha256" file) file "${cfg.dataDir}/.env"]}
+            replace-secret ${
+              escapeShellArgs [
+                (builtins.hashString "sha256" file)
+                file
+                "${cfg.dataDir}/.env"
+              ]
+            }
           '';
           secretReplacements = concatMapStrings mkSecretReplacement secretPaths;
-          filteredConfig = converge (filterAttrsRecursive (_: v: ! elem v [{ } null])) cfg.config;
-          fireflyEnv = pkgs.writeText "firefly-iii.env" (fireflyEnvVars (builtins.trace filteredConfig filteredConfig));
+          filteredConfig = converge (filterAttrsRecursive (
+            _: v:
+            !elem v [
+              { }
+              null
+            ]
+          )) cfg.config;
+          fireflyEnv = pkgs.writeText "firefly-iii.env" (fireflyEnvVars filteredConfig);
         in
         ''
           set -euo pipefail

@@ -1,9 +1,11 @@
-{ pkgs
-, config
-, lib
-, ...
+{
+  pkgs,
+  config,
+  lib,
+  ...
 }:
-with lib; let
+with lib;
+let
   cfg = config.jd.graphical.applications;
   isGraphical =
     let
@@ -22,18 +24,22 @@ with lib; let
   };
 
   steam = pkgs.steam.override (prev: {
-    extraLibraries = pkgs:
+    extraLibraries =
+      pkgs:
       let
         prevLibs = if prev ? extraLibraries then prev.extraLibraries pkgs else [ ];
-        additionalLibs = with pkgs;
-          if stdenv.hostPlatform.is64bit
-          then [ pkgs.mesa.drivers ] ++ [
-            # todo match better with system config
-            intel-media-driver
-            libvdpau-va-gl
-            vaapiIntel
-          ]
-          else [ ];
+        additionalLibs =
+          with pkgs;
+          if stdenv.hostPlatform.is64bit then
+            [ pkgs.mesa ]
+            ++ [
+              # todo match better with system config
+              intel-media-driver
+              libvdpau-va-gl
+              intel-vaapi-driver
+            ]
+          else
+            [ ];
       in
       prevLibs ++ additionalLibs;
   });

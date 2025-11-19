@@ -1,15 +1,9 @@
-{ pkgs
-, config
-, lib
-, ...
-}:
-with lib; let
+{ pkgs, config, lib, ... }:
+with lib;
+let
   cfg = config.jd.applications.syncthing;
-  isGraphical =
-    let
-      inherit (config.jd) graphical;
-    in
-    graphical.xorg.enable || graphical.wayland.enable;
+  isGraphical = let inherit (config.jd) graphical;
+  in graphical.xorg.enable || graphical.wayland.enable;
   syncthingtrayv2 = pkgs.runCommand "syncthingtray-fixed" { } ''
     mkdir $out
     cp -rs ${pkgs.syncthingtray}/* $out
@@ -24,18 +18,18 @@ with lib; let
 
   syncthingtray = pkgs.syncthingtray.overrideAttrs (_: {
     buildInputs = with pkgs; [
-      libsForQt5.qt5.qtbase
+      kdePackages.qt5.qtbase
       cpp-utilities
-      libsForQt5.qtutilities
+      kdePackages.qtutilities
       boost
-      libsForQt5.qtforkawesome
-      libsForQt5.plasma-framework
+      kdePackages.qtforkawesome
+      kdePackages.plasma-framework
     ];
 
     nativeBuildInputs = with pkgs; [
       cmake
-      libsForQt5.qt5.qttools
-      libsForQt5.qt5.wrapQtAppsHook
+      kdePackages.qt5.qttools
+      kdePackages.qt5.wrapQtAppsHook
     ];
 
     cmakeFlags = [
@@ -48,8 +42,7 @@ with lib; let
       "-DBUILD_SHARED_LIBS=1"
     ];
   });
-in
-{
+in {
   options.jd.applications.syncthing = {
     enable = mkOption {
       description = "Enable syncthing";

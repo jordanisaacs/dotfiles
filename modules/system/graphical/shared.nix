@@ -1,7 +1,14 @@
-{ pkgs, config, lib, ... }:
+{
+  pkgs,
+  config,
+  lib,
+  ...
+}:
 with lib;
-let cfg = config.jd.graphical;
-in {
+let
+  cfg = config.jd.graphical;
+in
+{
   options.jd.graphical = {
     enable = mkEnableOption "graphical desktop support";
 
@@ -13,29 +20,35 @@ in {
         # Graphics
         libva-utils
         vdpauinfo
-        glxinfo
+        mesa-demos
       ];
 
       hardware.graphics = {
         enable = true;
-        extraPackages = with pkgs; [ mesa.drivers ];
+        extraPackages = with pkgs; [ mesa ];
       };
 
       environment.etc = {
-        "profile.local".text = builtins.concatStringsSep "\n" ([''
-          # /etc/profile.local: DO NOT EDIT -- this file has been generated automatically.
-          if [ -f "$HOME/.profile" ]; then
-            . "$HOME/.profile"
-          fi
-        ''] ++ lib.optional (cfg.xorg.enable && !config.jd.greetd.enable) ''
-          if [ -z "$DISPLAY" ] && [ "''${XDG_VTNR}" -eq 1 ]; then
-            exec startx
-          fi
-        '' ++ lib.optional (cfg.wayland.enable && !config.jd.greetd.enable) ''
-          if [ -z "$DISPLAY" ] && [ "''${XDG_VTNR}" -eq 2 ]; then
-            exec $HOME/.winitrc
-          fi
-        '');
+        "profile.local".text = builtins.concatStringsSep "\n" (
+          [
+            ''
+              # /etc/profile.local: DO NOT EDIT -- this file has been generated automatically.
+              if [ -f "$HOME/.profile" ]; then
+                . "$HOME/.profile"
+              fi
+            ''
+          ]
+          ++ lib.optional (cfg.xorg.enable && !config.jd.greetd.enable) ''
+            if [ -z "$DISPLAY" ] && [ "''${XDG_VTNR}" -eq 1 ]; then
+              exec startx
+            fi
+          ''
+          ++ lib.optional (cfg.wayland.enable && !config.jd.greetd.enable) ''
+            if [ -z "$DISPLAY" ] && [ "''${XDG_VTNR}" -eq 2 ]; then
+              exec $HOME/.winitrc
+            fi
+          ''
+        );
       };
     }
     (mkIf cfg.flatpak.enable { services.flatpak.enable = true; })

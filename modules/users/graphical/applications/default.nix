@@ -13,5 +13,6 @@
     ./kdeconnect.nix
     ./dolphin.nix
     ./gnome-keyring.nix
+    ./cursor.nix
   ];
 }

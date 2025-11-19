@@ -98,7 +98,7 @@ in {
         # Misc.
         neofetch
         bat
-        utillinux
+        util-linux
 
         # Shells
         zsh

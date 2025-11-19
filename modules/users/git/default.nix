@@ -1,7 +1,14 @@
-{ pkgs, config, lib, ... }:
+{
+  pkgs,
+  config,
+  lib,
+  ...
+}:
 with lib;
-let cfg = config.jd.git;
-in {
+let
+  cfg = config.jd.git;
+in
+{
   options.jd.git = {
     enable = mkOption {
       description = "Enable git";
@@ -29,7 +36,10 @@ in {
 
     signWith = mkOption {
       description = "Sign with [ssh gpg]";
-      type = types.enum [ "ssh" "gpg" ];
+      type = types.enum [
+        "ssh"
+        "gpg"
+      ];
       default = "gpg";
     };
 
@@ -43,9 +53,11 @@ in {
   config = mkIf cfg.enable {
     programs.git = {
       enable = true;
-      inherit (cfg) userName;
-      inherit (cfg) userEmail;
-      extraConfig = {
+      settings = {
+        user = {
+          name = cfg.userName;
+          email = cfg.userEmail;
+        };
         commit.gpgSign = cfg.signByDefault;
         gpg = {
           program = "${pkgs.gnupg}/bin/gpg";
@@ -69,6 +81,9 @@ in {
       };
     };
 
-    home.packages = with pkgs; [ delta scripts.devTools ];
+    home.packages = with pkgs; [
+      delta
+      scripts.devTools
+    ];
   };
 }

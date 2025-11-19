@@ -1,9 +1,11 @@
-{ pkgs
-, config
-, lib
-, ...
+{
+  pkgs,
+  config,
+  lib,
+  ...
 }:
-with lib; let
+with lib;
+let
   cfg = config.jd.ssh;
 in
 {
@@ -15,28 +17,28 @@ in
     };
   };
 
-  config = mkIf cfg.enable (mkMerge
-    [
-      {
-        programs.ssh = {
-          enable = true;
-          matchBlocks = {
-            localhost = {
-              hostname = "127.0.0.1";
-              user = "root";
-              identityFile = "~/.ssh/local";
-            };
-            "38.45.64.210" = {
-              forwardAgent = true;
-            };
-          };
-          extraConfig = ''
-            AddKeysToAgent yes
-          '';
+  config = mkIf cfg.enable (mkMerge [
+    {
+      programs.ssh = {
+        enable = true;
+        enableDefaultConfig = false;
+
+        matchBlocks."*" = {
+          forwardAgent = false;
+          addKeysToAgent = "yes";
+          compression = false;
+          serverAliveInterval = 0;
+          serverAliveCountMax = 3;
+          hashKnownHosts = false;
+          userKnownHostsFile = "~/.ssh/known_hosts";
+          controlMaster = "no";
+          controlPath = "~/.ssh/master-%r@%n:%p";
+          controlPersist = "no";
         };
-      }
-      (mkIf config.jd.impermanence.enable {
-        home.persistence.${config.jd.impermanence.backupPool}.directories = [ ".ssh" ];
-      })
-    ]);
+      };
+    }
+    (mkIf config.jd.impermanence.enable {
+      home.persistence.${config.jd.impermanence.backupPool}.directories = [ ".ssh" ];
+    })
+  ]);
 }

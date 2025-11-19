@@ -1,9 +1,11 @@
-{ pkgs
-, config
-, lib
-, ...
+{
+  pkgs,
+  config,
+  lib,
+  ...
 }:
-with lib; let
+with lib;
+let
   cfg = config.jd.networking;
 in
 {
@@ -109,15 +111,15 @@ in
 
   config =
     let
-      networkCfg =
-        listToAttrs
-          (map
-            (n: {
-              name = "${n}";
-              # Use builtin DHCP of iwd
-              value = { useDHCP = true; };
-            })
-            cfg.interfaces);
+      networkCfg = listToAttrs (
+        map (n: {
+          name = "${n}";
+          # Use builtin DHCP of iwd
+          value = {
+            useDHCP = true;
+          };
+        }) cfg.interfaces
+      );
 
       interfaces =
         cfg.interfaces
@@ -164,7 +166,6 @@ in
             settings = {
               General = {
                 EnableNetworkConfiguration = false;
-                UseDefaultInterface = false;
                 RequiredFamilyForOnline = "ipv4";
               };
               Network = {
@@ -188,7 +189,15 @@ in
               onState = [ "routable" ];
               script = ''
                 #!${pkgs.runtimeShell}
-                export PATH=${lib.makeBinPath (with pkgs; [systemd curl])}
+                export PATH=${
+                  lib.makeBinPath (
+                    with pkgs;
+                    [
+                      systemd
+                      curl
+                    ]
+                  )
+                }
 
                 if [[ $IFACE == "wlan0" ]]; then
                   timedatectl set-timezone "$(curl -fsS4 --interface wlan0 https://ipapi.co/timezone)"
@@ -204,28 +213,29 @@ in
         networking.nftables.enable = true;
         networking.firewall = {
           enable = true;
-          interfaces =
-            listToAttrs
-              (map
-                (n: {
-                  name = n;
-                  value = mkMerge [
-                    (mkIf cfg.firewall.allowKdeconnect rec {
-                      allowedTCPPortRanges = [
-                        {
-                          from = 1714;
-                          to = 1764;
-                        }
-                      ];
-                      allowedUDPPortRanges = allowedTCPPortRanges;
-                    })
-                    (mkIf cfg.firewall.allowDefaultSyncthing {
-                      allowedTCPPorts = [ 2200 ];
-                      allowedUDPPorts = [ 21027 22000 ];
-                    })
+          interfaces = listToAttrs (
+            map (n: {
+              name = n;
+              value = mkMerge [
+                (mkIf cfg.firewall.allowKdeconnect rec {
+                  allowedTCPPortRanges = [
+                    {
+                      from = 1714;
+                      to = 1764;
+                    }
+                  ];
+                  allowedUDPPortRanges = allowedTCPPortRanges;
+                })
+                (mkIf cfg.firewall.allowDefaultSyncthing {
+                  allowedTCPPorts = [ 2200 ];
+                  allowedUDPPorts = [
+                    21027
+                    22000
                   ];
                 })
-                interfaces);
+              ];
+            }) interfaces
+          );
         };
       })
       (mkIf cfg.static.enable {
@@ -235,8 +245,16 @@ in
           };
 
           networkConfig = {
-            Address = [ cfg.static.ipv4.addr cfg.static.ipv6.addr ];
-            DNS = [ "9.9.9.9" "149.112.112.112" "2620:fe::fe" "2620:fe::9" ]; # quad9
+            Address = [
+              cfg.static.ipv4.addr
+              cfg.static.ipv6.addr
+            ];
+            DNS = [
+              "9.9.9.9"
+              "149.112.112.112"
+              "2620:fe::fe"
+              "2620:fe::9"
+            ]; # quad9
             DNSSEC = "allow-downgrade";
             # https://tldp.org/HOWTO/Linux+IPv6-HOWTO/ch06s05.html
             IPv6PrivacyExtensions = "no";

@@ -66,15 +66,9 @@
     emacs-config.url = "github:jordanisaacs/emacs-config";
     nixd.url = "github:nix-community/nixd";
 
-    river-src.url = "git+https://github.com/riverwm/river?submodules=1";
-    river-src.flake = false;
-
     rivercarro-src.url =
       "git+https://git.sr.ht/~novakane/rivercarro?submodules=1";
     rivercarro-src.flake = false;
-
-    awatcher-src.url = "github:2e3s/awatcher";
-    awatcher-src.flake = false;
   };
 
   outputs = { self, secrets, nixpkgs, home-manager, ... }@inputs:
@@ -516,6 +510,10 @@
               applications = {
                 enable = true;
                 anki.enable = true;
+                cursor = {
+                  enable = true;
+                  scale = "1.5";
+                };
                 dolphin.enable = true;
                 firefox.enable = true;
                 libreoffice.enable = true;
