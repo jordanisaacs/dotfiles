@@ -285,7 +285,11 @@ in
         '';
       })
       (mkIf cfg.tailscale.enable {
-        services.tailscale.enable = true;
+        services.tailscale = {
+          enable = true;
+          useRoutingFeatures = "client";
+          disableUpstreamLogging = true;
+        };
       })
       # If unbound is enabled do not use systemd-resolved
       (mkIf (!config.jd.unbound.enable) {
