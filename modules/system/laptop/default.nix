@@ -122,7 +122,7 @@ in
         # Hibernate on low battery. from: https://wiki.archlinux.org/title/laptop#Hibernate_on_low_battery_level
         udev.extraRules = ''
           # Suspend the system when battery level drops to 5% or lower
-          SUBSYSTEM=="power_supply", ATTR{status}=="Discharging", ATTR{capacity}=="[0-5]", RUN+="${pkgs.systemd}/bin/systemctl hibernate"
+          SUBSYSTEM=="power_supply", ENV{POWER_SUPPLY_NAME}=="BAT1", ATTR{status}=="Discharging", ATTR{capacity}=="[0-5]", RUN+="${pkgs.systemd}/bin/systemctl hibernate"
         '';
 
         logind = {
