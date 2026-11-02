@@ -499,6 +499,22 @@
           inherit pkgs;
           bootMountOptions = self.nixosConfigurations.framework.config.fileSystems."/boot".options;
         };
+        storage-password-boot = import ./tests/encrypted-storage-option.nix {
+          inherit pkgs;
+          mode = "password";
+        };
+        storage-disko-inventory = import ./tests/disko-inventory.nix {
+          inherit pkgs nixpkgs;
+          inherit (inputs) disko;
+        };
+        storage-disko-provision = import ./tests/disko-provision.nix {
+          inherit pkgs;
+          inherit (inputs) disko;
+        };
+        storage-key-filesystem-boot = import ./tests/encrypted-storage-option.nix {
+          inherit pkgs;
+          mode = "key-filesystem";
+        };
         configuration-warnings =
           let
             warnings =
