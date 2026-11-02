@@ -108,6 +108,13 @@
       };
 
       scripts = import ./scripts { inherit pkgs; };
+      rsyncNetPolicy = import ./backups/rsync-net/framework.nix {
+        identifiers = privateIdentifiers.rsyncNet;
+      };
+      rsyncNet = import ./backups/rsync-net {
+        inherit pkgs;
+        modules = [ rsyncNetPolicy ];
+      };
       style = import ./tests/style.nix { inherit pkgs; };
       treefmt = inputs.treefmt-nix.lib.evalModule pkgs {
         projectRootFile = "flake.nix";
@@ -328,6 +335,11 @@
             mods = [ "kvm-intel" ];
           };
           laptop.enable = true;
+          inputStyle = "win";
+          graphical.inputRemapping = {
+            enable = false;
+            users = [ "jd" ];
+          };
           graphical.activityMonitor = {
             allowedUsers = [ "jd" ];
             networkMetrics = true;
@@ -416,6 +428,68 @@
                 # secrets.identityPaths = [ secrets.age.framework.jd.privateKeyPath ];
                 ssh.enable = true;
                 gpg.enable = true;
+                rsyncNetClient = {
+                  # Hourly Documents backup with independent recovery escrow.
+                  enable = true;
+                  policyModules = [ rsyncNetPolicy ];
+                  endpoint.publicHostKey = privateIdentifiers.rsyncNet.publicHostKey;
+                  bindings.documents = {
+                    principal = privateIdentifiers.rsyncNet.backup.principal;
+                    device = privateIdentifiers.rsyncNet.backup.device;
+                    identityFile = privateIdentifiers.rsyncNet.backup.identityFile;
+                  };
+                  bindings.${privateIdentifiers.rsyncNet.git.binding} = {
+                    principal = privateIdentifiers.rsyncNet.git.principal;
+                    device = privateIdentifiers.rsyncNet.git.device;
+                    identityFile = privateIdentifiers.rsyncNet.git.identityFile;
+                  };
+                  gitIdentity = {
+                    enable = true;
+                    device = privateIdentifiers.rsyncNet.git.device;
+                    lookupCommand = [
+                      "${pkgs.libsecret}/bin/secret-tool"
+                      "lookup"
+                      "application"
+                      "rsync-net"
+                      "credential"
+                      "git-gpg"
+                      "device"
+                      privateIdentifiers.rsyncNet.git.device
+                    ];
+                    storeCommand = [
+                      "${pkgs.libsecret}/bin/secret-tool"
+                      "store"
+                      "--collection=default"
+                      "--label=Git GPG: ${privateIdentifiers.rsyncNet.git.device}"
+                      "application"
+                      "rsync-net"
+                      "credential"
+                      "git-gpg"
+                      "device"
+                      privateIdentifiers.rsyncNet.git.device
+                    ];
+                  };
+                  backups.documents = {
+                    enable = true;
+                    binding = "documents";
+                    createWrapper = true;
+                    xdgDirectories = [ "documents" ];
+                    passwordCommand = lib.escapeShellArgs [
+                      "${pkgs.libsecret}/bin/secret-tool"
+                      "lookup"
+                      "application"
+                      "rsync-net"
+                      "host"
+                      rsyncNet.config.rsyncNet.connection.host
+                      "backup"
+                      "documents"
+                    ];
+                    timerConfig = {
+                      OnCalendar = "hourly";
+                      Persistent = true;
+                    };
+                  };
+                };
                 git = {
                   enable = true;
                   allowedSignerFile = builtins.toString authorizedKeyFiles;
@@ -473,14 +547,32 @@
       };
 
       formatter.${system} = treefmt.config.build.wrapper;
-      packages.${system}.home-manager = pkgs.home-manager;
-      apps.${system}.home-manager = {
-        type = "app";
-        program = "${pkgs.home-manager}/bin/home-manager";
-        meta.description = "Manage the user environment with Home Manager";
+      lib.rsyncNet = import ./backups/rsync-net;
+      lib.rsyncNetModule = import ./backups/rsync-net/module.nix;
+      homeManagerModules.rsync-net-client = import ./backups/rsync-net/client/home-manager.nix;
+      nixosModules.rsync-net-client = import ./backups/rsync-net/client/nixos.nix;
+      packages.${system} = {
+        rsync-net = rsyncNet.cli;
+        rsync-net-manifest = rsyncNet.manifest;
+        inherit (pkgs) home-manager;
       };
-      devShells.${system}.default = pkgs.mkShell {
-        packages = style.devShellPackages ++ [ treefmt.config.build.wrapper ];
+      apps.${system} = {
+        rsync-net = {
+          type = "app";
+          program = "${rsyncNet.cli}/bin/rsync-net";
+          meta.description = "Enroll devices and reconstruct reviewed rsync.net account policy";
+        };
+        home-manager = {
+          type = "app";
+          program = "${pkgs.home-manager}/bin/home-manager";
+          meta.description = "Manage the user environment with Home Manager";
+        };
+      };
+      devShells.${system} = {
+        rsync-net = rsyncNet.devShell;
+        default = pkgs.mkShell {
+          packages = style.devShellPackages ++ [ treefmt.config.build.wrapper ];
+        };
       };
       checks.${system} = style.checks // {
         formatting = treefmt.config.build.check self;
@@ -493,10 +585,23 @@
           homeConfiguration = self.homeConfigurations."jd@framework";
         };
         framework = self.nixosConfigurations.framework.config.system.build.toplevel;
+        laptop-critical-power = import ./tests/laptop-critical-power.nix {
+          inherit pkgs;
+          systemConfig = self.nixosConfigurations.framework.config;
+        };
         home-framework = self.homeConfigurations."jd@framework".activationPackage;
         mission-center-apps = pkgs.mission-center.tests.uwsm-apps;
         trayscale-localapi = import ./tests/trayscale-localapi.nix { inherit pkgs; };
         trayscale-netmon = import ./tests/trayscale-netmon.nix { inherit pkgs; };
+        rsync-net = import ./backups/rsync-net/tests/unit.nix { inherit pkgs; };
+        rsync-net-integration = import ./backups/rsync-net/tests/freebsd.nix { inherit pkgs; };
+        rsync-net-network-module = import ./backups/rsync-net/tests/network-module.nix { inherit pkgs; };
+        rsync-net-client-home = import ./backups/rsync-net/client/tests/home-manager.nix {
+          inherit pkgs;
+          homeManager = home-manager;
+        };
+        rsync-net-client-system = import ./backups/rsync-net/client/tests/nixos.nix { inherit pkgs; };
+        nix-cache = import ./backups/rsync-net/tests/nix-cache.nix { inherit pkgs; };
         activity-monitor-metrics = import ./tests/activity-monitor-metrics.nix { inherit pkgs; };
         libreoffice-grammar = import ./tests/libreoffice-grammar.nix {
           inherit pkgs;
@@ -566,12 +671,17 @@
           inherit pkgs;
           homeConfiguration = self.homeConfigurations."jd@framework";
         };
+        input-style-control-click = import ./tests/mac-control-click.nix {
+          inherit pkgs;
+          homeConfiguration = self.homeConfigurations."jd@framework";
+        };
         input-style-reka = import ./tests/reka-session.nix {
           inherit pkgs;
           homeConfiguration = self.homeConfigurations."jd@framework";
           inputStyle = "mac";
         };
         xremap-session = import ./tests/xremap-session.nix { inherit pkgs; };
+        uinput-acl = import ./tests/uinput-acl.nix { inherit pkgs; };
         river-input = import ./tests/river-input.nix {
           inherit pkgs;
           homeConfiguration = self.homeConfigurations."jd@framework";
