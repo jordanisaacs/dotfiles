@@ -1,0 +1,4 @@
+include module.nix framework.nix example-identifiers.nix
+recursive-include tests *.py *.nix
+recursive-include network *.nix
+recursive-include src *.py *.json *.in

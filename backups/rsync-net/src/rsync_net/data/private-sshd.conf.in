@@ -1,0 +1,32 @@
+# Dedicated ordinary OpenSSH, reached only through private Tailnet transport.
+AddressFamily inet
+ListenAddress @listen_address@
+# Tailnet Serve proxies all peers through loopback. A failed device login must
+# not penalize every other peer sharing that source address.
+PerSourcePenaltyExemptList 127.0.0.1/32
+Port @port@
+PidFile @pid_file@
+HostKey @host_key@
+AuthorizedKeysFile @authorized_keys_root@/%u
+AuthorizedKeysCommand none
+AuthorizedPrincipalsFile none
+AuthorizedPrincipalsCommand none
+TrustedUserCAKeys none
+AuthenticationMethods publickey
+PubkeyAuthentication yes
+PasswordAuthentication no
+KbdInteractiveAuthentication no
+PermitEmptyPasswords no
+HostbasedAuthentication no
+PermitRootLogin no
+UsePAM yes
+PermitUserEnvironment no
+PermitUserRC no
+PermitTTY no
+AllowAgentForwarding no
+AllowTcpForwarding no
+AllowStreamLocalForwarding no
+X11Forwarding no
+PermitTunnel no
+StrictModes yes
+AllowUsers @managed_users@

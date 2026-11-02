@@ -1,0 +1,8 @@
+{
+  "listenAddress": "127.0.0.1",
+  "port": 2222,
+  "hostKey": "/etc/ssh/ssh_host_ed25519_key",
+  "pidFile": "/var/run/rsync-net-sshd.pid",
+  "configPath": "/usr/local/etc/rsync-net/sshd-private.conf",
+  "authorizedKeysRoot": "/usr/local/etc/rsync-net/authorized_keys"
+}

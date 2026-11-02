@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rsync-net"
+version = "0.1.0"
+description = "Declarative rsync.net account policy and encrypted recovery administration"
+requires-python = ">=3.11"
+dependencies = []
+
+[project.scripts]
+rsync-net = "rsync_net.cli:main"
+rsync-net-gpg = "rsync_net.git:gpg_main"
+
+[dependency-groups]
+dev = ["pytest>=8"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"rsync_net.data" = ["*.json", "*.in"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra --strict-config --strict-markers"
+
+[tool.ruff]
+target-version = "py311"
+
+[tool.ruff.lint]
+extend-select = ["I", "UP", "B", "C4"]
