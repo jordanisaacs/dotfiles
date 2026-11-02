@@ -469,3 +469,10 @@ in
 ## Credit
 
 A heavily evolved version of Wil Taylor's [dotfiles](https://github.com/wiltaylor/dotfiles). Would not have the setup I have today without his [youtube series](https://www.youtube.com/watch?v=QKoQ1gKJY5A&list=PL-saUBvIJzOkjAw_vOac75v-x6EzNzZq-) and repo as a guide when I was first starting out.
+
+Account endpoints, hardware identifiers, host keys and live enrollment metadata
+come from the private `secrets.dotfiles` flake output in `~/.secrets`. The public
+repository keeps service policy and synthetic examples; identifier values are
+resolved into local generated configuration when building. Commit the private
+input before updating its public lock pin, and make that private revision
+available to other machines before they use the pin.
