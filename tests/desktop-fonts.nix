@@ -22,7 +22,16 @@ pkgs.runCommand "desktop-font-tests"
     FUZZEL = pkgs.lib.getExe home.programs.fuzzel.package;
     FONT_POINTS = toString home.gtk.font.size;
     TERMINAL_FONT_POINTS = toString home.programs.ghostty.settings.font-size;
+    TERMINAL_PREFERRED_FONT_POINTS = toString home.jd.graphical.wayland.terminal.preferredFontSize;
+    OUTPUT_SCALE = toString (
+      if home.jd.graphical.wayland.display.enable then
+        home.jd.graphical.wayland.display.internalScale
+      else
+        1.0
+    );
     LAUNCHER_FONT = home.programs.fuzzel.settings.main.font;
+    MONOSPACE_FONT = builtins.head home.fonts.fontconfig.defaultFonts.monospace;
+    NORMAL_FONT = home.gtk.font.name;
     GTK_TEXT_SCALE = toString home.dconf.settings."org/gnome/desktop/interface".text-scaling-factor;
   }
   ''

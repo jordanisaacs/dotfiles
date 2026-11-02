@@ -103,6 +103,26 @@ additional text-scaling multiplier. Ghostty keeps its preferred terminal font
 size, while Fuzzel uses physical-DPI font sizing explicitly so connecting a
 scaled monitor does not change its font-sizing mode. Qt uses native KDE platform
 integration with matching dark colors and opaque Kvantum windows.
+Normal controls use Noto Sans. Fontconfig's separate monospace role selects
+Berkeley Mono for terminals, the launcher, and KDE's fixed-width font; those
+applications reference the role instead of inheriting the GUI family.
+
+Laptop output scaling is declared once in
+`jd.graphical.wayland.display.internalScale` (default `1.25`), with panel
+selection in `display.internalOutput` (default `eDP-1`). Native Kanshi follows
+the graphical systemd session and applies that policy with any number of
+external displays; their mode, position, scale and enabled state are retained.
+This scales entire application interfaces, including browser controls, rather
+than adding a toolkit text multiplier. The GTK/Qt base remains 15 points:
+`15 × 96/72 × 1.25 = 25` physical pixels. Waybar uses equivalent CSS pixels.
+`jd.graphical.wayland.terminal.preferredFontSize` expresses the terminal's
+preferred points at 100% scale (default 20); Ghostty's configured points divide
+by the internal scale, preserving about 27 physical pixels on that panel.
+Fuzzel retains its independent 12-point physical-DPI policy. Terminal sizing is
+calibrated for the internal panel; its physical size on another display follows
+that display's scale. Native per-output scaling also depends on application
+support; older Xwayland applications may have different rendering behavior.
+
 Laptop touchpad scrolling defaults to half distance through
 `jd.graphical.wayland.touchpad.scrollFactor`; mouse wheels retain their defaults.
 

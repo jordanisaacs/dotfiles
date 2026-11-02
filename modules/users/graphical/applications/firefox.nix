@@ -7,6 +7,28 @@
 with lib;
 let
   cfg = config.jd.graphical.applications;
+  ui = cfg.firefox.ui;
+  # Gecko's native system-font overrides use CSS pixels, not GTK points.
+  # See widget/nsXPLookAndFeel.cpp, LookAndFeel::GetFont().
+  uiFontSizePx = toString (ui.fontSize * 96.0 / 72.0);
+  uiFontRoles = [
+    "caption"
+    "icon"
+    "menu"
+    "message-box"
+    "small-caption"
+    "status-bar"
+    "-moz-pull-down-menu"
+    "-moz-button"
+    "-moz-list"
+    "-moz-field"
+  ];
+  uiFontPreferences = listToAttrs (
+    concatMap (role: [
+      (nameValuePair "ui.font.${role}" ui.fontFamily)
+      (nameValuePair "ui.font.${role}.size" uiFontSizePx)
+    ]) uiFontRoles
+  );
   firefoxPkg =
     if cfg.firefox.useDevEdition then pkgs.firefox-devedition-unwrapped else pkgs.firefox-unwrapped;
   # The flake's NUR revision owns these versions, including Kagi and LanguageTool.
@@ -45,6 +67,24 @@ in
       type = types.bool;
       default = true;
       description = "Enable Video DownloadHelper (version 10+ needs no native companion).";
+    };
+
+    ui = {
+      fontFamily = mkOption {
+        type = types.str;
+        default = if config.gtk.font == null then "sans-serif" else config.gtk.font.name;
+        description = "Firefox interface font family; inherits the normal desktop UI font.";
+      };
+      fontSize = mkOption {
+        type = types.ints.positive;
+        default = 11;
+        description = "Firefox interface font size in points, independent of the desktop UI size.";
+      };
+      scalePercent = mkOption {
+        type = types.ints.positive;
+        default = 110;
+        description = "Firefox pixel scale as a percentage, on top of each monitor's compositor scale.";
+      };
     };
 
     vim.enable = mkEnableOption "Tridactyl Vim navigation";
@@ -144,6 +184,8 @@ in
                 "gfx.webrender.all"
                 "layers.mlgpu.enabled"
                 "layers.gpu-process.enabled"
+                # A fixed override would defeat automatic per-monitor scaling.
+                "layout.css.devPixelsPerPx"
                 "devtools.chrome.enabled"
                 "devtools.debugger.remote-enabled"
               ]
@@ -162,13 +204,21 @@ in
             @-moz-document url("chrome://browser/content/browser.xhtml") {
               @media -moz-pref("sidebar.verticalTabs") {
                 :root[uidensity="compact"] #tabbrowser-tabs {
-                  --tab-min-height: 28px;
+                  /* Reserve label line height even while labels are hidden.
+                   * Otherwise expanding the rail grows rows under the pointer. */
+                  --tab-min-height: max(28px, calc(var(--tab-label-line-height) * 1em));
                   --tab-margin-block: 0px;
                 }
               }
             }
           '';
-          settings = {
+          settings = uiFontPreferences // {
+            # Native pixel zoom composes with the monitor's scale; unlike a
+            # positive devPixelsPerPx override it keeps per-monitor adaptation.
+            # See widget/Screen.cpp, Screen::GetDefaultCSSScaleFactor().
+            "ui.textScaleFactor" = ui.scalePercent;
+            "browser.display.os-zoom-behavior" = 1;
+
             # Native vertical tabs; the small stylesheet above adjusts spacing.
             # Firefox source: browser/app/profile/firefox.js, sidebar preferences.
             "sidebar.revamp" = true;

@@ -6,6 +6,17 @@ let
   session = home.home.file.".winitrc".source;
   riverInit = home.xdg.configFile."river/init".source;
   oxbowInit = home.xdg.configFile."oxbow/init".source;
+  kanshiUnit = home.home.file."${homeDirectory}/.config/systemd/user/kanshi.service".source;
+  kanshiFixture =
+    pkgs.runCommand "headless-display-policy"
+      {
+        nativeBuildInputs = [ pkgs.python3 ];
+        KANSHI_SOURCE = home.xdg.configFile."kanshi/config".source;
+        INTERNAL_OUTPUT = home.jd.graphical.wayland.display.internalOutput;
+      }
+      ''
+        python -B ${./prepare_display_fixture.py}
+      '';
   profile = pkgs.buildEnv {
     name = "desktop-test-profile";
     paths = [
@@ -35,7 +46,7 @@ let
     os.environ.update({
         "WLR_BACKENDS": "headless",
         "WLR_RENDERER": "pixman",
-        "WLR_HEADLESS_OUTPUTS": "1",
+        "WLR_HEADLESS_OUTPUTS": "2",
         # The fixture has no GPU; Xwayland should use its software path.
         "WLR_XWAYLAND": "${headlessXwayland}/bin/headless-xwayland",
         # Exercise Home Manager's path additions on top of a login environment.
@@ -100,6 +111,13 @@ pkgs.testers.runNixOSTest {
       "L+ ${homeDirectory}/.winitrc - - - - ${session}"
       "L+ ${homeDirectory}/.config/river/init - - - - ${riverInit}"
       "L+ ${homeDirectory}/.config/oxbow/init - - - - ${oxbowInit}"
+      "d ${homeDirectory}/.config/kanshi 0755 ${username} users -"
+      "d ${homeDirectory}/.config/systemd 0755 ${username} users -"
+      "d ${homeDirectory}/.config/systemd/user 0755 ${username} users -"
+      "d ${homeDirectory}/.config/systemd/user/graphical-session.target.wants 0755 ${username} users -"
+      "L+ ${homeDirectory}/.config/kanshi/config - - - - ${kanshiFixture}"
+      "L+ ${homeDirectory}/.config/systemd/user/kanshi.service - - - - ${kanshiUnit}"
+      "L+ ${homeDirectory}/.config/systemd/user/graphical-session.target.wants/kanshi.service - - - - ${kanshiUnit}"
       "L+ ${home.home.profileDirectory} - - - - ${profile}"
     ];
     services = {
@@ -166,6 +184,22 @@ pkgs.testers.runNixOSTest {
     assert environment["WAYLAND_DISPLAY"], environment
     assert environment["DISPLAY"], environment
     assert environment["OXBOW_SOCKET"], environment
+    machine.wait_until_succeeds(user("systemctl", "--user", "is-active", "kanshi.service"))
+    # Query River's actual output-management protocol after native Kanshi has
+    # applied the generated policy. The second output models arbitrary docks.
+    for attempt in range(30):
+        outputs = json.loads(machine.succeed(user(
+            "env", "WAYLAND_DISPLAY=" + environment["WAYLAND_DISPLAY"],
+            "${pkgs.wlr-randr}/bin/wlr-randr", "--json",
+        )))
+        scales = {output["name"]: output["scale"] for output in outputs}
+        if scales.get("HEADLESS-1") == ${toString home.jd.graphical.wayland.display.internalScale}:
+            break
+        machine.sleep(duration=timedelta(seconds=1))
+    else:
+        print(machine.succeed("journalctl -b --no-pager _UID=1000"))
+        raise AssertionError(scales)
+    assert scales["HEADLESS-2"] == 1.0, scales
     assert environment["TMUX_TMPDIR"] == runtime, environment["TMUX_TMPDIR"]
     data_dirs = environment["XDG_DATA_DIRS"].split(":")
     assert "/run/current-system/sw/share" in data_dirs, data_dirs
@@ -261,6 +295,7 @@ pkgs.testers.runNixOSTest {
         user("systemctl", "--user", "is-active", "graphical-session.target")
     )
     machine.wait_until_fails(user("systemctl", "--user", "is-active", app_unit))
+    machine.wait_until_fails(user("systemctl", "--user", "is-active", "kanshi.service"))
     machine.wait_until_fails("kill -0 " + str(application_state["pid"]))
     machine.wait_until_fails(user("pgrep", "--exact", "river"))
     machine.wait_until_fails(user("pgrep", "--exact", "oxbow"))

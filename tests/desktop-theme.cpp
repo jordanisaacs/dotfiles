@@ -1,6 +1,9 @@
 #include <QApplication>
 #include <QColor>
 #include <QEventLoop>
+#include <QFontDatabase>
+#include <QFontInfo>
+#include <QFontMetricsF>
 #include <QLabel>
 #include <QLineEdit>
 #include <QMainWindow>
@@ -90,6 +93,20 @@ int main(int argc, char **argv)
     if (std::abs(app.font().pointSizeF() - expectedFont) > 0.01) {
         std::cerr << "Qt application font is " << app.font().pointSizeF()
                   << "pt, expected " << expectedFont << "pt" << std::endl;
+        valid = false;
+    }
+    const QFontInfo uiFont(app.font());
+    const auto expectedFamily = qEnvironmentVariable("DESKTOP_FONT_FAMILY");
+    if (uiFont.family() != expectedFamily) {
+        std::cerr << "Qt resolved UI family " << uiFont.family().toStdString()
+                  << ", expected " << expectedFamily.toStdString() << std::endl;
+        valid = false;
+    }
+    const QFontMetricsF uiMetrics(app.font());
+    const QFontMetricsF fixedMetrics(QFontDatabase::systemFont(QFontDatabase::FixedFont));
+    if (uiMetrics.horizontalAdvance("iiii") >= uiMetrics.horizontalAdvance("WWWW") * 0.75
+        || std::abs(fixedMetrics.horizontalAdvance("iiii") - fixedMetrics.horizontalAdvance("WWWW")) > 0.1) {
+        std::cerr << "UI and fixed-width font roles were not kept separate" << std::endl;
         valid = false;
     }
     if (window.testAttribute(Qt::WA_TranslucentBackground) || window.windowOpacity() < 1.0) {

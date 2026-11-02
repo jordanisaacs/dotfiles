@@ -60,9 +60,16 @@ pkgs.runCommand "desktop-theme-tests"
     ICON_ROOT = "${home.home.path}/share/icons";
     KDE_PALETTE_CHECK = "${paletteCheck}/bin/desktop-palette-check";
     FIREFOX_USER_JS = home.home.file.".mozilla/firefox/personal/user.js".source;
-    FONTCONFIG_FILE = pkgs.makeFontsConf { fontDirectories = [ pkgs.dejavu_fonts ]; };
+    FONTCONFIG_FILE = pkgs.makeFontsConf {
+      fontDirectories = [
+        pkgs.dejavu_fonts
+        pkgs.bm-variable-font
+        home.gtk.font.package
+      ];
+    };
     WESTON = "${pkgs.weston}/bin/weston";
     DESKTOP_FONT_POINTS = toString home.gtk.font.size;
+    DESKTOP_FONT_FAMILY = home.gtk.font.name;
   }
   ''
     python -B ${./test_desktop_theme.py}

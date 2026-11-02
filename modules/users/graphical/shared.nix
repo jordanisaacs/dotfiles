@@ -20,6 +20,7 @@ let
       };
   ini = pkgs.formats.ini { };
   qtFont = "${config.gtk.font.name},${toString config.gtk.font.size},-1,5,50,0,0,0,0,0";
+  qtFixedFont = "${builtins.head config.fonts.fontconfig.defaultFonts.monospace},${toString config.gtk.font.size},-1,5,50,0,0,0,0,0";
   opaqueKvantum =
     pkgs.runCommand "opaque-${kdeTheme.name}" { nativeBuildInputs = [ pkgs.python3 ]; }
       ''
@@ -89,7 +90,18 @@ in
       gtk.enable = true;
     };
 
-    fonts.fontconfig.enable = true;
+    fonts.fontconfig = {
+      enable = true;
+      defaultFonts = {
+        sansSerif = [ config.gtk.font.name ];
+        serif = [ "Noto Serif" ];
+        monospace = [
+          "Berkeley Mono Variable"
+          "DejaVu Sans Mono"
+        ];
+        emoji = [ "Noto Color Emoji" ];
+      };
+    };
 
     qt = {
       enable = true;
@@ -123,9 +135,8 @@ in
       };
 
       font = {
-        # already installed in profile
-        package = null;
-        name = "Berkeley Mono Variable";
+        package = pkgs.noto-fonts;
+        name = "Noto Sans";
         # Shared GUI font: Qt's KDE palette/fonts and Waybar derive from this.
         # Terminal and launcher fonts have their own explicit sizing policies.
         size = 15;
@@ -181,7 +192,7 @@ in
               General = {
                 TerminalApplication = "${pkgs.ghostty}/bin/ghostty";
                 font = qtFont;
-                fixed = qtFont;
+                fixed = qtFixedFont;
                 menuFont = qtFont;
                 smallestReadableFont = qtFont;
                 toolBarFont = qtFont;

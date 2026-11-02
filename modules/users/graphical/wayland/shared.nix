@@ -110,6 +110,15 @@ in
     };
 
     terminal = {
+      preferredFontSize = mkOption {
+        type = types.numbers.positive;
+        default = 20;
+        description = ''
+          Preferred terminal font size in points at output scale 1. The
+          configured size is divided by the internal display scale so raising
+          the desktop scale preserves the terminal's physical text size.
+        '';
+      };
       theme = mkOption {
         type =
           with types;
@@ -163,12 +172,12 @@ in
       programs.ghostty = {
         enable = true;
         settings = {
-          font-family = [
-            "Berkeley Mono Variable"
-            "Noto Color Emoji"
-          ];
-          # Preserve the terminal size independently of GUI typography changes.
-          font-size = 20;
+          font-family =
+            config.fonts.fontconfig.defaultFonts.monospace ++ config.fonts.fontconfig.defaultFonts.emoji;
+          # Font points become logical pixels at 96 DPI, then output scale
+          # converts to physical pixels. Keep the preferred terminal size.
+          font-size =
+            cfg.terminal.preferredFontSize / (if cfg.display.enable then cfg.display.internalScale else 1.0);
           theme = if cfg.terminal.theme == "tokyo-night" then "TokyoNight" else "Dracula";
           window-padding-x = 2;
           window-padding-y = 2;

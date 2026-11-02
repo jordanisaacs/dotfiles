@@ -240,7 +240,7 @@ in
           launch-prefix = "${pkgs.uwsm}/bin/uwsm app -t service --";
           # Physical-DPI sizing is stable when other monitors are connected.
           dpi-aware = "yes";
-          font = "${config.gtk.font.name}:size=12";
+          font = "${builtins.head config.fonts.fontconfig.defaultFonts.monospace}:size=12";
         };
       };
 

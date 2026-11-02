@@ -473,6 +473,17 @@
           inherit pkgs;
           home = self.homeConfigurations."jd@framework".config;
         };
+        desktop-font-scaling = import ./tests/desktop-fonts.nix {
+          inherit pkgs;
+          # A second output policy must preserve the same preferred terminal
+          # size through the actual generated Ghostty configuration.
+          home =
+            (self.homeConfigurations."jd@framework".extendModules {
+              modules = [
+                { jd.graphical.wayland.display.internalScale = lib.mkForce 1.5; }
+              ];
+            }).config;
+        };
         firefox-sidebar = import ./tests/firefox-sidebar.nix {
           inherit pkgs;
           home = self.homeConfigurations."jd@framework".config;

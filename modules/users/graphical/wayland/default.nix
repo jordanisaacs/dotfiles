@@ -7,5 +7,6 @@
     ./shared.nix
     ./power.nix
     ./input.nix
+    ./display.nix
   ];
 }
