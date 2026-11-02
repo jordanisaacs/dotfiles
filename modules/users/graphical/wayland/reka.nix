@@ -7,17 +7,35 @@
 let
   cfg = config.jd.graphical.wayland;
   emacsBindings = config.jd.keybindings == "emacs";
+  inputProfile = import ../../../../lib/input-profile.nix {
+    style = config.jd.inputStyle;
+    wmModifier = cfg.keyboard.macWmModifier;
+  };
+  wm = inputProfile.emacsWmModifier;
   settings = pkgs.writeText "reka-session.json" (
     builtins.toJSON {
       uiFont = config.gtk.font.name;
       uiFontSize = config.gtk.font.size;
       monospaceFont = builtins.head config.fonts.fontconfig.defaultFonts.monospace;
-      nextKey = if emacsBindings then "s-n" else "s-j";
-      previousKey = if emacsBindings then "s-p" else "s-k";
-      launcherKey = if emacsBindings then "s-x" else "s-p";
+      nextKey = wm + (if emacsBindings then "n" else "j");
+      previousKey = wm + (if emacsBindings then "p" else "k");
+      launcherKey =
+        if inputProfile.isMac then
+          inputProfile.emacsLauncher
+        else
+          wm + (if emacsBindings then "x" else "p");
+      inherit (inputProfile) isMac;
+      nextWindowKey = inputProfile.emacsNextWindow;
+      previousWindowKey = inputProfile.emacsPreviousWindow;
+      floatingKey = wm + "SPC";
+      closeKey = wm + "S-c";
+      monocleKey = wm + "m";
+      balanceKey = wm + "t";
+      workspacePrefix = wm;
+      fullscreenKey = inputProfile.emacsFullscreen;
       setup = cfg.river.setupCommand;
       commands = {
-        "s-S-<return>" = [
+        "${wm}S-<return>" = [
           "${pkgs.uwsm}/bin/uwsm"
           "app"
           "-t"
@@ -26,7 +44,7 @@ let
           "${pkgs.ghostty}/bin/ghostty"
         ];
         launcher = [ "${pkgs.fuzzel}/bin/fuzzel" ];
-        "s-v" = [
+        "${wm}v" = [
           "${pkgs.uwsm}/bin/uwsm"
           "app"
           "-t"
@@ -35,7 +53,7 @@ let
           "${cfg.clipboard.package}/bin/clipboard-history"
           "pick"
         ];
-        "s-S-v" = [
+        "${wm}S-v" = [
           "${config.services.swaync.package}/bin/swaync-client"
           "--toggle-panel"
           "--skip-wait"
@@ -78,6 +96,10 @@ let
           "set"
           "4%-"
         ];
+      }
+      // lib.optionalAttrs inputProfile.isMac {
+        "s-S-3" = [ "${config.home.profileDirectory}/bin/wl-capture-displays" ];
+        "s-S-4" = [ "${config.home.profileDirectory}/bin/wl-capture-region" ];
       };
     }
   );

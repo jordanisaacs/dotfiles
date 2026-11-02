@@ -3,6 +3,7 @@
   river ? pkgs.river-reka-with-health,
 }:
 let
+  abiProbe = import ./river-health-abi.nix { inherit pkgs river; };
   fixture = import ./river-health-fixture.nix { inherit pkgs; };
 in
 pkgs.runCommand "river-native-client-health"
@@ -13,6 +14,7 @@ pkgs.runCommand "river-native-client-health"
     HEALTH_CLIENT = "${pkgs.river-health}/bin/river-health";
     HEALTH_FIXTURE = "${fixture}/bin/river-health-fixture";
     OXBOW = "${pkgs.oxbow}/bin/oxbow";
+    GTK_DEMO = "${pkgs.gtk3.dev}/bin/gtk3-demo";
     OXCTL = "${pkgs.oxbow}/bin/oxctl";
     XWAYLAND = "${pkgs.xwayland}/bin/Xwayland";
     XMESSAGE = "${pkgs.xmessage}/bin/xmessage";
@@ -20,6 +22,7 @@ pkgs.runCommand "river-native-client-health"
     meta.timeout = 120;
   }
   ''
+    ${abiProbe}/bin/river-health-abi
     python -B ${./test_river_health.py}
     touch "$out"
   ''

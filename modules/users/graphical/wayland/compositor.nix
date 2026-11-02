@@ -8,6 +8,10 @@ with lib;
 let
   cfg = config.jd.graphical.wayland;
   systemCfg = config.machineData.systemConfig;
+  inputProfile = import ../../../../lib/input-profile.nix {
+    style = config.jd.inputStyle;
+    wmModifier = cfg.keyboard.macWmModifier;
+  };
   pythonScript = import ../../../../lib/python-script.nix { inherit pkgs; };
   desktopScript = name: settings: pythonScript name ../../../../scripts/desktop.py settings;
   menuCmd = [ "${pkgs.fuzzel}/bin/fuzzel" ];
@@ -166,7 +170,7 @@ let
     uwsm = "${pkgs.uwsm}/bin/uwsm";
     command =
       if isRiver then
-        [ "${riverPackage}/bin/river" ]
+        [ "${riverPackage}/bin/river" ] ++ optional cfg.river.controlClick "-control-click"
       else
         [ "${pkgs.sway}/bin/sway" ] ++ optional isSwayDbg "--debug";
     profileBin = "${config.home.profileDirectory}/bin";
@@ -202,6 +206,14 @@ let
     cursorTheme = config.home.pointerCursor.name;
     cursorSize = config.jd.graphical.cursor.size;
     keybindings = config.jd.keybindings or "emacs";
+    inherit (inputProfile)
+      isMac
+      wmModifier
+      auxiliaryModifier
+      nextWindow
+      previousWindow
+      fullscreen
+      ;
     touchpadScrollFactor = cfg.touchpad.scrollFactor;
     touchpadClickMethod = lib.replaceStrings [ "_" ] [ "-" ] cfg.touchpad.clickMethod;
     outerGap = cfg.river.gaps.outer;
@@ -213,7 +225,7 @@ let
     inherit wayExit;
     setup = "${compositorStartup}/bin/compositor-setup";
     commandBindings = {
-      "Super+v" = [
+      "${inputProfile.wmModifier}+v" = [
         "${pkgs.uwsm}/bin/uwsm"
         "app"
         "-t"
@@ -222,7 +234,7 @@ let
         "${cfg.clipboard.package}/bin/clipboard-history"
         "pick"
       ];
-      "Super+Shift+v" = [
+      "${inputProfile.wmModifier}+Shift+v" = [
         "${config.services.swaync.package}/bin/swaync-client"
         "--toggle-panel"
         "--skip-wait"
@@ -243,6 +255,10 @@ let
         "set"
         "4%-"
       ];
+    }
+    // lib.optionalAttrs inputProfile.isMac {
+      "Super+Shift+3" = [ "${captureDisplays}/bin/wl-capture-displays" ];
+      "Super+Shift+4" = [ "${captureRegion}/bin/wl-capture-region" ];
     };
   };
   riverInit = desktopScript "river-init" {
@@ -260,6 +276,12 @@ in
   imports = [ ./river-wm.nix ];
   options.jd.graphical.wayland = {
     river = {
+      controlClick = mkOption {
+        type = types.bool;
+        default = config.jd.inputStyle == "mac";
+        defaultText = lib.literalExpression ''config.jd.inputStyle == "mac"'';
+        description = "Make Control+primary click a secondary click after native libinput processing. Takes effect when the River compositor starts.";
+      };
       package = mkOption {
         type = types.package;
         default = pkgs.river-reka;
@@ -303,6 +325,10 @@ in
   config = mkIf cfg.enable (mkMerge [
     {
       assertions = [
+        {
+          assertion = !isRiver || !cfg.river.controlClick || (riverPackage.controlClick or false);
+          message = "River Control+click requires a compositor package with the native controlClick capability.";
+        }
         {
           assertion = systemCfg.graphical.wayland.enable;
           message = "To enable wayland for user, it must be enabled for system";

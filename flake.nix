@@ -558,6 +558,20 @@
           inherit pkgs;
           homeConfiguration = self.homeConfigurations."jd@framework";
         };
+        input-style-gtk = import ./tests/input-style-gtk.nix {
+          inherit pkgs;
+          homeConfiguration = self.homeConfigurations."jd@framework";
+        };
+        input-style-session = import ./tests/input-style-session.nix {
+          inherit pkgs;
+          homeConfiguration = self.homeConfigurations."jd@framework";
+        };
+        input-style-reka = import ./tests/reka-session.nix {
+          inherit pkgs;
+          homeConfiguration = self.homeConfigurations."jd@framework";
+          inputStyle = "mac";
+        };
+        xremap-session = import ./tests/xremap-session.nix { inherit pkgs; };
         river-input = import ./tests/river-input.nix {
           inherit pkgs;
           homeConfiguration = self.homeConfigurations."jd@framework";

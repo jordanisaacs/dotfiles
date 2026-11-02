@@ -19,6 +19,8 @@ static struct wl_compositor *compositor;
 static struct wl_shm *shm;
 static struct xdg_wm_base *shell;
 static int fixture;
+static bool never_map;
+static unsigned destroyed_unmapped;
 static int sandbox_check;
 static bool sandbox_has_health, sandbox_has_inventory, sandbox_has_shell;
 static struct wp_security_context_manager_v1 *security_manager;
@@ -64,6 +66,16 @@ struct window {
 static void configure(void *data, struct xdg_surface *surface, uint32_t serial) {
     struct window *window = data;
     xdg_surface_ack_configure(surface, serial);
+    if (never_map) {
+        // Initial configure has created River's foreign handle, but this
+        // toplevel deliberately never acquires a buffer or emits unmap.
+        xdg_toplevel_destroy(window->top);
+        xdg_surface_destroy(window->xdg);
+        wl_surface_destroy(window->surface);
+        window->top = NULL;
+        destroyed_unmapped++;
+        return;
+    }
     wl_surface_attach(window->surface, window->buffer, 0, 0);
     wl_surface_damage(window->surface, 0, 0, 64, 64);
     wl_surface_commit(window->surface);
@@ -114,7 +126,8 @@ static int check_security_context(struct wl_display *outer) {
     return passed ? 0 : 2;
 }
 int main(int argc, char **argv) {
-    fixture = argc >= 2 && !strcmp(argv[1], "--fixture");
+    never_map = argc >= 2 && !strcmp(argv[1], "--never-map");
+    fixture = never_map || (argc >= 2 && !strcmp(argv[1], "--fixture"));
     sandbox_check = argc >= 2 && !strcmp(argv[1], "--sandbox-check");
     if (!fixture && !sandbox_check) return 2;
     struct wl_display *display = wl_display_connect(NULL);
@@ -145,6 +158,12 @@ int main(int argc, char **argv) {
     }
     signal(SIGUSR1, drop_one);
     while (true) {
+        if (never_map && destroyed_unmapped == 2) {
+            if (wl_display_roundtrip(display) < 0) return 1;
+            puts("unmapped-destroyed");
+            wl_display_disconnect(display);
+            return 0;
+        }
         if (close_one && windows[0].top) {
             xdg_toplevel_destroy(windows[0].top);
             xdg_surface_destroy(windows[0].xdg);

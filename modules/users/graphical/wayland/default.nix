@@ -10,6 +10,7 @@
     ./statusbar.nix
     ./power.nix
     ./input.nix
+    ./input-style.nix
     ./display.nix
     ./reka.nix
     ./logout.nix

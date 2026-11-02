@@ -168,7 +168,19 @@ with compositor(os.environ["HEALTH_RIVER"]) as (env, river):
     observers = []
     vetoes = queue.Queue()
     pings = queue.Queue()
+    replacements = []
     try:
+        # The initial configure creates foreign handles before map. Destruction
+        # here never emits unmap, so cleanup must not depend on that event.
+        unmapped = subprocess.run(
+            [os.environ["HEALTH_FIXTURE"], "--never-map", "never-mapped"],
+            env=env,
+            text=True,
+            capture_output=True,
+            timeout=10,
+            check=True,
+        )
+        assert unmapped.stdout.strip() == "unmapped-destroyed", unmapped
         for name in ["veto", "blocked"]:
             children.append(
                 subprocess.Popen(
@@ -194,6 +206,64 @@ with compositor(os.environ["HEALTH_RIVER"]) as (env, river):
                 len(states(v, "veto", "responsive")) == 2
                 and len(states(v, "blocked", "responsive")) == 2
             )
+        )
+        monitor.wait(
+            lambda values: (
+                not any(
+                    event["app_id"] == "never-mapped" and event["status"] != "closed"
+                    for event in values.values()
+                )
+            )
+        )
+        print(
+            "GREEN: destroyed never-mapped surfaces leave no stale foreign handles",
+            flush=True,
+        )
+        # A toolkit window adds a different native surface lifecycle from the
+        # deliberately minimal XDG fixture. Observe it across WM reconnections.
+        toolkit = subprocess.Popen(
+            [os.environ["GTK_DEMO"]],
+            env=env | {"GDK_BACKEND": "wayland", "GSK_RENDERER": "cairo"},
+            stdout=subprocess.DEVNULL,
+        )
+        children.append(toolkit)
+        monitor.wait(lambda v: any(e["app_id"] == "gtk3-demo" for e in v.values()))
+        for _ in range(3):
+            descendants = [river.pid]
+            managers = []
+            while descendants:
+                parent = descendants.pop()
+                try:
+                    for child in (
+                        Path(f"/proc/{parent}/task/{parent}/children")
+                        .read_text()
+                        .split()
+                    ):
+                        pid = int(child)
+                        descendants.append(pid)
+                        if (
+                            Path(f"/proc/{pid}/comm").read_text().strip() == "oxbow"
+                            and Path(f"/proc/{pid}/stat").read_text().split()[2] != "Z"
+                        ):
+                            managers.append(pid)
+                except FileNotFoundError:
+                    pass
+            # Subsequent managers are owned directly by this fixture.
+            managers += [p.pid for p in replacements if p.poll() is None]
+            assert len(set(managers)) == 1, managers
+            os.kill(managers[0], signal.SIGTERM)
+            time.sleep(0.2)
+            replacements.append(subprocess.Popen([os.environ["OXBOW"]], env=env))
+            time.sleep(0.5)
+            assert river.poll() is None, "River crashed across WM reconnection"
+            reconnected = Observer(env)
+            observers.append(reconnected)
+            reconnected.wait(lambda v: len(states(v, "veto", "responsive")) == 2)
+            reconnected.stop()
+        assert toolkit.poll() is None
+        print(
+            "GREEN: GTK surfaces and health observers survive three WM reconnections",
+            flush=True,
         )
         identifiers = [
             e["identifier"] for e in states(monitor.latest, "veto", "responsive")
@@ -282,7 +352,7 @@ with compositor(os.environ["HEALTH_RIVER"]) as (env, river):
         for monitor in observers:
             if monitor.process.poll() is None:
                 monitor.stop()
-        for child in children:
+        for child in children + replacements:
             if child.poll() is None:
                 child.kill()
                 child.wait(timeout=5)

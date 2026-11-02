@@ -14,10 +14,10 @@ in
     allowedUsers = lib.mkOption {
       type = lib.types.listOf lib.types.str;
       default = [ ];
-      description = "Users allowed to read optional privileged activity-monitor metrics.";
+      description = "Users granted optional activity-monitor metrics; changed membership requires a fresh login/user-manager session.";
     };
     networkMetrics = lib.mkEnableOption "NetHogs network metrics for activity monitors";
-    cpuEnergyMetrics = lib.mkEnableOption "read-only Intel RAPL energy counters for activity monitors";
+    cpuEnergyMetrics = lib.mkEnableOption "read-only Intel RAPL package-energy metrics, not whole-system or per-device power";
   };
 
   config = lib.mkIf metricsEnabled {

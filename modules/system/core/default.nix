@@ -10,38 +10,50 @@ let
   cfg = config.jd.core;
 in
 {
-  options.jd.keybindings = mkOption {
-    type = types.enum [
-      "vim"
-      "emacs"
-    ];
-    default = "emacs";
-    description = "Default editing and navigation keybinding profile, inherited by users.";
-  };
-
-  options.jd.core = {
-    enable = mkOption {
-      description = "Enable core options";
-      type = types.bool;
-      default = true;
+  options.jd = {
+    inputStyle = mkOption {
+      type = types.enum [
+        "mac"
+        "win"
+      ];
+      default = "win";
+      description = "Default desktop shortcut convention, independently of the editing keybindings.";
     };
 
-    time = mkOption {
-      description = "Time zone (null if unmanaged)";
-      type =
-        with types;
-        nullOr (enum [
-          "west"
-          "east"
-        ]);
-      default = "east";
+    keybindings = mkOption {
+      type = types.enum [
+        "vim"
+        "emacs"
+      ];
+      default = "emacs";
+      description = "Default editing and navigation keybinding profile, inherited by users.";
     };
 
-    ccache = mkOption {
-      description = "Enable ccache";
-      type = types.bool;
-      default = false;
+    core = {
+      enable = mkOption {
+        description = "Enable core options";
+        type = types.bool;
+        default = true;
+      };
+
+      time = mkOption {
+        description = "Time zone (null if unmanaged)";
+        type =
+          with types;
+          nullOr (enum [
+            "west"
+            "east"
+          ]);
+        default = "east";
+      };
+
+      ccache = mkOption {
+        description = "Enable ccache";
+        type = types.bool;
+        default = false;
+      };
     };
+
   };
 
   config = mkIf cfg.enable {

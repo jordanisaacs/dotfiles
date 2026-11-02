@@ -53,6 +53,7 @@ let
           Requires = [ "clipboard-vault.service" ];
           BindsTo = [ "clipboard-vault.service" ];
           After = [ "clipboard-vault.service" ];
+          # Never let a watcher create a plaintext database beneath a lost mount.
           ConditionPathIsMountPoint = "%t/clipboard-history/plain";
         }
       else
@@ -73,7 +74,12 @@ in
     persistent = lib.mkOption {
       type = lib.types.bool;
       default = true;
-      description = "Retain keyring-encrypted clipboard history between graphical logins; disabling uses only session-owned runtime storage.";
+      description = ''
+        Retain gocryptfs-encrypted history using an existing password-protected
+        default Secret Service keyring. Locked or unavailable keys stop capture;
+        no plaintext fallback is created. Disabling uses session runtime storage
+        without deleting an existing vault. Back up vault and keyring together.
+      '';
     };
     vaultPackage = lib.mkOption {
       type = lib.types.package;

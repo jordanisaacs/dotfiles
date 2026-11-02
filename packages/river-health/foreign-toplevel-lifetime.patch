@@ -1,0 +1,50 @@
+--- a/river/Window.zig
++++ b/river/Window.zig
+@@ -360,6 +360,11 @@
+         var it = decorations.safeIterator(.forward);
+         while (it.next()) |decoration| decoration.destroy();
+     }
++
++    // A handle is announced before map. If the client destroys its role
++    // before ever mapping, unmap() is never called, so retire the handles here
++    // before their data pointer can outlive its owning Window.
++    window.destroyForeignToplevelHandles();
+ 
+     window.tree.node.destroy();
+     window.popup_tree.node.destroy();
+@@ -1201,6 +1206,18 @@
+     };
+ }
+ 
++fn destroyForeignToplevelHandles(window: *Window) void {
++    if (window.foreign_toplevel_handle) |handle| {
++        handle.destroy();
++        window.foreign_toplevel_handle = null;
++    }
++
++    if (window.wlr_toplevel_handle) |handle| {
++        handle.destroy();
++        window.wlr_toplevel_handle = null;
++    }
++}
++
+ /// Called by the impl when the surface is ready to be displayed
+ pub fn map(window: *Window) !void {
+     log.debug("window '{?s}' mapped", .{window.getTitle()});
+@@ -1221,15 +1238,7 @@
+ 
+     server.wm.dirtyWindowing();
+ 
+-    if (window.foreign_toplevel_handle) |handle| {
+-        handle.destroy();
+-        window.foreign_toplevel_handle = null;
+-    }
+-
+-    if (window.wlr_toplevel_handle) |handle| {
+-        handle.destroy();
+-        window.wlr_toplevel_handle = null;
+-    }
++    window.destroyForeignToplevelHandles();
+ 
+     {
+         var it = server.input_manager.seats.iterator(.forward);

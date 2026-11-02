@@ -48,7 +48,11 @@ in
   options.jd.graphical.wayland.logout.healthPackage = lib.mkOption {
     type = lib.types.nullOr lib.types.package;
     default = null;
-    description = "Optional native River response observer; absent support uses Waiting for app.";
+    description = ''
+      Native response observer requiring a compatible River health protocol.
+      Only compositor ping timeouts mean Not responding; refused closure does
+      not. Missing support falls back to Waiting for app and never forces exit.
+    '';
   };
 
   options.jd.graphical.wayland.logout.package = lib.mkOption {

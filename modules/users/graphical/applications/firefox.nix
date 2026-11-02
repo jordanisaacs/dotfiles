@@ -214,6 +214,9 @@ in
             }
           '';
           settings = uiFontPreferences // {
+            # Firefox persists user preferences: set both directions so a
+            # return to Windows mode replaces the previous Mac accelerator.
+            "ui.key.accelKey" = if config.jd.inputStyle == "mac" then 224 else 17;
             # Native pixel zoom composes with the monitor's scale; unlike a
             # positive devPixelsPerPx override it keeps per-monitor adaptation.
             # See widget/Screen.cpp, Screen::GetDefaultCSSScaleFactor().

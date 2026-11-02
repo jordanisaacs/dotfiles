@@ -1,4 +1,10 @@
-{ pkgs, homeConfiguration }:
+{
+  pkgs,
+  homeConfiguration,
+  nativeInput ? false,
+  extraModules ? [ ],
+  testScriptOverride ? null,
+}:
 let
   home = homeConfiguration.config;
   username = home.home.username;
@@ -51,7 +57,8 @@ let
     import os
 
     os.environ.update({
-        "WLR_BACKENDS": "headless",
+        "WLR_BACKENDS": "${if nativeInput then "headless,libinput" else "headless"}",
+        **({"LIBSEAT_BACKEND": "logind"} if ${if nativeInput then "True" else "False"} else {}),
         "WLR_RENDERER": "pixman",
         "WLR_HEADLESS_OUTPUTS": "2",
         # The fixture has no GPU; Xwayland should use its software path.
@@ -90,7 +97,7 @@ let
   '';
 in
 pkgs.testers.runNixOSTest {
-  name = "river-oxbow-systemd-session";
+  name = "river-oxbow-systemd-session${pkgs.lib.optionalString nativeInput "-native-input"}";
 
   nodes.machine = {
     imports = [
@@ -98,7 +105,8 @@ pkgs.testers.runNixOSTest {
       ({ lib, ... }: {
         options.jd.graphical.enable = lib.mkEnableOption "graphical fixture support";
       })
-    ];
+    ]
+    ++ extraModules;
     jd.graphical.enable = true;
     virtualisation = {
       memorySize = 1536;
@@ -159,205 +167,209 @@ pkgs.testers.runNixOSTest {
     };
   };
 
-  testScript = ''
-    import ast
-    from datetime import timedelta
-    import json
-    from pathlib import Path
-    import shlex
+  testScript =
+    if testScriptOverride != null then
+      testScriptOverride
+    else
+      ''
+        import ast
+        from datetime import timedelta
+        import json
+        from pathlib import Path
+        import shlex
 
-    runtime = "/run/user/1000"
+        runtime = "/run/user/1000"
 
-    def user(*arguments):
-        return shlex.join([
-            "runuser", "-u", "${username}", "--", "env",
-            "XDG_RUNTIME_DIR=" + runtime,
-            "DBUS_SESSION_BUS_ADDRESS=unix:path=" + runtime + "/bus",
-            *arguments,
-        ])
+        def user(*arguments):
+            return shlex.join([
+                "runuser", "-u", "${username}", "--", "env",
+                "XDG_RUNTIME_DIR=" + runtime,
+                "DBUS_SESSION_BUS_ADDRESS=unix:path=" + runtime + "/bus",
+                *arguments,
+            ])
 
-    def manager_environment():
-        return dict(
-            line.split("=", 1)
-            for line in machine.succeed(
-                user("systemctl", "--user", "show-environment")
-            ).splitlines()
-            if "=" in line
-        )
+        def manager_environment():
+            return dict(
+                line.split("=", 1)
+                for line in machine.succeed(
+                    user("systemctl", "--user", "show-environment")
+                ).splitlines()
+                if "=" in line
+            )
 
-    start_all()
-    machine.wait_for_unit("greetd.service")
-    try:
-        machine.wait_until_succeeds(
-            user("systemctl", "--user", "is-active", "graphical-session.target"),
-            timeout=timedelta(minutes=3),
-        )
-    except Exception:
-        print(machine.succeed("journalctl -b --no-pager _UID=1000"))
-        raise
-    environment = manager_environment()
-    assert environment["JD_DESKTOP_READY"] == "1", environment
-    assert environment["JD_RIVER_WM"] == "oxbow", environment
-    assert environment["XDG_SESSION_TYPE"] == "wayland", environment
-    assert environment["XDG_CURRENT_DESKTOP"] == "river", environment
-    assert environment["WAYLAND_DISPLAY"], environment
-    assert environment["DISPLAY"], environment
-    assert environment["OXBOW_SOCKET"], environment
-    # A ready manager has its own session cgroup; river/init bridges its native
-    # Type=notify acknowledgement back to the original UWSM compositor unit.
-    manager_properties = machine.succeed(user(
-        "systemctl", "--user", "show", "river-wm-oxbow.service",
-        "--property=Type", "--property=NotifyAccess", "--property=Slice",
-        "--property=ActiveState", "--property=ControlGroup",
-    ))
-    for property in ("Type=notify", "NotifyAccess=all", "Slice=session.slice", "ActiveState=active"):
-        assert property in manager_properties, manager_properties
-    assert "/session.slice/river-wm-oxbow.service" in manager_properties, manager_properties
-    machine.fail(user("systemctl", "--user", "is-active", "river-wm-reka.service"))
-    machine.fail(user("systemctl", "--user", "is-active", "river-input.service"))
-    machine.wait_until_succeeds(user("systemctl", "--user", "is-active", "kanshi.service"))
-    # Query River's actual output-management protocol after native Kanshi has
-    # applied the generated policy. The second output models arbitrary docks.
-    for attempt in range(30):
-        outputs = json.loads(machine.succeed(user(
-            "env", "WAYLAND_DISPLAY=" + environment["WAYLAND_DISPLAY"],
-            "${pkgs.wlr-randr}/bin/wlr-randr", "--json",
-        )))
-        scales = {output["name"]: output["scale"] for output in outputs}
-        if scales.get("HEADLESS-1") == ${toString home.jd.graphical.wayland.display.internalScale}:
-            break
-        machine.sleep(duration=timedelta(seconds=1))
-    else:
-        print(machine.succeed("journalctl -b --no-pager _UID=1000"))
-        raise AssertionError(scales)
-    assert scales["HEADLESS-2"] == 1.0, scales
-    assert environment["TMUX_TMPDIR"] == runtime, environment["TMUX_TMPDIR"]
-    data_dirs = environment["XDG_DATA_DIRS"].split(":")
-    assert "/run/current-system/sw/share" in data_dirs, data_dirs
-    assert "${home.home.profileDirectory}/share" in data_dirs, data_dirs
-    assert all(directory.startswith("/") and "$" not in directory for directory in data_dirs), data_dirs
-    for directory in ${builtins.toJSON home.xdg.systemDirs.data}:
-        assert directory in data_dirs, data_dirs
-    # Query the real manager after production initialization. The persistent
-    # touchpad rule must keep the calibrated factor without changing mice.
-    input_rules = json.loads(machine.succeed(user(
-        "env", "OXBOW_SOCKET=" + environment["OXBOW_SOCKET"],
-        "${pkgs.oxbow}/bin/oxctl", "input", "rules", "list", "--json",
-    )))
-    touchpad_rules = [rule for role, rule in input_rules if role == "touchpad"]
-    assert len(touchpad_rules) == 1, input_rules
-    settings = touchpad_rules[0]["settings"]
-    assert settings["scroll_factor"] == ${builtins.toJSON home.jd.graphical.wayland.touchpad.scrollFactor}, settings
-    assert settings["natural_scroll"] is True, settings
-    assert settings["tap"] is True, settings
-    assert not [rule for role, rule in input_rules if role == "mouse"], input_rules
-    machine.succeed(user("systemctl", "--user", "start", "xdg-document-portal.service"))
-    # The FUSE mount is private to its owner; inspect it as that user.
-    try:
-        machine.wait_until_succeeds(user("mountpoint", "-q", runtime + "/doc"), timeout=timedelta(seconds=15))
-    except Exception:
-        print(machine.succeed("journalctl -b -u user@1000.service --no-pager"))
-        print(machine.succeed(user("systemctl", "--user", "status", "xdg-document-portal.service")))
-        raise
-    machine.succeed("test -x " + shlex.quote(environment["SUDO_ASKPASS"]))
-    x11_environment = [
-        name + "=" + environment[name]
-        for name in ("DISPLAY", "XAUTHORITY") if name in environment
-    ]
-    machine.wait_until_succeeds(
-        user("env", *x11_environment, "${pkgs.xdpyinfo}/bin/xdpyinfo"),
-        timeout=timedelta(seconds=30),
-    )
-    journal = machine.succeed("journalctl -b -u user@1000.service --no-pager")
-    for message in (
-        "Eavesdropping is deprecated", "Failed to initialize glamor",
-        "Could not resolve keysym", "Symbol map for key", "Multiple symbols for",
-    ):
-        assert message not in journal, journal
-    sessions = json.loads(machine.succeed("loginctl list-sessions --json=short"))
-    login_sessions = [
-        session["session"] for session in sessions
-        if session["user"] == "${username}" and session["class"] == "user"
-    ]
-    assert len(login_sessions) == 1, sessions
-    machine.succeed(user(
-        "env", "OXBOW_SOCKET=" + environment["OXBOW_SOCKET"],
-        "${pkgs.oxbow}/bin/oxctl", "layout", "tiling", "mfact", "0.55",
-    ))
-
-    machine.succeed(user(
-        "${pkgs.uwsm}/bin/uwsm", "app", "-t", "service", "-u", "desktop-launcher-test.service",
-        "--", "${pkgs.fuzzel}/bin/fuzzel",
-        "--config=${home.xdg.configFile."fuzzel/fuzzel.ini".source}",
-        "--search=Desktop Regression Fixture", "--auto-select",
-    ))
-    machine.wait_for_file(runtime + "/desktop-test-app.json")
-    application_state = json.loads(machine.succeed(
-        "cat " + runtime + "/desktop-test-app.json"
-    ))
-    app_unit = application_state["cgroup"].strip().rsplit("/", 1)[1]
-    machine.succeed(user("systemctl", "--user", "is-active", app_unit))
-    properties = machine.succeed(user(
-        "systemctl", "--user", "show", app_unit,
-        "--property=Slice", "--property=ExitType",
-    ))
-    assert "Slice=app-graphical.slice" in properties, properties
-    assert "ExitType=cgroup" in properties, properties
-    assert "/app-graphical.slice/" in application_state["cgroup"], application_state
-    assert app_unit in application_state["cgroup"], application_state
-    for name, value in application_state["environment"].items():
-        assert value == environment[name], (name, value, environment[name])
-
-    # Reload preferences twice in the actual running manager. Mode declarations
-    # must not abort a reload, and existing app/compositor processes must survive.
-    oxbow_pid = machine.succeed(user("pgrep", "--exact", "oxbow")).strip()
-    river_pid = machine.succeed(user("pgrep", "--exact", "river")).strip()
-    for reload in range(2):
-        machine.succeed(user("env", "OXBOW_SOCKET=" + environment["OXBOW_SOCKET"], "${oxbowInit}", "--configure-only"))
-    assert machine.succeed(user("pgrep", "--exact", "oxbow")).strip() == oxbow_pid
-    assert machine.succeed(user("pgrep", "--exact", "river")).strip() == river_pid
-    machine.succeed("kill -0 " + str(application_state["pid"]))
-    bindings = json.loads(machine.succeed(user("env", "OXBOW_SOCKET=" + environment["OXBOW_SOCKET"], "${pkgs.oxbow}/bin/oxctl", "keymap", "list", "--json")))["bindings"]
-    assert any(binding["mode"] == "passthrough" for binding in bindings), bindings
-    assert any(binding["keybind"] == "XF86AudioRaiseVolume" for binding in bindings), bindings
-
-    # Read the real generated Oxbow configuration to invoke its actual logout
-    # helper, without maintaining another copy of that command in the test.
-    tree = ast.parse(Path("${oxbowInit}").read_text())
-    assignment = next(
-        node for node in tree.body if isinstance(node, ast.Assign)
-        and any(isinstance(target, ast.Name) and target.id == "CONFIG"
-                for target in node.targets)
-    )
-    assert isinstance(assignment.value, ast.Call)
-    argument = assignment.value.args[0]
-    assert isinstance(argument, ast.Constant)
-    configuration = argument.value
-    assert isinstance(configuration, str)
-    machine.succeed(user(json.loads(configuration)["wayExit"]))
-    machine.wait_until_fails(
-        user("systemctl", "--user", "is-active", "graphical-session.target")
-    )
-    machine.wait_until_fails(user("systemctl", "--user", "is-active", app_unit))
-    machine.wait_until_fails(user("systemctl", "--user", "is-active", "kanshi.service"))
-    for unit in ("river-wm-oxbow.service", "river-wm-reka.service", "river-input.service"):
-        machine.wait_until_fails(user("systemctl", "--user", "is-active", unit))
-    machine.wait_until_fails("kill -0 " + str(application_state["pid"]))
-    machine.wait_until_fails(user("pgrep", "--exact", "river"))
-    machine.wait_until_fails(user("pgrep", "--exact", "oxbow"))
-    result = machine.succeed(user(
-        "systemctl", "--user", "show", "river-wm-oxbow.service", "--property=Result", "--value",
-    )).strip()
-    assert result == "success", result
-    for attempt in range(60):
+        start_all()
+        machine.wait_for_unit("greetd.service")
+        try:
+            machine.wait_until_succeeds(
+                user("systemctl", "--user", "is-active", "graphical-session.target"),
+                timeout=timedelta(minutes=3),
+            )
+        except Exception:
+            print(machine.succeed("journalctl -b --no-pager _UID=1000"))
+            raise
         environment = manager_environment()
-        if not {"WAYLAND_DISPLAY", "DISPLAY", "OXBOW_SOCKET", "JD_DESKTOP_READY", "JD_RIVER_WM"} & environment.keys():
-            break
-        machine.sleep(duration=timedelta(seconds=1))
-    else:
-        raise AssertionError(environment)
-    # A lingering user's manager has a separate class=manager logind session;
-    # only the real greetd login must disappear on logout.
-    machine.wait_until_fails("loginctl show-session " + login_sessions[0])
-  '';
+        assert environment["JD_DESKTOP_READY"] == "1", environment
+        assert environment["JD_RIVER_WM"] == "oxbow", environment
+        assert environment["XDG_SESSION_TYPE"] == "wayland", environment
+        assert environment["XDG_CURRENT_DESKTOP"] == "river", environment
+        assert environment["WAYLAND_DISPLAY"], environment
+        assert environment["DISPLAY"], environment
+        assert environment["OXBOW_SOCKET"], environment
+        # A ready manager has its own session cgroup; river/init bridges its native
+        # Type=notify acknowledgement back to the original UWSM compositor unit.
+        manager_properties = machine.succeed(user(
+            "systemctl", "--user", "show", "river-wm-oxbow.service",
+            "--property=Type", "--property=NotifyAccess", "--property=Slice",
+            "--property=ActiveState", "--property=ControlGroup",
+        ))
+        for property in ("Type=notify", "NotifyAccess=all", "Slice=session.slice", "ActiveState=active"):
+            assert property in manager_properties, manager_properties
+        assert "/session.slice/river-wm-oxbow.service" in manager_properties, manager_properties
+        machine.fail(user("systemctl", "--user", "is-active", "river-wm-reka.service"))
+        machine.fail(user("systemctl", "--user", "is-active", "river-input.service"))
+        machine.wait_until_succeeds(user("systemctl", "--user", "is-active", "kanshi.service"))
+        # Query River's actual output-management protocol after native Kanshi has
+        # applied the generated policy. The second output models arbitrary docks.
+        for attempt in range(30):
+            outputs = json.loads(machine.succeed(user(
+                "env", "WAYLAND_DISPLAY=" + environment["WAYLAND_DISPLAY"],
+                "${pkgs.wlr-randr}/bin/wlr-randr", "--json",
+            )))
+            scales = {output["name"]: output["scale"] for output in outputs}
+            if scales.get("HEADLESS-1") == ${toString home.jd.graphical.wayland.display.internalScale}:
+                break
+            machine.sleep(duration=timedelta(seconds=1))
+        else:
+            print(machine.succeed("journalctl -b --no-pager _UID=1000"))
+            raise AssertionError(scales)
+        assert scales["HEADLESS-2"] == 1.0, scales
+        assert environment["TMUX_TMPDIR"] == runtime, environment["TMUX_TMPDIR"]
+        data_dirs = environment["XDG_DATA_DIRS"].split(":")
+        assert "/run/current-system/sw/share" in data_dirs, data_dirs
+        assert "${home.home.profileDirectory}/share" in data_dirs, data_dirs
+        assert all(directory.startswith("/") and "$" not in directory for directory in data_dirs), data_dirs
+        for directory in ${builtins.toJSON home.xdg.systemDirs.data}:
+            assert directory in data_dirs, data_dirs
+        # Query the real manager after production initialization. The persistent
+        # touchpad rule must keep the calibrated factor without changing mice.
+        input_rules = json.loads(machine.succeed(user(
+            "env", "OXBOW_SOCKET=" + environment["OXBOW_SOCKET"],
+            "${pkgs.oxbow}/bin/oxctl", "input", "rules", "list", "--json",
+        )))
+        touchpad_rules = [rule for role, rule in input_rules if role == "touchpad"]
+        assert len(touchpad_rules) == 1, input_rules
+        settings = touchpad_rules[0]["settings"]
+        assert settings["scroll_factor"] == ${builtins.toJSON home.jd.graphical.wayland.touchpad.scrollFactor}, settings
+        assert settings["natural_scroll"] is True, settings
+        assert settings["tap"] is True, settings
+        assert not [rule for role, rule in input_rules if role == "mouse"], input_rules
+        machine.succeed(user("systemctl", "--user", "start", "xdg-document-portal.service"))
+        # The FUSE mount is private to its owner; inspect it as that user.
+        try:
+            machine.wait_until_succeeds(user("mountpoint", "-q", runtime + "/doc"), timeout=timedelta(seconds=15))
+        except Exception:
+            print(machine.succeed("journalctl -b -u user@1000.service --no-pager"))
+            print(machine.succeed(user("systemctl", "--user", "status", "xdg-document-portal.service")))
+            raise
+        machine.succeed("test -x " + shlex.quote(environment["SUDO_ASKPASS"]))
+        x11_environment = [
+            name + "=" + environment[name]
+            for name in ("DISPLAY", "XAUTHORITY") if name in environment
+        ]
+        machine.wait_until_succeeds(
+            user("env", *x11_environment, "${pkgs.xdpyinfo}/bin/xdpyinfo"),
+            timeout=timedelta(seconds=30),
+        )
+        journal = machine.succeed("journalctl -b -u user@1000.service --no-pager")
+        for message in (
+            "Eavesdropping is deprecated", "Failed to initialize glamor",
+            "Could not resolve keysym", "Symbol map for key", "Multiple symbols for",
+        ):
+            assert message not in journal, journal
+        sessions = json.loads(machine.succeed("loginctl list-sessions --json=short"))
+        login_sessions = [
+            session["session"] for session in sessions
+            if session["user"] == "${username}" and session["class"] == "user"
+        ]
+        assert len(login_sessions) == 1, sessions
+        machine.succeed(user(
+            "env", "OXBOW_SOCKET=" + environment["OXBOW_SOCKET"],
+            "${pkgs.oxbow}/bin/oxctl", "layout", "tiling", "mfact", "0.55",
+        ))
+
+        machine.succeed(user(
+            "${pkgs.uwsm}/bin/uwsm", "app", "-t", "service", "-u", "desktop-launcher-test.service",
+            "--", "${pkgs.fuzzel}/bin/fuzzel",
+            "--config=${home.xdg.configFile."fuzzel/fuzzel.ini".source}",
+            "--search=Desktop Regression Fixture", "--auto-select",
+        ))
+        machine.wait_for_file(runtime + "/desktop-test-app.json")
+        application_state = json.loads(machine.succeed(
+            "cat " + runtime + "/desktop-test-app.json"
+        ))
+        app_unit = application_state["cgroup"].strip().rsplit("/", 1)[1]
+        machine.succeed(user("systemctl", "--user", "is-active", app_unit))
+        properties = machine.succeed(user(
+            "systemctl", "--user", "show", app_unit,
+            "--property=Slice", "--property=ExitType",
+        ))
+        assert "Slice=app-graphical.slice" in properties, properties
+        assert "ExitType=cgroup" in properties, properties
+        assert "/app-graphical.slice/" in application_state["cgroup"], application_state
+        assert app_unit in application_state["cgroup"], application_state
+        for name, value in application_state["environment"].items():
+            assert value == environment[name], (name, value, environment[name])
+
+        # Reload preferences twice in the actual running manager. Mode declarations
+        # must not abort a reload, and existing app/compositor processes must survive.
+        oxbow_pid = machine.succeed(user("pgrep", "--exact", "oxbow")).strip()
+        river_pid = machine.succeed(user("pgrep", "--exact", "river")).strip()
+        for reload in range(2):
+            machine.succeed(user("env", "OXBOW_SOCKET=" + environment["OXBOW_SOCKET"], "${oxbowInit}", "--configure-only"))
+        assert machine.succeed(user("pgrep", "--exact", "oxbow")).strip() == oxbow_pid
+        assert machine.succeed(user("pgrep", "--exact", "river")).strip() == river_pid
+        machine.succeed("kill -0 " + str(application_state["pid"]))
+        bindings = json.loads(machine.succeed(user("env", "OXBOW_SOCKET=" + environment["OXBOW_SOCKET"], "${pkgs.oxbow}/bin/oxctl", "keymap", "list", "--json")))["bindings"]
+        assert any(binding["mode"] == "passthrough" for binding in bindings), bindings
+        assert any(binding["keybind"] == "XF86AudioRaiseVolume" for binding in bindings), bindings
+
+        # Read the real generated Oxbow configuration to invoke its actual logout
+        # helper, without maintaining another copy of that command in the test.
+        tree = ast.parse(Path("${oxbowInit}").read_text())
+        assignment = next(
+            node for node in tree.body if isinstance(node, ast.Assign)
+            and any(isinstance(target, ast.Name) and target.id == "CONFIG"
+                    for target in node.targets)
+        )
+        assert isinstance(assignment.value, ast.Call)
+        argument = assignment.value.args[0]
+        assert isinstance(argument, ast.Constant)
+        configuration = argument.value
+        assert isinstance(configuration, str)
+        machine.succeed(user(json.loads(configuration)["wayExit"]))
+        machine.wait_until_fails(
+            user("systemctl", "--user", "is-active", "graphical-session.target")
+        )
+        machine.wait_until_fails(user("systemctl", "--user", "is-active", app_unit))
+        machine.wait_until_fails(user("systemctl", "--user", "is-active", "kanshi.service"))
+        for unit in ("river-wm-oxbow.service", "river-wm-reka.service", "river-input.service"):
+            machine.wait_until_fails(user("systemctl", "--user", "is-active", unit))
+        machine.wait_until_fails("kill -0 " + str(application_state["pid"]))
+        machine.wait_until_fails(user("pgrep", "--exact", "river"))
+        machine.wait_until_fails(user("pgrep", "--exact", "oxbow"))
+        result = machine.succeed(user(
+            "systemctl", "--user", "show", "river-wm-oxbow.service", "--property=Result", "--value",
+        )).strip()
+        assert result == "success", result
+        for attempt in range(60):
+            environment = manager_environment()
+            if not {"WAYLAND_DISPLAY", "DISPLAY", "OXBOW_SOCKET", "JD_DESKTOP_READY", "JD_RIVER_WM"} & environment.keys():
+                break
+            machine.sleep(duration=timedelta(seconds=1))
+        else:
+            raise AssertionError(environment)
+        # A lingering user's manager has a separate class=manager logind session;
+        # only the real greetd login must disappear on logout.
+        machine.wait_until_fails("loginctl show-session " + login_sessions[0])
+      '';
 }

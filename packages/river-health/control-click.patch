@@ -1,0 +1,175 @@
+--- a/river/main.zig
++++ b/river/main.zig
+@@ -30,6 +30,7 @@
+     \\  -c <command>       Run `sh -c <command>` on startup instead of the default init executable.
+     \\  -log-level <level> Set the log level to error, warning, info, or debug.
+     \\  -no-xwayland       Disable xwayland even if built with support.
++    \\  -control-click     Translate Control+primary click to secondary click.
+     \\
+ ;
+ 
+@@ -39,6 +40,9 @@
+ });
+ 
+ pub var server: Server = undefined;
++
++/// Per-session pointer policy; disabled unless explicitly selected at startup.
++pub var control_click: bool = false;
+ 
+ pub fn main(init: std.process.Init.Minimal) anyerror!void {
+     var arena_alloc = std.heap.ArenaAllocator.init(util.gpa);
+@@ -62,6 +66,7 @@
+         .{ .name = "log-level", .kind = .arg },
+         .{ .name = "log-scopes", .kind = .arg },
+         .{ .name = "no-xwayland", .kind = .boolean },
++        .{ .name = "control-click", .kind = .boolean },
+     }).parse(args[1..]) catch {
+         try stderr.writeAll(usage);
+         try stderr.flush();
+@@ -121,6 +126,7 @@
+             }
+         }
+     }
++    control_click = result.flags.@"control-click";
+     const runtime_xwayland = !result.flags.@"no-xwayland";
+     const startup_command = blk: {
+         if (result.flags.c) |command| {
+--- a/river/Cursor.zig
++++ b/river/Cursor.zig
+@@ -13,7 +13,9 @@
+ const wl = wayland.server.wl;
+ const zwlr = wayland.server.zwlr;
+ 
+-const server = &@import("main.zig").server;
++const main = @import("main.zig");
++const server = &main.server;
++const c = @import("c");
+ const util = @import("util.zig");
+ 
+ const DragIcon = @import("DragIcon.zig");
+@@ -53,6 +55,13 @@
+     op,
+ };
+ 
++const Press = struct {
++    binding: ?*PointerBinding = null,
++    /// The logical button is fixed at physical press time, even if modifiers
++    /// change before release. The map key remains the physical button.
++    button: ?u32 = null,
++};
++
+ const default_size = 24;
+ 
+ const Image = union(enum) {
+@@ -84,7 +93,7 @@
+ wm_image_surface_destroy: wl.Listener(*wlr.Surface) = .init(handleWmImageSurfaceDestroy),
+ 
+ /// The set of currently pressed pointer buttons and the corresponding pointer mapping if any.
+-pressed: std.AutoHashMapUnmanaged(u32, ?*PointerBinding) = .{},
++pressed: std.AutoHashMapUnmanaged(u32, Press) = .{},
+ 
+ /// The pointer constraint for the surface that currently has keyboard focus, if any.
+ /// This constraint is not necessarily active, activation only occurs once the cursor
+@@ -476,7 +485,7 @@
+         }
+ 
+         if (cursor.seat.matchPointerBinding(event.button)) |binding| {
+-            result.value_ptr.* = binding;
++            result.value_ptr.* = .{ .binding = binding };
+             binding.pressed();
+             switch (cursor.mode) {
+                 .passthrough, .drag, .down => {
+@@ -491,7 +500,13 @@
+             return;
+         }
+ 
+-        result.value_ptr.* = null;
++        const button: u32 = if (main.control_click and
++            server.lock_manager.state == .unlocked and event.button == c.BTN_LEFT and
++            (if (cursor.seat.wlr_seat.getKeyboard()) |keyboard| keyboard.getModifiers().ctrl else false))
++            c.BTN_RIGHT
++        else
++            event.button;
++        result.value_ptr.* = .{ .button = button };
+ 
+         switch (cursor.mode) {
+             .passthrough => {
+@@ -499,7 +514,7 @@
+                     cursor.seat.interact(at);
+ 
+                     if (at.surface != null) {
+-                        _ = cursor.seat.wlr_seat.pointerNotifyButton(event.time_msec, event.button, event.state);
++                        cursor.notifyButton(event, button);
+                         log.debug("entering cursor mode down", .{});
+                         cursor.mode = .{
+                             .down = .{
+@@ -522,7 +537,7 @@
+                 if (server.scene.at(cursor.wlr_cursor.x, cursor.wlr_cursor.y)) |at| {
+                     cursor.seat.interact(at);
+                     if (at.surface != null) {
+-                        _ = cursor.seat.wlr_seat.pointerNotifyButton(event.time_msec, event.button, event.state);
++                        cursor.notifyButton(event, button);
+                         return;
+                     }
+                 }
+@@ -530,7 +545,7 @@
+             },
+             // Pointer focus does not change while in down mode.
+             .down => {
+-                _ = cursor.seat.wlr_seat.pointerNotifyButton(event.time_msec, event.button, event.state);
++                cursor.notifyButton(event, button);
+             },
+             // No client has pointer focus while in ignore/op mode.
+             .ignore, .op => {},
+@@ -539,7 +554,8 @@
+         assert(event.state == .released);
+         const result = cursor.pressed.fetchRemove(event.button);
+         if (result) |kv| {
+-            if (kv.value) |binding| {
++            const button = kv.value.button;
++            if (kv.value.binding) |binding| {
+                 binding.released();
+             }
+ 
+@@ -547,7 +563,7 @@
+                 .passthrough => unreachable,
+                 .drag, .down, .ignore => {
+                     if (cursor.mode != .ignore) {
+-                        _ = cursor.seat.wlr_seat.pointerNotifyButton(event.time_msec, event.button, event.state);
++                        if (button) |logical_button| cursor.notifyButton(event, logical_button);
+                     }
+                     if (cursor.pressed.count() == 0) {
+                         log.debug("exiting cursor mode {s}", .{@tagName(cursor.mode)});
+@@ -569,6 +585,19 @@
+     }
+ }
+ 
++/// Multiple physical buttons may map to one logical button. Only emit the
++/// first press and final release, preserving the client's implicit pointer grab.
++fn notifyButton(cursor: *Cursor, event: *const Seat.Event.PointerButton, button: u32) void {
++    var it = cursor.pressed.iterator();
++    while (it.next()) |entry| {
++        if (entry.key_ptr.* == event.button) continue;
++        if (entry.value_ptr.button) |logical_button| {
++            if (logical_button == button) return;
++        }
++    }
++    _ = cursor.seat.wlr_seat.pointerNotifyButton(event.time_msec, button, event.state);
++}
++
+ pub fn processAxis(cursor: *Cursor, event: *const Seat.Event.PointerAxis) void {
+     cursor.seat.wlr_seat.pointerNotifyAxis(
+         event.time_msec,
+--- a/river/PointerBinding.zig
++++ b/river/PointerBinding.zig
+@@ -91,8 +91,8 @@
+ fn handleDestroy(_: *river.PointerBindingV1, binding: *PointerBinding) void {
+     if (binding.seat.cursor.pressed.getPtr(binding.button)) |value_ptr| {
+         // It is possible for the window manager to create duplicate pointer bindings.
+-        if (value_ptr.* == binding) {
+-            value_ptr.* = null;
++        if (value_ptr.binding == binding) {
++            value_ptr.binding = null;
+         }
+     }
+ 

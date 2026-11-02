@@ -240,6 +240,9 @@ in
     # dconf settings set by gtk settings: https://github.com/nix-community/home-manager/blob/693d76eeb84124cc3110793ff127aeab3832f95c/modules/misc/gtk.nix#L227
     dconf.settings = {
       "org/gnome/desktop/interface" = {
+        # Wayland GTK reads GSettings ahead of settings.ini. Keep the editing
+        # preference consistent across native GTK apps and Gecko text widgets.
+        gtk-key-theme = if config.jd.keybindings == "emacs" then "Emacs" else "Default";
         # https://askubuntu.com/questions/1404764/how-to-use-hdystylemanagercolor-scheme
         color-scheme = "prefer-dark";
         text-scaling-factor = 1.0;

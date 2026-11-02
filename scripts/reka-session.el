@@ -10,12 +10,17 @@
     (insert-file-contents jd-reka-settings-file)
     (json-parse-buffer :object-type 'alist :array-type 'list)))
 
+;; Application Command shortcuts may translate to ordinary Control keys.
+;; Keep Reka's editor prefixes local to its own frame in the Mac profile.
+(when (eq (alist-get 'isMac jd-reka-settings) t)
+  (setq reka-intercept-prefixes nil))
+
 (setq server-name "reka"
       inhibit-startup-screen t
       initial-scratch-message nil
       use-dialog-box nil
       confirm-kill-processes nil
-      reka-floating-toggle-key "s-SPC"
+      reka-floating-toggle-key (alist-get 'floatingKey jd-reka-settings)
       tab-bar-show 1
       tab-bar-new-tab-choice "*reka-background*")
 
@@ -72,15 +77,19 @@
 (global-set-key (kbd "C-x C-c")
                 (lambda () (interactive)
                   (user-error "Use Super+Shift+q to end the desktop session")))
-(jd-reka-bind "s-S-c" #'jd-reka-close-window)
+(jd-reka-bind (alist-get 'closeKey jd-reka-settings) #'jd-reka-close-window)
 (jd-reka-bind (alist-get 'nextKey jd-reka-settings) #'other-window)
 (jd-reka-bind (alist-get 'previousKey jd-reka-settings)
               (lambda () (interactive) (other-window -1)))
-(jd-reka-bind "s-m" #'delete-other-windows)
-(jd-reka-bind "s-t" #'balance-windows)
+(when (eq (alist-get 'isMac jd-reka-settings) t)
+  (jd-reka-bind (alist-get 'nextWindowKey jd-reka-settings) #'other-window)
+  (jd-reka-bind (alist-get 'previousWindowKey jd-reka-settings)
+                (lambda () (interactive) (other-window -1))))
+(jd-reka-bind (alist-get 'monocleKey jd-reka-settings) #'delete-other-windows)
+(jd-reka-bind (alist-get 'balanceKey jd-reka-settings) #'balance-windows)
 (dotimes (index 9)
   (let ((number (1+ index)))
-    (jd-reka-bind (format "s-%d" number)
+    (jd-reka-bind (format "%s%d" (alist-get 'workspacePrefix jd-reka-settings) number)
                   (lambda () (interactive) (jd-reka-workspace number)))))
 
 (defun jd-reka-ready ()
@@ -92,4 +101,4 @@
 (add-hook 'reka-ready-hook #'jd-reka-ready)
 (server-start)
 (reka-enable)
-(reka-push-intercept-prefix "s-f" 'toggle-fullscreen)
+(reka-push-intercept-prefix (alist-get 'fullscreenKey jd-reka-settings) 'toggle-fullscreen)

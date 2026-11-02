@@ -64,6 +64,15 @@ in
 {
   options.jd.graphical.wayland = {
     keyboard = {
+      macWmModifier = lib.mkOption {
+        type = lib.types.enum [
+          "Super+Alt"
+          "Super+Control"
+          "Alt"
+        ];
+        default = "Super+Alt";
+        description = "Window-management modifier in the Mac shortcut profile; Alt alone conflicts with Option navigation and is rejected by that profile.";
+      };
       layout = lib.mkOption {
         type = lib.types.strMatching "[A-Za-z0-9_,+-]+";
         default = "us";

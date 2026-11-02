@@ -4,6 +4,7 @@
 {
   imports = [
     ./askpass.nix
+    ./input-style.nix
     ./activity-monitor.nix
     ./portal-support.nix
     ./wayland.nix

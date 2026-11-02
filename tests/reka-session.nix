@@ -2,9 +2,45 @@
   pkgs,
   homeConfiguration,
   withPipes ? true,
+  inputStyle ? "win",
 }:
 let
-  home = homeConfiguration.config;
+  home =
+    if inputStyle == "win" then
+      homeConfiguration.config
+    else
+      (homeConfiguration.extendModules {
+        modules = [
+          ({ lib, ... }: {
+            jd.inputStyle = lib.mkForce inputStyle;
+            # This fixture exercises native compositor bindings; the separate
+            # input-style-session check runs the privileged input service.
+            machineData = lib.mkForce (
+              homeConfiguration.config.machineData
+              // {
+                inputRemapping = {
+                  enable = true;
+                  users = [ homeConfiguration.config.home.username ];
+                };
+              }
+            );
+          })
+        ];
+      }).config;
+  isMac = inputStyle == "mac";
+  wmModifiers =
+    if isMac then
+      map (
+        modifier:
+        if modifier == "Super" then
+          "logo"
+        else if modifier == "Control" then
+          "ctrl"
+        else
+          "alt"
+      ) (pkgs.lib.splitString "+" home.jd.graphical.wayland.keyboard.macWmModifier)
+    else
+      [ "logo" ];
   username = home.home.username;
   homeDirectory = home.home.homeDirectory;
   runtime = "/run/user/1000";
@@ -122,7 +158,7 @@ let
   '';
 in
 pkgs.testers.runNixOSTest {
-  name = "river-reka-systemd-session";
+  name = "river-reka-systemd-session${pkgs.lib.optionalString isMac "-mac-input"}";
   nodes.machine = {
     virtualisation = {
       memorySize = 2048;
@@ -284,7 +320,14 @@ pkgs.testers.runNixOSTest {
     # its asynchronous UWSM child before the application service starts.
     machine.succeed(user(
         "env", wayland, "${pkgs.wtype}/bin/wtype",
-        "-M", "logo", "-k", "${if home.jd.keybindings == "emacs" then "x" else "p"}", "-m", "logo",
+        "-M", "logo", "-k", "${
+          if isMac then
+            "space"
+          else if home.jd.keybindings == "emacs" then
+            "x"
+          else
+            "p"
+        }", "-m", "logo",
     ))
     machine.wait_until_succeeds(user("pgrep", "--exact", "fuzzel"))
     machine.succeed(user(
@@ -320,12 +363,35 @@ pkgs.testers.runNixOSTest {
     machine.succeed(user("env", wayland, "${pkgs.wtype}/bin/wtype", "v"))
     output = machine.succeed("tail -c +" + str(offset + 1) + " " + runtime + "/reka-session-keys.log")
     assert re.search(r"sym: +v\b", output), output
+    ${pkgs.lib.optionalString isMac ''
+      assert evaluate('(not (seq-intersection reka-intercept-prefixes \'("C-x" "C-u" "C-h" "M-x") #\'equal))') == "t"
+      offset = int(machine.succeed("stat --format=%s " + runtime + "/reka-session-keys.log"))
+      machine.succeed(user("env", wayland, "${pkgs.wtype}/bin/wtype", "-M", "ctrl", "-k", "x", "-m", "ctrl"))
+      output = machine.succeed("tail -c +" + str(offset + 1) + " " + runtime + "/reka-session-keys.log")
+      assert re.search(r"sym: +x\b", output) and "Control" in output, output
+    ''}
     # The public desktop binding must toggle the real client twice while
     # retaining focus, rather than toggling an underlying tile on the return.
     def toggle_floating():
         machine.succeed(user(
             "env", wayland, "${pkgs.wtype}/bin/wtype",
-            "-M", "logo", "-k", "space", "-m", "logo",
+            *${
+              builtins.toJSON (
+                pkgs.lib.concatMap (modifier: [
+                  "-M"
+                  modifier
+                ]) wmModifiers
+              )
+            },
+            "-k", "space",
+            *${
+              builtins.toJSON (
+                pkgs.lib.concatMap (modifier: [
+                  "-m"
+                  modifier
+                ]) (pkgs.lib.reverseList wmModifiers)
+              )
+            },
         ))
 
     toggle_floating()

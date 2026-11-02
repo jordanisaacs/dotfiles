@@ -1,0 +1,552 @@
+--- a/src/client/socket_monitor.rs
++++ b/src/client/socket_monitor.rs
+@@ -4,8 +4,9 @@
+ use std::collections::HashMap;
+ use std::path::PathBuf;
+ use std::sync::{Mutex, OnceLock};
++use std::time::Duration;
+ use zbus::fdo::DBusProxy;
+-use zbus::zvariant::{OwnedObjectPath, Value};
++use zbus::zvariant::{OwnedObjectPath, OwnedValue, Value};
+ use zbus::{block_on, Connection, MatchRule, Message, MessageStream};
+ 
+ pub struct SessionMonitor {
+@@ -26,20 +27,21 @@
+     }
+ 
+     pub fn get_active_session(&self) -> Option<Session> {
+-        self.sessions.lock().unwrap().get_active_session()
+-    }
+-
+-    #[cfg(test)]
+-    pub(super) fn set_active_session(&self, user_socket: PathBuf) {
+-        let session_path = OwnedObjectPath::try_from("/dummy").unwrap();
+-        self.sessions.lock().unwrap().insert(
+-            session_path,
+-            Session {
+-                id: "test".into(),
+-                user_socket,
+-            },
+-            true,
+-        );
++        let session = self.sessions.lock().ok()?.get_active_session()?;
++        // Property-change signals are only a discovery cache: a VT switch can
++        // precede their delivery. Re-read logind for every context request,
++        // without proxy property caching, before consulting the per-UID bridge.
++        let connection = self.connection.get()?;
++        let proxy = block_on(zbus::Proxy::new(
++            connection,
++            "org.freedesktop.login1",
++            session.path.as_str(),
++            "org.freedesktop.DBus.Properties",
++        ))
++        .ok()?;
++        let properties: HashMap<String, OwnedValue> =
++            block_on(proxy.call("GetAll", &("org.freedesktop.login1.Session",))).ok()?;
++        graphical_unlocked(&properties, session.uid).then_some(session)
+     }
+ 
+     pub fn run(&self) -> Result<()> {
+@@ -53,7 +55,11 @@
+             .interface("org.freedesktop.login1.Manager")?
+             .member("SessionRemoved")?
+             .build();
+-        let connection = block_on(Connection::system())?;
++        let connection = block_on(
++            zbus::connection::Builder::system()?
++                .method_timeout(Duration::from_millis(250))
++                .build(),
++        )?;
+         let proxy = block_on(DBusProxy::new(&connection))?;
+         let connection = self.connection.get_or_init(|| connection);
+         let proxy = self.proxy.get_or_init(|| proxy);
+@@ -128,6 +134,8 @@
+         let is_active = block_on(session_proxy.active())?;
+         let session = Session {
+             id: session_id.clone(),
++            uid,
++            path: session_path.clone(),
+             user_socket: user_socket_path(&self.socket_path, uid),
+         };
+         let active_str = if is_active { " active" } else { "" };
+@@ -168,6 +176,8 @@
+             let is_active = block_on(session_proxy.active())?;
+             let session = Session {
+                 id: session_id.clone(),
++                uid,
++                path: session_path.clone(),
+                 user_socket: user_socket_path(&self.socket_path, uid),
+             };
+             self.sessions
+@@ -208,7 +218,20 @@
+ #[derive(Clone, Debug)]
+ pub struct Session {
+     pub id: String,
++    pub uid: u32,
++    pub path: OwnedObjectPath,
+     pub user_socket: PathBuf,
++}
++
++fn graphical_unlocked(properties: &HashMap<String, OwnedValue>, uid: u32) -> bool {
++    matches!(properties.get("User").map(|v| &**v), Some(Value::Structure(user))
++        if user.fields().len() == 2
++            && matches!(user.fields().first(), Some(Value::U32(actual_uid)) if *actual_uid == uid))
++        && matches!(properties.get("Active").map(|v| &**v), Some(Value::Bool(true)))
++        && matches!(properties.get("Remote").map(|v| &**v), Some(Value::Bool(false)))
++        && matches!(properties.get("LockedHint").map(|v| &**v), Some(Value::Bool(false)))
++        && matches!(properties.get("Type").map(|v| &**v), Some(Value::Str(s)) if s.as_str() == "wayland")
++        && matches!(properties.get("Class").map(|v| &**v), Some(Value::Str(s)) if s.as_str() == "user")
+ }
+ 
+ struct Sessions {
+@@ -282,3 +305,60 @@
+     #[zbus(property)]
+     fn active(&self) -> zbus::Result<bool>;
+ }
++
++#[cfg(test)]
++mod tests {
++    use super::*;
++
++    fn properties() -> HashMap<String, OwnedValue> {
++        HashMap::from([
++            (
++                "User".into(),
++                OwnedValue::try_from(Value::from((
++                    1000_u32,
++                    OwnedObjectPath::try_from("/org/freedesktop/login1/user/_1000").unwrap(),
++                )))
++                .unwrap(),
++            ),
++            ("Active".into(), true.into()),
++            ("Remote".into(), false.into()),
++            ("LockedHint".into(), false.into()),
++            ("Type".into(), OwnedValue::try_from(Value::from("wayland")).unwrap()),
++            ("Class".into(), OwnedValue::try_from(Value::from("user")).unwrap()),
++        ])
++    }
++
++    #[test]
++    fn context_requires_a_known_active_local_unlocked_wayland_user() {
++        let valid = properties();
++        assert!(graphical_unlocked(&valid, 1000));
++        assert!(!graphical_unlocked(&valid, 1001));
++        for key in ["User", "Active", "Remote", "LockedHint", "Type", "Class"] {
++            let mut missing = properties();
++            missing.remove(key);
++            assert!(!graphical_unlocked(&missing, 1000), "missing {key}");
++        }
++        for (key, value) in [("Active", false), ("Remote", true), ("LockedHint", true)] {
++            let mut changed = properties();
++            changed.insert(key.into(), value.into());
++            assert!(!graphical_unlocked(&changed, 1000), "invalid {key}");
++        }
++        for (key, value) in [
++            ("Type", "tty"),
++            ("Type", "unspecified"),
++            ("Type", "x11"),
++            ("Class", "greeter"),
++            ("Class", "manager"),
++            ("Class", "unknown"),
++        ] {
++            let mut changed = properties();
++            changed.insert(key.into(), OwnedValue::try_from(Value::from(value)).unwrap());
++            assert!(!graphical_unlocked(&changed, 1000), "invalid {key}={value}");
++        }
++        let mut locked = properties();
++        locked.insert("LockedHint".into(), true.into());
++        assert!(!graphical_unlocked(&locked, 1000));
++        locked.insert("LockedHint".into(), false.into());
++        assert!(graphical_unlocked(&locked, 1000));
++    }
++}
+--- a/src/client/socket_client.rs
++++ b/src/client/socket_client.rs
+@@ -3,13 +3,17 @@
+ use crate::client::{Client, WindowInfo};
+ use anyhow::{anyhow, bail, Context, Result};
+ use log::{debug, error};
++use nix::errno::Errno;
++use nix::poll::{poll, PollFd, PollFlags};
+ use regex::Regex;
+-use std::io::{BufRead, BufReader, Write};
++use std::io::{Read, Write};
++use std::os::fd::{AsFd, AsRawFd, FromRawFd, OwnedFd};
++use std::os::unix::ffi::OsStrExt;
+ use std::os::unix::net::UnixStream;
+ use std::path::Path;
+ use std::sync::Arc;
+ use std::thread::spawn;
+-use std::time::Duration;
++use std::time::{Duration, Instant};
+ 
+ // This client supports a line-based socket protocol where a message is
+ // sent over the socket as a single line of JSON followed by a newline ('\n'),
+@@ -76,18 +80,122 @@
+ 
+     fn call_via_socket<T: serde::Serialize>(&self, command: T) -> Result<String> {
+         let session = self.monitor.get_active_session().ok_or(anyhow!("no active session"))?;
+-        let mut stream = UnixStream::connect(&session.user_socket)
+-            .context(format!("Could not connect to socket: {:?}", session.user_socket))?;
+-        stream.set_write_timeout(Some(Duration::from_millis(500)))?;
+-        stream.set_read_timeout(Some(Duration::from_millis(500)))?;
+-        stream.write_all(serde_json::to_string(&command)?.as_bytes())?;
+-        stream.write_all(b"\n")?;
+-        stream.flush()?;
+-        let mut reader = BufReader::new(stream);
+-        let mut response = String::new();
+-        reader.read_line(&mut response)?;
++        let response = Self::call_socket_path(&session.user_socket, command)?;
++        // A reply may arrive after a VT switch, lock, or session replacement.
++        // Never use context that was authorized only before waiting for it.
++        let current = self
++            .monitor
++            .get_active_session()
++            .ok_or(anyhow!("session changed during bridge request"))?;
++        if current.path != session.path || current.uid != session.uid {
++            bail!("session changed during bridge request");
++        }
+         Ok(response)
+     }
++
++    fn call_socket_path<T: serde::Serialize>(path: &Path, command: T) -> Result<String> {
++        // One deadline covers connection, writes and every response fragment.
++        // Per-read timeouts alone allow a stalled or drip-feeding bridge to
++        // hold the physical-keyboard event loop indefinitely.
++        let deadline = Instant::now() + Duration::from_millis(500);
++        let mut stream = connect_socket(path, deadline).context(format!("Could not connect to socket: {:?}", path))?;
++        let mut request = serde_json::to_vec(&command)?;
++        request.push(b'\n');
++        let mut pending = request.as_slice();
++        while !pending.is_empty() {
++            wait_ready(&stream, PollFlags::POLLOUT, deadline)?;
++            match stream.write(pending) {
++                Ok(0) => bail!("bridge closed while writing"),
++                Ok(written) => pending = &pending[written..],
++                Err(err) if err.kind() == std::io::ErrorKind::WouldBlock => continue,
++                Err(err) => return Err(err.into()),
++            }
++        }
++        let mut response = Vec::new();
++        loop {
++            wait_ready(&stream, PollFlags::POLLIN, deadline)?;
++            let mut chunk = [0; 4096];
++            let count = match stream.read(&mut chunk) {
++                Ok(0) if response.is_empty() => bail!("bridge closed without a response"),
++                Ok(0) => return Ok(String::from_utf8(response)?),
++                Ok(count) => count,
++                Err(err) if err.kind() == std::io::ErrorKind::WouldBlock => continue,
++                Err(err) => return Err(err.into()),
++            };
++            let end = chunk[..count].iter().position(|byte| *byte == b'\n');
++            response.extend_from_slice(&chunk[..end.map_or(count, |end| end + 1)]);
++            if response.len() > 1024 * 1024 {
++                bail!("bridge response exceeds one MiB");
++            }
++            if end.is_some() {
++                return Ok(String::from_utf8(response)?);
++            }
++        }
++    }
++}
++
++fn wait_ready(stream: &UnixStream, events: PollFlags, deadline: Instant) -> Result<()> {
++    loop {
++        let remaining = deadline
++            .checked_duration_since(Instant::now())
++            .ok_or_else(|| anyhow!("bridge request timed out"))?;
++        let timeout = remaining.as_millis().clamp(1, 500) as u16;
++        let mut descriptors = [PollFd::new(stream.as_fd(), events)];
++        match poll(&mut descriptors, timeout) {
++            Ok(0) => bail!("bridge request timed out"),
++            Ok(_) => return Ok(()),
++            Err(Errno::EINTR) => continue,
++            Err(err) => return Err(err.into()),
++        }
++    }
++}
++
++fn connect_socket(path: &Path, deadline: Instant) -> Result<UnixStream> {
++    let path = path.as_os_str().as_bytes();
++    // sockaddr_un is a plain C structure; zeroing initializes its path padding.
++    let mut address: nix::libc::sockaddr_un = unsafe { std::mem::zeroed() };
++    if path.is_empty() || path.contains(&0) || path.len() >= address.sun_path.len() {
++        bail!("invalid bridge socket path");
++    }
++    address.sun_family = nix::libc::AF_UNIX as _;
++    for (slot, byte) in address.sun_path.iter_mut().zip(path) {
++        *slot = *byte as _;
++    }
++    // The fresh descriptor is checked before OwnedFd takes exclusive ownership.
++    let descriptor = unsafe {
++        nix::libc::socket(
++            nix::libc::AF_UNIX,
++            nix::libc::SOCK_STREAM | nix::libc::SOCK_CLOEXEC | nix::libc::SOCK_NONBLOCK,
++            0,
++        )
++    };
++    if descriptor < 0 {
++        return Err(std::io::Error::last_os_error().into());
++    }
++    let descriptor = unsafe { OwnedFd::from_raw_fd(descriptor) };
++    let stream = UnixStream::from(descriptor);
++    // The initialized address remains alive for the full connect syscall.
++    let connected = unsafe {
++        nix::libc::connect(
++            stream.as_raw_fd(),
++            &address as *const nix::libc::sockaddr_un as *const nix::libc::sockaddr,
++            std::mem::size_of_val(&address) as _,
++        )
++    };
++    if connected < 0 {
++        let error = Errno::last();
++        if error != Errno::EINPROGRESS {
++            // AF_UNIX reports a saturated listen backlog as EAGAIN. No
++            // connection is pending in that case: leave the key unchanged.
++            return Err(error.into());
++        }
++        wait_ready(&stream, PollFlags::POLLOUT, deadline)?;
++        if let Some(error) = stream.take_error()? {
++            return Err(error.into());
++        }
++        stream.peer_addr()?;
++    }
++    Ok(stream)
+ }
+ 
+ impl Client for SocketClient {
+@@ -153,8 +261,60 @@
+ #[cfg(test)]
+ mod tests {
+     use super::*;
++    use std::io::{BufRead, BufReader};
+     use std::iter::repeat_with;
+     use std::os::unix::net::UnixListener;
++
++    fn socket_path() -> std::path::PathBuf {
++        std::env::temp_dir()
++            .join(format!("xremap_socket_{}.sock", repeat_with(fastrand::alphanumeric).take(10).collect::<String>()))
++    }
++
++    #[test]
++    fn saturated_listen_backlog_cannot_block_the_keyboard_loop() {
++        let path = socket_path();
++        let listener = UnixListener::bind(&path).unwrap();
++        // Reconfigure only this test's own listener to a one-entry queue.
++        assert_eq!(unsafe { nix::libc::listen(listener.as_raw_fd(), 0) }, 0);
++        let _queued = UnixStream::connect(&path).unwrap();
++        let started = Instant::now();
++        assert!(SocketClient::call_socket_path(&path, Request::ActiveWindow).is_err());
++        assert!(started.elapsed() < Duration::from_secs(2));
++        std::fs::remove_file(path).unwrap();
++    }
++
++    #[test]
++    fn partial_response_bytes_do_not_extend_the_request_deadline() {
++        let path = socket_path();
++        let listener = UnixListener::bind(&path).unwrap();
++        let server = spawn(move || {
++            let (mut stream, _) = listener.accept().unwrap();
++            for _ in 0..20 {
++                if stream.write_all(b" ").is_err() {
++                    break;
++                }
++                std::thread::sleep(Duration::from_millis(100));
++            }
++        });
++        let started = Instant::now();
++        assert!(SocketClient::call_socket_path(&path, Request::ActiveWindow).is_err());
++        assert!(started.elapsed() < Duration::from_secs(2));
++        server.join().unwrap();
++        std::fs::remove_file(path).unwrap();
++    }
++
++    #[test]
++    fn unbounded_response_lines_are_rejected() {
++        let path = socket_path();
++        let listener = UnixListener::bind(&path).unwrap();
++        let server = spawn(move || {
++            let (mut stream, _) = listener.accept().unwrap();
++            let _ = stream.write_all(&vec![b' '; 1024 * 1024 + 4096]);
++        });
++        assert!(SocketClient::call_socket_path(&path, Request::ActiveWindow).is_err());
++        server.join().unwrap();
++        std::fs::remove_file(path).unwrap();
++    }
+ 
+     #[test]
+     fn test_run() {
+@@ -172,14 +332,8 @@
+             assert_eq!(serde_json::from_str::<Request>(&request).unwrap(), Request::Run(expected_command));
+             writeln!(reader.get_mut(), "{}", serde_json::to_string(&Response::Ok).unwrap()).unwrap();
+         });
+-        let monitor = Arc::new(SessionMonitor::new(socket_path.to_string_lossy().into()));
+-        monitor.set_active_session(socket_path.clone());
+-        let mut client = SocketClient {
+-            socket_path: socket_path.to_string_lossy().into(),
+-            monitor,
+-        };
+-
+-        assert!(client.run(&command).unwrap());
++        let response = SocketClient::call_socket_path(&socket_path, Request::Run(command)).unwrap();
++        assert!(matches!(serde_json::from_str::<Response>(&response).unwrap(), Response::Ok));
+ 
+         handle.join().unwrap();
+         std::fs::remove_file(socket_path).unwrap();
+--- a/src/client/wlroots_client.rs
++++ b/src/client/wlroots_client.rs
+@@ -20,6 +20,23 @@
+     titles: HashMap<ObjectId, String>,
+ }
+ 
++impl State {
++    fn update_activation(&mut self, id: ObjectId, activated: bool) {
++        if activated {
++            self.active_window = Some(id);
++        } else if self.active_window.as_ref() == Some(&id) {
++            self.active_window = None;
++        }
++    }
++
++    fn forget(&mut self, id: ObjectId) {
++        self.update_activation(id.clone(), false);
++        self.windows.remove(&id);
++        self.titles.remove(&id);
++        self.toplevel_handles.remove(&id);
++    }
++}
++
+ #[derive(Default)]
+ pub struct WlRootsClient {
+     queue: Option<EventQueue<State>>,
+@@ -32,6 +49,9 @@
+     }
+ 
+     fn connect(&mut self) -> Result<()> {
++        // A disconnected compositor must not leave an old focused app behind.
++        self.queue = None;
++        self.state = State::default();
+         let connection = Connection::connect_to_env()?;
+         let (globals, mut queue) = registry_queue_init::<State>(&connection)?;
+ 
+@@ -49,6 +69,11 @@
+     fn borrow<'a>(&'a mut self) -> Result<(&'a mut EventQueue<State>, &'a mut State)> {
+         if self.queue.is_none() {
+             self.connect()?;
++        }
++
++        if self.queue.as_mut().unwrap().roundtrip(&mut self.state).is_err() {
++            self.connect()?;
++            log::debug!("Reconnected to wayland");
+         }
+ 
+         let state = &mut self.state;
+@@ -56,8 +81,6 @@
+             .queue
+             .as_mut()
+             .ok_or_else(|| anyhow::format_err!("This cannot happen"))?;
+-
+-        queue.roundtrip(state)?;
+ 
+         Ok((queue, state))
+     }
+@@ -83,16 +106,9 @@
+     }
+ 
+     fn current_window(&mut self) -> Option<String> {
+-        let queue = self.queue.as_mut()?;
+-
+-        if queue.roundtrip(&mut self.state).is_err() {
+-            // try to reconnect
+-            if let Err(err) = self.connect() {
+-                log::error!("{err}");
+-                return None;
+-            }
+-
+-            log::debug!("Reconnected to wayland");
++        if let Err(err) = self.sync_state_with_server() {
++            log::error!("{err}");
++            return None;
+         }
+ 
+         let id = self.state.active_window.as_ref()?;
+@@ -100,20 +116,17 @@
+     }
+ 
+     fn current_application(&mut self) -> Option<String> {
+-        let queue = self.queue.as_mut()?;
+-
+-        if queue.roundtrip(&mut self.state).is_err() {
+-            // try to reconnect
+-            if let Err(err) = self.connect() {
+-                log::error!("{err}");
+-                return None;
+-            }
+-
+-            log::debug!("Reconnected to wayland");
++        if let Err(err) = self.sync_state_with_server() {
++            log::error!("{err}");
++            return None;
+         }
+ 
+         let id = self.state.active_window.as_ref()?;
+-        self.state.windows.get(id).cloned()
++        self.state
++            .windows
++            .get(id)
++            .filter(|app| !app.is_empty() && app.as_str() != "<unknown>")
++            .cloned()
+     }
+ 
+     fn window_list(&mut self) -> anyhow::Result<Vec<WindowInfo>> {
+@@ -212,17 +225,44 @@
+                 state.titles.insert(handle.id(), title);
+             }
+             HandleEvent::Closed => {
+-                state.windows.remove(&handle.id());
+-                state.titles.remove(&handle.id());
+-                state.toplevel_handles.remove(&handle.id());
++                state.forget(handle.id());
+             }
+             HandleEvent::State { state: handle_state } => {
+                 let activated = HandleState::Activated as u8;
+-                if handle_state.contains(&activated) {
+-                    state.active_window = Some(handle.id());
+-                }
++                state.update_activation(handle.id(), handle_state.contains(&activated));
+             }
+             _ => {}
+         }
+     }
+ }
++
++#[cfg(test)]
++mod tests {
++    use super::*;
++    use std::os::unix::net::UnixStream;
++
++    #[test]
++    fn losing_activation_and_closing_clear_the_focused_context() {
++        let (client, _server) = UnixStream::pair().unwrap();
++        let connection = Connection::from_socket(client).unwrap();
++        let first = connection.display().id();
++        let second = ObjectId::null();
++        let mut state = State::default();
++
++        state.update_activation(first.clone(), true);
++        state.update_activation(second.clone(), false);
++        assert_eq!(state.active_window, Some(first.clone()));
++        state.update_activation(first.clone(), false);
++        assert_eq!(state.active_window, None);
++
++        state.windows.insert(first.clone(), "firefox".into());
++        state.titles.insert(first.clone(), "test".into());
++        state.update_activation(first.clone(), true);
++        state.forget(second);
++        assert_eq!(state.active_window, Some(first.clone()));
++        state.forget(first);
++        assert_eq!(state.active_window, None);
++        assert!(state.windows.is_empty());
++        assert!(state.titles.is_empty());
++    }
++}

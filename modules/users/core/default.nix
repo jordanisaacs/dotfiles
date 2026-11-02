@@ -10,21 +10,33 @@ let
   persist = config.jd.impermanence;
 in
 {
-  options.jd.keybindings = mkOption {
-    type = types.enum [
-      "vim"
-      "emacs"
-    ];
-    default = config.machineData.keybindings or "emacs";
-    description = "Editing and navigation keybinding profile; defaults to the system preference.";
-  };
-
-  options.jd.core = {
-    enable = mkOption {
-      description = "Enable some core configurations";
-      type = types.bool;
-      default = true;
+  options.jd = {
+    inputStyle = mkOption {
+      type = types.enum [
+        "mac"
+        "win"
+      ];
+      default = config.machineData.inputStyle or "win";
+      description = "Desktop shortcut convention; defaults to the system preference independently of editing keybindings.";
     };
+
+    keybindings = mkOption {
+      type = types.enum [
+        "vim"
+        "emacs"
+      ];
+      default = config.machineData.keybindings or "emacs";
+      description = "Editing and navigation keybinding profile; defaults to the system preference.";
+    };
+
+    core = {
+      enable = mkOption {
+        description = "Enable some core configurations";
+        type = types.bool;
+        default = true;
+      };
+    };
+
   };
 
   config = mkIf cfg.enable (mkMerge [

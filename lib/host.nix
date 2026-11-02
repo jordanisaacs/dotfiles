@@ -86,6 +86,10 @@ with utils;
           cpuTempSensor
           ;
         keybindings = config.jd.keybindings;
+        inputStyle = config.jd.inputStyle;
+        inputRemapping = {
+          inherit (config.jd.graphical.inputRemapping) enable users capsLockAsAlt;
+        };
         greetdDefaultWindowManager = config.jd.greetd.defaultWindowManager;
       };
     in

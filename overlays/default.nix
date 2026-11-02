@@ -16,6 +16,7 @@
     (import ./mission-center.nix)
     (import ./screencast.nix)
     (import ./trayscale.nix)
+    (import ./xremap.nix)
     (import ./river-channel.nix)
     (import ./river-vt-lifecycle.nix)
     scripts.overlay
