@@ -56,6 +56,9 @@ in
 
         libsixel
 
+        # Git history and diffs
+        gitg
+
         # Password manager
         bitwarden-desktop
 
