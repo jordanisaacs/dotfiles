@@ -15,6 +15,13 @@ in
   };
 
   config = mkIf cfg.applications.enable {
+    # Upstream defaults to unlimited amplification. Own the tray through the
+    # native service and bound ordinary scrolling at PulseAudio's unity gain.
+    services.pasystray = {
+      enable = true;
+      extraOptions = [ "--volume-max=100" ];
+    };
+
     programs = {
       emacs = {
         enable = true;
@@ -65,7 +72,6 @@ in
 
         # Sound
         pavucontrol
-        pasystray
 
         # kdeconnect
         tlaplusToolbox
@@ -84,6 +90,31 @@ in
       ++ lib.optional systemCfg.networking.wifi.enable pkgs.wpa_supplicant_gui;
 
     xdg = {
+      # The package also ships an uncapped XDG launcher. Only the Home Manager
+      # service should own the tray, including when UWSM starts the session.
+      autostart = {
+        enable = true;
+        entries = [
+          "${pkgs.writeTextDir "pasystray.desktop" ''
+            [Desktop Entry]
+            Type=Application
+            Name=PulseAudio System Tray
+            Hidden=true
+          ''}/pasystray.desktop"
+        ];
+      };
+
+      desktopEntries.pasystray = {
+        name = "PulseAudio System Tray";
+        genericName = "Audio controls";
+        exec = "${pkgs.systemd}/bin/systemctl --user start pasystray.service";
+        icon = "audio-card";
+        terminal = false;
+        categories = [
+          "AudioVideo"
+          "Mixer"
+        ];
+      };
       desktopEntries.wifi = lib.mkIf systemCfg.networking.wifi.enable {
         name = "Wi-Fi Settings";
         genericName = "Wireless network configuration";

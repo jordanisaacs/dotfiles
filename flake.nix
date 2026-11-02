@@ -381,7 +381,10 @@
                     type = "river";
                     river.gaps.outer = 0;
                     background.enable = true;
-                    statusbar.enable = true;
+                    statusbar = {
+                      enable = true;
+                      scale = 0.75;
+                    };
                     screenlock.enable = true;
                     screen.gamma = {
                       enable = true;
@@ -532,6 +535,10 @@
           inherit pkgs;
           homeConfiguration = self.homeConfigurations."jd@framework";
         };
+        waybar-session = import ./tests/waybar-session.nix {
+          inherit pkgs;
+          homeConfiguration = self.homeConfigurations."jd@framework";
+        };
         reka-shutdown = import ./tests/reka-shutdown.nix {
           inherit pkgs;
           home = self.homeConfigurations."jd@framework".config;
@@ -543,6 +550,11 @@
           inherit pkgs;
           nixosConfiguration = self.nixosConfigurations.framework;
         };
+        audio-volume = import ./tests/audio-volume.nix {
+          inherit pkgs;
+          home = self.homeConfigurations."jd@framework".config;
+        };
+        boot-console = import ./tests/boot-console.nix { inherit pkgs; };
         encrypted-boot = import ./tests/encrypted-boot.nix {
           inherit pkgs;
           bootMountOptions = self.nixosConfigurations.framework.config.fileSystems."/boot".options;

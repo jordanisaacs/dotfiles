@@ -61,7 +61,9 @@ assert menu["main"]["dpi-aware"] == "yes", (
 bar = (config / "waybar/style.css").read_text()
 bar_pixels = re.search(r"font-size:\s*([\d.]+)px", bar)
 assert bar_pixels is not None, bar
-assert math.isclose(float(bar_pixels[1]), points * 96 / 72), bar_pixels[0]
+assert math.isclose(
+    float(bar_pixels[1]), points * 96 / 72 * float(os.environ["BAR_SCALE"])
+), bar_pixels[0]
 print(
     f"GUI fonts use {points:g}pt; terminal and physical-DPI launcher sizes stay independent"
 )

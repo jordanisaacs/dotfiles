@@ -21,6 +21,7 @@ pkgs.runCommand "desktop-font-tests"
     GHOSTTY = pkgs.lib.getExe home.programs.ghostty.package;
     FUZZEL = pkgs.lib.getExe home.programs.fuzzel.package;
     FONT_POINTS = toString home.gtk.font.size;
+    BAR_SCALE = toString home.jd.graphical.wayland.statusbar.scale;
     TERMINAL_FONT_POINTS = toString home.programs.ghostty.settings.font-size;
     TERMINAL_PREFERRED_FONT_POINTS = toString home.jd.graphical.wayland.terminal.preferredFontSize;
     OUTPUT_SCALE = toString (

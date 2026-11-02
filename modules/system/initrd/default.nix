@@ -30,7 +30,10 @@ in
     {
       # systemd is the only supported initrd implementation.
 
-      boot.kernelParams = optional cfg.quiet "rd.udev.log_level=3";
+      boot.kernelParams = optionals cfg.quiet [
+        "rd.udev.log_level=3"
+        "rd.systemd.show_status=false"
+      ];
     }
     (mkIf cfg.plymouth.enable {
       jd = {

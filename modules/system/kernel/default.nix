@@ -53,13 +53,19 @@ in
 
     kernelPackages = mkDefault cfg.package;
     kernelModules = cfg.mods;
+    # `quiet` alone still permits error-priority kernel messages. Keep the
+    # console clean across Plymouth handoffs without lowering journal verbosity.
+    consoleLogLevel = mkIf cfg.quiet (mkDefault 0);
 
     blacklistedKernelModules = optionals (!cfg.watchdog) [
       "iTCO_wdt"
     ];
 
     kernelParams =
-      optionals cfg.quiet [ "quiet" ]
+      optionals cfg.quiet [
+        "quiet"
+        "systemd.show_status=false"
+      ]
       ++ optional cfg.disableBGRTRestore "video=efifb:nobgrt"
       ++ optionals (!cfg.watchdog) [
         "nowatchdog"
