@@ -473,6 +473,7 @@
         formatting = treefmt.config.build.check self;
         framework = self.nixosConfigurations.framework.config.system.build.toplevel;
         home-framework = self.homeConfigurations."jd@framework".activationPackage;
+        mission-center-apps = pkgs.mission-center.tests.uwsm-apps;
         libreoffice-grammar = import ./tests/libreoffice-grammar.nix {
           inherit pkgs;
           home = self.homeConfigurations."jd@framework".config;
@@ -504,6 +505,7 @@
         wifi-boot = import ./tests/wifi-boot.nix { inherit pkgs; };
         initrd-dlopen = import ./tests/initrd-dlopen.nix { inherit pkgs; };
         xwayland-keymap = import ./tests/xwayland-keymap.nix { inherit pkgs; };
+        tla-toolbox = import ./tests/tla-toolbox.nix { inherit pkgs; };
         dbus-policy =
           pkgs.runCommand "dbus-session-policy-tests"
             {

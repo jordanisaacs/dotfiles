@@ -1,0 +1,202 @@
+--- a/subprojects/magpie/platform-linux/crates/app-rummage/src/cgroup.rs
++++ b/subprojects/magpie/platform-linux/crates/app-rummage/src/cgroup.rs
+@@ -145,22 +145,43 @@
+     let uid = nix::unistd::getuid();
+     let app_slice_dir =
+         format!("/sys/fs/cgroup/user.slice/user-{uid}.slice/user@{uid}.service/app.slice");
+-    let app_slice_dir = match Path::new(&app_slice_dir).read_dir() {
++    running_apps_in_slice(Path::new(&app_slice_dir), available_apps)
++}
++
++fn running_apps_in_slice<'a>(
++    slice: &Path,
++    available_apps: &'a HashMap<Rc<str>, ApplicationEntry>,
++) -> HashMap<Rc<str>, (&'a ApplicationEntry, Vec<NonZeroU32>)> {
++    let mut result = HashMap::with_capacity(available_apps.len());
++    collect_apps_in_slice(slice, available_apps, &mut result);
++    for (_, pids) in result.values_mut() {
++        pids.sort_unstable();
++        pids.dedup();
++    }
++    result
++}
++
++fn collect_apps_in_slice<'a>(
++    slice: &Path,
++    available_apps: &'a HashMap<Rc<str>, ApplicationEntry>,
++    result: &mut HashMap<Rc<str>, (&'a ApplicationEntry, Vec<NonZeroU32>)>,
++) {
++    let app_slice_dir = match slice.read_dir() {
+         Ok(r) => r,
+         Err(e) => {
+             log::warn!(
+                 "Error reading cgroup information from {}: {}",
+-                app_slice_dir,
++                slice.display(),
+                 e
+             );
+-            return HashMap::new();
++            return;
+         }
+     };
+ 
+-    let mut result: HashMap<Rc<str>, (&ApplicationEntry, Vec<NonZeroU32>)> = HashMap::new();
+-    result.reserve(available_apps.len());
+-
+     for entry in app_slice_dir.filter_map(|e| e.ok()).filter(|e| {
++        if !e.file_type().map(|kind| kind.is_dir()).unwrap_or(false) {
++            return false;
++        }
+         let file_name = e.file_name();
+         let file_name = file_name.as_bytes();
+         file_name.ends_with(b".slice")
+@@ -169,28 +190,136 @@
+     }) {
+         let path = entry.path();
+ 
+-        if let Some(app_id) = app_id(&path) {
++        let app = app_id(&path).and_then(|id| {
++            available_apps.get(&id).or_else(|| {
++                // UWSM may name a command-launched unit after its executable
++                // rather than the desktop ID. Only use an unambiguous alias.
++                let mut matches = available_apps.values().filter(|app| {
++                    app.exec.as_ref().is_some_and(|exec| {
++                        Path::new(exec.as_ref()).file_name().is_some_and(|name| {
++                            name.as_bytes() == id.as_bytes()
++                        })
++                    })
++                });
++                let app = matches.next()?;
++                matches.next().is_none().then_some(app)
++            })
++        });
++        if let Some(app) = app {
+             let mut pids = find_pids_for_cgroup(&path);
+             if !pids.is_empty() {
+-                if let Some(app) = available_apps.get(&app_id) {
+-                    if let Some((_, existing_pids)) = result.get_mut(&app.id) {
+-                        existing_pids.extend(pids);
+-                        existing_pids.sort_unstable();
+-                    } else {
+-                        pids.sort_unstable();
+-                        result.insert(app.id.clone(), (app, pids));
+-                    }
++                if let Some((_, existing_pids)) = result.get_mut(&app.id) {
++                    existing_pids.append(&mut pids);
++                } else {
++                    result.insert(app.id.clone(), (app, pids));
+                 }
+             }
+-        }
+-    }
+-
+-    result
++        } else if entry.file_name().as_bytes().ends_with(b".slice") {
++            // Desktop environments may insert grouping slices such as UWSM's
++            // app-graphical.slice. Recurse until an app owns the whole subtree.
++            collect_apps_in_slice(&path, available_apps, result);
++        }
++    }
+ }
+ 
+ #[cfg(test)]
+ mod tests {
+     use super::*;
++    use std::path::PathBuf;
++    use std::sync::atomic::{AtomicUsize, Ordering};
++
++    struct CgroupTree(PathBuf);
++
++    impl CgroupTree {
++        fn new() -> Self {
++            static NEXT: AtomicUsize = AtomicUsize::new(0);
++            let path = std::env::temp_dir().join(format!(
++                "app-rummage-{}-{}",
++                std::process::id(),
++                NEXT.fetch_add(1, Ordering::Relaxed),
++            ));
++            std::fs::create_dir_all(&path).unwrap();
++            Self(path)
++        }
++
++        fn pids(&self, unit: &str, pids: &[u32]) {
++            let dir = self.0.join(unit);
++            std::fs::create_dir_all(&dir).unwrap();
++            let contents = pids.iter().map(|pid| format!("{pid}\n")).collect::<String>();
++            std::fs::write(dir.join("cgroup.procs"), contents).unwrap();
++        }
++    }
++
++    impl Drop for CgroupTree {
++        fn drop(&mut self) {
++            std::fs::remove_dir_all(&self.0).unwrap();
++        }
++    }
++
++    fn application(id: &str, executable: &str) -> ApplicationEntry {
++        ApplicationEntry {
++            id: Rc::from(id),
++            name: Rc::from(id),
++            exec: Some(Rc::from(executable)),
++            exec_args: Vec::new(),
++            icon: None,
++        }
++    }
++
++    #[test]
++    fn uwsm_nested_slices_instances_and_descendants() {
++        let tree = CgroupTree::new();
++        let unit = "app-graphical.slice/app-work.slice/app-river-org.example.foo\\x2dbar@deadbeef.service";
++        tree.pids(unit, &[41]);
++        tree.pids(&format!("{unit}/renderer.scope"), &[42, 41]);
++        tree.pids("app-graphical.slice/app-river-org.example.foo\\x2dbar@0123abcd.service", &[43]);
++        tree.pids("app-graphical.slice/unrelated.service", &[99]);
++        let app = application("org.example.foo-bar", "/nix/store/test/bin/example");
++        let available = HashMap::from([(app.id.clone(), app)]);
++        let result = running_apps_in_slice(&tree.0, &available);
++        assert_eq!(result.len(), 1);
++        let pids = &result.get("org.example.foo-bar").unwrap().1;
++        assert_eq!(pids.iter().map(|pid| pid.get()).collect::<Vec<_>>(), vec![41, 42, 43]);
++    }
++
++    #[test]
++    fn uwsm_command_alias_is_unique() {
++        let tree = CgroupTree::new();
++        tree.pids("app-graphical.slice/app-river-example@abcdef01.service", &[51]);
++        let app = application("org.example.App", "/nix/store/test/bin/example");
++        let mut available = HashMap::from([(app.id.clone(), app)]);
++        let result = running_apps_in_slice(&tree.0, &available);
++        assert_eq!(result.get("org.example.App").unwrap().1[0].get(), 51);
++        let other = application("org.example.Other", "/nix/store/test/bin/example");
++        available.insert(other.id.clone(), other);
++        assert!(running_apps_in_slice(&tree.0, &available).is_empty());
++    }
++
++    #[test]
++    fn uwsm_recognized_app_owns_its_subtree() {
++        let tree = CgroupTree::new();
++        tree.pids("app-org.example.Parent.slice", &[61]);
++        tree.pids("app-org.example.Parent.slice/app-org.example.Child.service", &[62]);
++        let parent = application("org.example.Parent", "/bin/parent");
++        let child = application("org.example.Child", "/bin/child");
++        let available = HashMap::from([(parent.id.clone(), parent), (child.id.clone(), child)]);
++        let result = running_apps_in_slice(&tree.0, &available);
++        assert_eq!(result.len(), 1);
++        assert_eq!(result.get("org.example.Parent").unwrap().1.len(), 2);
++    }
++
++    #[test]
++    fn uwsm_flat_app_and_symlink_boundary() {
++        let tree = CgroupTree::new();
++        tree.pids("app-river-org.example.App@ab12.service", &[71]);
++        let outside = CgroupTree::new();
++        outside.pids("app-river-org.example.App@cd34.service", &[72]);
++        std::os::unix::fs::symlink(&outside.0, tree.0.join("app-linked.slice")).unwrap();
++        let app = application("org.example.App", "/bin/example");
++        let available = HashMap::from([(app.id.clone(), app)]);
++        let result = running_apps_in_slice(&tree.0, &available);
++        assert_eq!(result.get("org.example.App").unwrap().1.len(), 1);
++    }
+ 
+     fn id_of(unit: &str) -> Option<String> {
+         app_id(Path::new(unit)).map(|rc| rc.as_ref().to_owned())

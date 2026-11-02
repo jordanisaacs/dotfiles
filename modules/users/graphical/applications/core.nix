@@ -21,6 +21,9 @@ in
       enable = true;
       extraOptions = [ "--volume-max=100" ];
     };
+    services.flameshot.enable = true;
+    # Keep desktop launch helpers available through UWSM's session environment.
+    systemd.user.services.flameshot.Service.Environment = lib.mkForce [ ];
 
     programs = {
       emacs = {
@@ -48,8 +51,6 @@ in
         # jdpkgs.rstudioWrapper
         # jdpkgs.texstudioWrapper
 
-        # updated version with wayland/grim backend
-        flameshot
         libsixel
 
         # Password manager
@@ -74,7 +75,7 @@ in
         pavucontrol
 
         # kdeconnect
-        tlaplusToolbox
+        tlaplus-toolbox
 
         # GUI disk usage
         kdePackages.filelight
@@ -104,32 +105,31 @@ in
         ];
       };
 
-      desktopEntries.pasystray = {
-        name = "PulseAudio System Tray";
-        genericName = "Audio controls";
-        exec = "${pkgs.systemd}/bin/systemctl --user start pasystray.service";
-        icon = "audio-card";
-        terminal = false;
-        categories = [
-          "AudioVideo"
-          "Mixer"
-        ];
-      };
-      desktopEntries.wifi = lib.mkIf systemCfg.networking.wifi.enable {
-        name = "Wi-Fi Settings";
-        genericName = "Wireless network configuration";
-        exec = "${pkgs.wpa_supplicant_gui}/bin/wpa_gui -i ${
-          systemCfg.networking.wifi.interface or "wlan0"
-        }";
-        icon = "network-wireless";
-        terminal = false;
-        categories = [
-          "Settings"
-          "Network"
-        ];
-      };
-
       desktopEntries = {
+        pasystray = {
+          name = "PulseAudio System Tray";
+          genericName = "Audio controls";
+          exec = "${pkgs.systemd}/bin/systemctl --user start pasystray.service";
+          icon = "audio-card";
+          terminal = false;
+          categories = [
+            "AudioVideo"
+            "Mixer"
+          ];
+        };
+        wifi = lib.mkIf systemCfg.networking.wifi.enable {
+          name = "Wi-Fi Settings";
+          genericName = "Wireless network configuration";
+          exec = "${pkgs.wpa_supplicant_gui}/bin/wpa_gui -i ${
+            systemCfg.networking.wifi.interface or "wlan0"
+          }";
+          icon = "network-wireless";
+          terminal = false;
+          categories = [
+            "Settings"
+            "Network"
+          ];
+        };
         cider = {
           name = "Cider";
           genericName = "Music Streaming";

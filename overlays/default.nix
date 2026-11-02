@@ -12,6 +12,8 @@
     (import ./xwayland-keymap.nix)
     (import ./gamescope-errors.nix)
     (import ./libreoffice-wrapper.nix)
+    (import ./tlaplus-toolbox.nix)
+    (import ./mission-center.nix)
     (import ./river-channel.nix)
     (import ./river-vt-lifecycle.nix)
     scripts.overlay

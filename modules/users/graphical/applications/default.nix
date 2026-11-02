@@ -4,6 +4,7 @@
 {
   imports = [
     ./core.nix
+    ./activity-monitor.nix
     ./libreoffice.nix
     ./firefox.nix
     ./anki.nix
