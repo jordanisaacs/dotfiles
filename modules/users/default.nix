@@ -10,6 +10,7 @@
     ./gpg
     ./shell
     ./ssh
+    ../../backups/rsync-net/client/home-manager.nix
     ./office365
     ./wine
     ./keybase

@@ -23,6 +23,7 @@
     ./networking
     ./graphical
     ./ssh
+    ../../backups/rsync-net/client/nixos.nix
     ./services
     ./wireguard
     ./secrets
