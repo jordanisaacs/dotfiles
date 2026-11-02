@@ -375,7 +375,7 @@ pkgs.testers.runNixOSTest {
 
     # Swap the native window manager while the compositor and the already
     # running graphical application's cgroup remain alive throughout.
-    machine.succeed(user("${switcher}", "oxbow"))
+    machine.succeed(user("${switcher}", "toggle"))
     oxbow_environment = assert_oxbow()
     machine.wait_until_fails("kill -0 " + str(controller_pid))
     retired_controller = unit_properties("river-wm-reka.service")
@@ -401,7 +401,7 @@ pkgs.testers.runNixOSTest {
     assert_oxbow()
     machine.succeed(user("rm", dropin))
     machine.succeed(user("systemctl", "--user", "daemon-reload"))
-    machine.succeed(user("${switcher}", "reka"))
+    machine.succeed(user("${switcher}", "toggle"))
     assert_session_survives()
     machine.wait_until_succeeds(user("systemctl", "--user", "is-active", "river-input.service"))
     machine.fail(user("systemctl", "--user", "is-active", "river-wm-oxbow.service"))
@@ -427,6 +427,22 @@ pkgs.testers.runNixOSTest {
     # Exercise the managed WM's actual logout binding, including session target
     # shutdown and removal of the inherited display environment.
     assert evaluate("(progn (run-at-time 0.2 nil (lambda () (call-interactively (key-binding (kbd \"s-S-q\"))))) t)") == "t"
+    # The shared logout UI now waits for consent before asking real windows
+    # to close. Inspect its native GTK action before confirming the request.
+    logout_application = "dev.snowytrees.DesktopLogout"
+    for attempt in range(100):
+        status, action_state = machine.execute(user(
+            "busctl", "--user", "call", logout_application,
+            "/dev/snowytrees/DesktopLogout", "org.gtk.Actions", "Describe", "s", "confirm",
+        ))
+        if status == 0 and "true" in action_state:
+            break
+        machine.sleep(duration=timedelta(milliseconds=100))
+    else:
+        raise AssertionError(action_state)
+    machine.succeed(user("systemctl", "--user", "is-active", "graphical-session.target", app_unit))
+    machine.succeed("kill -0 " + str(controller_pid) + " " + str(state["pid"]))
+    machine.succeed(user("${pkgs.glib.bin}/bin/gapplication", "action", logout_application, "confirm"))
     machine.wait_until_fails(user("systemctl", "--user", "is-active", "graphical-session.target"))
     machine.wait_until_fails(user("systemctl", "--user", "is-active", app_unit))
     machine.wait_until_fails(user("systemctl", "--user", "is-active", "kanshi.service"))

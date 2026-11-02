@@ -21,7 +21,7 @@ let
       install -Dm755 river-vt-layer-client "$out/bin/river-vt-layer-client"
     '';
   };
-  login = pkgs.writers.writePython3Bin "river-vt-login" { } ''
+  login = pkgs.writers.writePython3Bin "river-vt-login" { flakeIgnore = [ "E501" ]; } ''
     import os
 
     os.environ.update({

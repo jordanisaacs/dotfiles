@@ -47,8 +47,12 @@ Switch the running session without restarting River or applications:
 ```console
 river-wm reka
 river-wm oxbow
+river-wm toggle
 river-wm status
 ```
+
+The launcher entry **Switch Window Manager (Reka / Oxbow)** toggles the active
+manager, using the same managed switcher as `river-wm toggle`.
 
 Runtime selection lasts for the current login; layouts may be rearranged. A
 failed start restores the previous manager. Reka uses a minimal Emacs

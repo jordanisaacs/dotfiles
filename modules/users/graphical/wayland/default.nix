@@ -10,5 +10,6 @@
     ./input.nix
     ./display.nix
     ./reka.nix
+    ./logout.nix
   ];
 }

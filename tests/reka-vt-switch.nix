@@ -1,4 +1,7 @@
-{ pkgs }:
+{
+  pkgs,
+  river ? pkgs.river-reka,
+}:
 let
   init = pkgs.writeText "reka-vt-init.el" ''
     (require 'reka)
@@ -22,7 +25,7 @@ let
     init = "${init}"
     os.execv(executable, [executable, "-Q", "--load", init])
   '';
-  login = pkgs.writers.writePython3Bin "reka-vt-login" { } ''
+  login = pkgs.writers.writePython3Bin "reka-vt-login" { flakeIgnore = [ "E501" ]; } ''
     import os
     os.environ.update({
         "WLR_BACKENDS": "drm,libinput",
@@ -30,7 +33,7 @@ let
         "LIBSEAT_BACKEND": "logind",
     })
     executable = (
-        "${pkgs.river-reka}"
+        "${river}"
         "/bin/river"
     )
     manager = (

@@ -328,6 +328,11 @@
             mods = [ "kvm-intel" ];
           };
           laptop.enable = true;
+          graphical.activityMonitor = {
+            allowedUsers = [ "jd" ];
+            networkMetrics = true;
+            cpuEnergyMetrics = true;
+          };
           core.time = null;
           networking.wifi = {
             interface = "wifi0";
@@ -379,7 +384,11 @@
                   wayland = {
                     enable = true;
                     type = "river";
-                    river.gaps.outer = 0;
+                    river = {
+                      gaps.outer = 0;
+                      package = pkgs.river-reka-with-health;
+                    };
+                    logout.healthPackage = pkgs.river-health;
                     background.enable = true;
                     statusbar = {
                       enable = true;
@@ -474,6 +483,7 @@
         framework = self.nixosConfigurations.framework.config.system.build.toplevel;
         home-framework = self.homeConfigurations."jd@framework".activationPackage;
         mission-center-apps = pkgs.mission-center.tests.uwsm-apps;
+        activity-monitor-metrics = import ./tests/activity-monitor-metrics.nix { inherit pkgs; };
         libreoffice-grammar = import ./tests/libreoffice-grammar.nix {
           inherit pkgs;
           home = self.homeConfigurations."jd@framework".config;
@@ -533,6 +543,7 @@
           inherit pkgs;
           homeConfiguration = self.homeConfigurations."jd@framework";
         };
+        reka-click-focus = inputs.reka.checks.${system}.native-focus;
         reka-session = import ./tests/reka-session.nix {
           inherit pkgs;
           homeConfiguration = self.homeConfigurations."jd@framework";
@@ -541,12 +552,28 @@
           inherit pkgs;
           homeConfiguration = self.homeConfigurations."jd@framework";
         };
+        graceful-logout = import ./tests/graceful-logout.nix {
+          inherit pkgs;
+          homeConfiguration = self.homeConfigurations."jd@framework";
+        };
+        graceful-logout-health = import ./tests/graceful-logout.nix {
+          inherit pkgs;
+          homeConfiguration = self.homeConfigurations."jd@framework";
+          nativeHealth = true;
+        };
         reka-shutdown = import ./tests/reka-shutdown.nix {
           inherit pkgs;
           home = self.homeConfigurations."jd@framework".config;
         };
-        reka-vt-switch = import ./tests/reka-vt-switch.nix { inherit pkgs; };
-        river-vt-switch = import ./tests/river-vt-switch.nix { inherit pkgs; };
+        reka-vt-switch = import ./tests/reka-vt-switch.nix {
+          inherit pkgs;
+          river = self.homeConfigurations."jd@framework".config.jd.graphical.wayland.river.package;
+        };
+        river-vt-switch = import ./tests/river-vt-switch.nix {
+          inherit pkgs;
+          river = self.homeConfigurations."jd@framework".config.jd.graphical.wayland.river.package;
+        };
+        river-app-health = import ./tests/river-health.nix { inherit pkgs; };
         login-greeter = import ./tests/login-greeter.nix { inherit pkgs; };
         audio-session = import ./tests/audio-session.nix {
           inherit pkgs;

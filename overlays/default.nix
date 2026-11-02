@@ -20,6 +20,7 @@
     inputs.nur.overlays.default
     inputs.oxbow.overlays.default
     inputs.reka.overlays.default
+    (import ./river-health.nix)
 
     (_self: super: {
       inherit (import ../configs/editor.nix super inputs.neovim-flake.lib.neovimConfiguration)

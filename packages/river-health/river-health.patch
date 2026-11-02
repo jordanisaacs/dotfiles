@@ -1,0 +1,63 @@
+--- a/build.zig
++++ b/build.zig
+@@ -200,6 +200,20 @@
+         river.root_module.addImport("flags", flags);
+         river.root_module.addImport("slotmap", slotmap);
+         river.root_module.addImport("c", translate_c.mod);
++
++        const health_header = b.addSystemCommand(&.{ "wayland-scanner", "server-header" });
++        health_header.addFileArg(b.path("protocol/jd-window-health-v1.xml"));
++        const header = health_header.addOutputFileArg("health-server.h");
++        const health_code = b.addSystemCommand(&.{ "wayland-scanner", "private-code" });
++        health_code.addFileArg(b.path("protocol/jd-window-health-v1.xml"));
++        const code = health_code.addOutputFileArg("health-protocol.c");
++        river.root_module.addIncludePath(header.dirname());
++        river.root_module.addCSourceFile(.{ .file = code });
++        const foreign_code = b.addSystemCommand(&.{ "wayland-scanner", "private-code" });
++        foreign_code.addFileArg(b.path("protocol/ext-foreign-toplevel-list-v1.xml"));
++        river.root_module.addCSourceFile(.{ .file = foreign_code.addOutputFileArg("foreign-protocol.c") });
++
++        river.root_module.addCSourceFile(.{ .file = b.path("river/health-server.c"), .flags = &.{"-std=c11", "-D_POSIX_C_SOURCE=200809L"} });
+ 
+         river.root_module.addCSourceFile(.{
+             .file = b.path("river/wlroots_log_wrapper.c"),
+--- a/river/Server.zig
++++ b/river/Server.zig
+@@ -88,6 +88,7 @@
+ 
+ wlr_foreign_toplevel_manager: *wlr.ForeignToplevelManagerV1,
+ foreign_toplevel_list: *wlr.ExtForeignToplevelListV1,
++health_global: *wl.Global,
+ toplevel_capture_source_manager: *wlr.ExtForeignToplevelImageCaptureSourceManagerV1,
+ 
+ tearing_control_manager: *wlr.TearingControlManagerV1,
+@@ -184,6 +185,7 @@
+ 
+         .wlr_foreign_toplevel_manager = try wlr.ForeignToplevelManagerV1.create(wl_server),
+         .foreign_toplevel_list = try wlr.ExtForeignToplevelListV1.create(wl_server, 1),
++        .health_global = river_health_create(wl_server) orelse return error.OutOfMemory,
+         .toplevel_capture_source_manager = try wlr.ExtForeignToplevelImageCaptureSourceManagerV1.create(wl_server, 1),
+ 
+         .tearing_control_manager = try wlr.TearingControlManagerV1.create(wl_server, 1),
+@@ -392,6 +394,7 @@
+         global == server.output_image_capture_source_manager.global or
+         global == server.wlr_foreign_toplevel_manager.global or
+         global == server.foreign_toplevel_list.global or
++        global == server.health_global or
+         global == server.toplevel_capture_source_manager.global or
+         global == server.export_dmabuf_manager.global or
+         global == server.data_control_manager.global or
+@@ -657,3 +660,13 @@
+ 
+ // TODO: remove this once it's supported in zig-wayland
+ extern fn wl_display_set_default_max_buffer_size(server: *wl.Server, size: usize) void;
++
++extern fn river_health_create(display: *wl.Server) ?*wl.Global;
++
++export fn river_health_xdg_surface(handle: *wlr.ExtForeignToplevelHandleV1) ?*wlr.XdgSurface {
++    const window: *Window = @ptrCast(@alignCast(handle.data orelse return null));
++    return switch (window.impl) {
++        .toplevel => |toplevel| toplevel.wlr_toplevel.base,
++        else => null,
++    };
++}

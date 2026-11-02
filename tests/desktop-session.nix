@@ -308,6 +308,19 @@ pkgs.testers.runNixOSTest {
     for name, value in application_state["environment"].items():
         assert value == environment[name], (name, value, environment[name])
 
+    # Reload preferences twice in the actual running manager. Mode declarations
+    # must not abort a reload, and existing app/compositor processes must survive.
+    oxbow_pid = machine.succeed(user("pgrep", "--exact", "oxbow")).strip()
+    river_pid = machine.succeed(user("pgrep", "--exact", "river")).strip()
+    for reload in range(2):
+        machine.succeed(user("env", "OXBOW_SOCKET=" + environment["OXBOW_SOCKET"], "${oxbowInit}", "--configure-only"))
+    assert machine.succeed(user("pgrep", "--exact", "oxbow")).strip() == oxbow_pid
+    assert machine.succeed(user("pgrep", "--exact", "river")).strip() == river_pid
+    machine.succeed("kill -0 " + str(application_state["pid"]))
+    bindings = json.loads(machine.succeed(user("env", "OXBOW_SOCKET=" + environment["OXBOW_SOCKET"], "${pkgs.oxbow}/bin/oxctl", "keymap", "list", "--json")))["bindings"]
+    assert any(binding["mode"] == "passthrough" for binding in bindings), bindings
+    assert any(binding["keybind"] == "XF86AudioRaiseVolume" for binding in bindings), bindings
+
     # Read the real generated Oxbow configuration to invoke its actual logout
     # helper, without maintaining another copy of that command in the test.
     tree = ast.parse(Path("${oxbowInit}").read_text())

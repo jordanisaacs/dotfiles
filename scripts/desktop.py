@@ -186,6 +186,9 @@ def configure_oxbow():
     )
     bind_exec(f"Super+{launcher}", [CONFIG["launcher"]])
     bind_exec("Super+Shift+q", [CONFIG["wayExit"]])
+    # Oxbow's stock uppercase-Q binding exits immediately. Its key parser
+    # folds letter names to lowercase, so use the exact XKB keysym to replace it.
+    bind_exec("Super+0x51", [CONFIG["wayExit"]])
     bind("Super+Shift+c", "window", "close")
     bind(f"Super+{next_key}", "window", "focus", "next")
     bind(f"Super+{previous_key}", "window", "focus", "prev")
@@ -215,7 +218,10 @@ def configure_oxbow():
     bind("Super+t", "layout", "tiling", "even")
     for key in ["Up", "Left", "Down", "Right"]:
         bind(f"Super+{key}", "layout", "tiling", "orientation", key.lower())
-    ox("keymap", "mode", "declare", "passthrough")
+    # A running, configured manager already owns its keymap modes. Reapplying
+    # bindings must not redeclare them and abort before the hardware keys.
+    if not arguments.configure_only:
+        ox("keymap", "mode", "declare", "passthrough")
     bind("Super+F11", "keymap", "mode", "enter", "passthrough")
     bind("Super+F11", "keymap", "mode", "enter", "normal", mode="passthrough")
 

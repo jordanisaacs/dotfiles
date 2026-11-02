@@ -2103,11 +2103,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1793516467,
-        "narHash": "sha256-fE0ILAJRHgRr82FlGIP7ebucM+b5Zeb6vxhjjAdfaX0=",
+        "lastModified": 1793521484,
+        "narHash": "sha256-L1j14vi+p06uIKTnj6Tlz2XSWDVKz2vNokYJ7NCf0rE=",
         "owner": "jordanisaacs",
         "repo": "reka",
-        "rev": "ecc4c708d41e972894b777679db50eb3048391df",
+        "rev": "1ebf295da86f2525d490445f88c821b2aed07dc6",
         "type": "github"
       },
       "original": {

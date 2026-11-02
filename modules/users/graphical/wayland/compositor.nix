@@ -53,12 +53,27 @@ let
     ];
   };
 
-  wayExitPackage = desktopScript "wayexit" {
-    action = "exit";
-    uwsm = "${pkgs.uwsm}/bin/uwsm";
-  };
+  wayExitPackage = desktopScript "wayexit" (
+    if cfg.type == "river" then
+      {
+        action = "command";
+        command = [
+          "${pkgs.uwsm}/bin/uwsm"
+          "app"
+          "-t"
+          "service"
+          "--"
+          "${cfg.logout.package}/bin/desktop-logout"
+        ];
+      }
+    else
+      {
+        action = "exit";
+        uwsm = "${pkgs.uwsm}/bin/uwsm";
+      }
+  );
   wayExit = "${wayExitPackage}/bin/wayexit";
-  riverPackage = pkgs.river-reka;
+  riverPackage = cfg.river.package;
 
   swayConfig = ''
     exec_always ${compositorStartup}/bin/compositor-setup
@@ -227,6 +242,11 @@ in
   imports = [ ./river-wm.nix ];
   options.jd.graphical.wayland = {
     river = {
+      package = mkOption {
+        type = types.package;
+        default = pkgs.river-reka;
+        description = "River compositor package used by the managed desktop session.";
+      };
       setupCommand = mkOption {
         type = types.listOf types.str;
         readOnly = true;

@@ -28,7 +28,11 @@ let
         launcher = [ "${pkgs.fuzzel}/bin/fuzzel" ];
         quit = [
           "${pkgs.uwsm}/bin/uwsm"
-          "stop"
+          "app"
+          "-t"
+          "service"
+          "--"
+          "${cfg.logout.package}/bin/desktop-logout"
         ];
         "<print>" = [ "${config.home.profileDirectory}/bin/wl-capture-region" ];
         "s-<print>" = [ "${config.home.profileDirectory}/bin/wl-capture-display" ];

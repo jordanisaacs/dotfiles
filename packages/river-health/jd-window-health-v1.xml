@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<protocol name="jd_window_health_v1">
+  <copyright>Copyright 2026 Jordan Isaacs. MIT license.</copyright>
+  <interface name="jd_window_health_manager_v1" version="1">
+    <description summary="experimental native XDG health observation">
+      Local experimental protocol; not an upstream River API. This global has
+      the same security restrictions as foreign toplevel inventory. Observation
+      never closes, signals or disconnects an application. Closing a window is
+      not evidence of responsiveness or lack thereof. An XDG ping tests whether
+      the Wayland connection dispatches events; it cannot prove every UI thread
+      or application operation is working. Xwayland is unsupported.
+    </description>
+    <request name="destroy" type="destructor"/>
+    <request name="watch">
+      <arg name="id" type="new_id" interface="jd_window_health_watch_v1"/>
+      <arg name="toplevel" type="object" interface="ext_foreign_toplevel_handle_v1"/>
+    </request>
+  </interface>
+  <interface name="jd_window_health_watch_v1" version="1">
+    <description summary="lifetime bound observer">
+      The supplied foreign toplevel capability identifies the original window.
+      A closed observer is inert. Destroying all observers ends probing.
+      A single connection shares one native ping and its ten second timeout.
+      State changes are sent immediately, with at most one probe per second.
+    </description>
+    <enum name="state">
+      <entry name="checking" value="0"/>
+      <entry name="responsive" value="1"/>
+      <entry name="unresponsive" value="2"/>
+      <entry name="unsupported" value="3"/>
+      <entry name="closed" value="4"/>
+    </enum>
+    <request name="destroy" type="destructor"/>
+    <event name="state"><arg name="state" type="uint" enum="state"/></event>
+  </interface>
+</protocol>

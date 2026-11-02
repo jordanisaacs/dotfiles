@@ -45,6 +45,18 @@ in
 
   config = lib.mkIf (cfg.enable && cfg.type == "river") {
     home.packages = [ switcher ];
+    xdg.desktopEntries.river-wm-switch = {
+      name = "Switch Window Manager (Reka / Oxbow)";
+      genericName = "Switch between Reka and Oxbow";
+      comment = "Switch window managers without logging out or closing applications";
+      exec = "${switcher}/bin/river-wm toggle";
+      icon = "preferences-system-windows";
+      terminal = false;
+      categories = [
+        "Settings"
+        "DesktopSettings"
+      ];
+    };
     # Stop the dynamic controller before UWSM terminates River. An After edge
     # to River would deadlock startup while River awaits controller readiness.
     xdg.configFile."systemd/user/wayland-wm@river.service.d/50-window-managers.conf".text = ''

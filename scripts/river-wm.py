@@ -75,6 +75,8 @@ def switch_manager(manager, *, initialize=False):
         raise RuntimeError(
             "The graphical session is still starting; try again once it is ready"
         )
+    if manager == "toggle":
+        manager = "oxbow" if previous == "reka" else "reka"
     if previous == manager:
         print(manager)
         return
@@ -101,7 +103,7 @@ def switch_manager(manager, *, initialize=False):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("manager", choices=("reka", "oxbow", "status"))
+    parser.add_argument("manager", choices=("reka", "oxbow", "toggle", "status"))
     parser.add_argument("--initialize", action="store_true", help=argparse.SUPPRESS)
     arguments = parser.parse_args()
     if arguments.manager == "status":

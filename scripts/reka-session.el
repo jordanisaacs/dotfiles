@@ -48,7 +48,7 @@
   "Request a normal close of the active native application."
   (interactive)
   (when-let* ((buffer (reka--active-application-buffer)))
-    (kill-buffer buffer)))
+    (reka-request-close buffer)))
 
 (defun jd-reka-workspace (number)
   "Select or create the workspace NUMBER."
