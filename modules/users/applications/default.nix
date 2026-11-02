@@ -96,6 +96,15 @@ in
     ];
 
     programs = {
+      btop = {
+        enable = true;
+        settings = {
+          # Let Ghostty or the current terminal supply its own background.
+          theme_background = false;
+          vim_keys = config.jd.keybindings == "vim";
+        };
+      };
+
       codex.enable = true;
 
       claude-code.enable = true;

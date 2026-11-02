@@ -44,7 +44,7 @@ with tempfile.TemporaryDirectory() as temporary:
                 "--width=1280",
                 "--height=800",
                 "--idle-time=0",
-                "--shell=kiosk-shell.so",
+                "--shell=desktop-shell.so",
             ],
             env=environment,
             stdout=log,
@@ -65,6 +65,27 @@ with tempfile.TemporaryDirectory() as temporary:
                 env=environment,
                 timeout=20,
             )
+            gtk = subprocess.run(
+                [os.environ["GTK_THEME_CHECK"]],
+                check=False,
+                env=environment
+                | {
+                    "GSETTINGS_BACKEND": "memory",
+                    "GTK_A11Y": "none",
+                    "GSK_RENDERER": "cairo",
+                },
+                text=True,
+                capture_output=True,
+                timeout=20,
+            )
+            assert gtk.returncode == 0, gtk.stdout + gtk.stderr
+            assert "Theme parser error" not in gtk.stderr, gtk.stderr
+            appearance = json.loads(gtk.stdout.strip().splitlines()[-1])
+            assert appearance["font"] == (
+                os.environ["DESKTOP_FONT_FAMILY"]
+                + " "
+                + os.environ["DESKTOP_FONT_POINTS"]
+            ), appearance
         except Exception:
             log.seek(0)
             print(log.read())

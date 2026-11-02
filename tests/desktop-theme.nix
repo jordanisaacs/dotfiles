@@ -3,7 +3,9 @@ let
   configFiles = [
     "kdeglobals"
     "Kvantum/kvantum.kvconfig"
+    "gtk-4.0/settings.ini"
   ]
+  ++ pkgs.lib.optional (builtins.hasAttr "gtk-4.0/gtk.css" home.xdg.configFile) "gtk-4.0/gtk.css"
   ++ builtins.filter (
     name: pkgs.lib.hasPrefix "Kvantum/" name && name != "Kvantum/kvantum.kvconfig"
   ) (builtins.attrNames home.xdg.configFile);
@@ -47,6 +49,26 @@ let
     # KDE's setup hook supplies installation paths unused by this tiny fixture.
     cmakeFlags = [ "-Wno-unused-cli" ];
   };
+  gtkPython = pkgs.python3.withPackages (packages: [ packages.pygobject3 ]);
+  gtkSource = pkgs.writeText "gtk-theme-probe.py" (
+    "#!${gtkPython}/bin/python3\n" + builtins.readFile ./gtk_theme_probe.py
+  );
+  gtkCheck = pkgs.stdenvNoCC.mkDerivation {
+    name = "desktop-gtk4-theme-check";
+    dontUnpack = true;
+    nativeBuildInputs = [
+      pkgs.wrapGAppsHook4
+      pkgs.gobject-introspection
+    ];
+    buildInputs = [
+      pkgs.gtk4
+      pkgs.libadwaita
+      pkgs.gsettings-desktop-schemas
+    ];
+    installPhase = ''
+      install -Dm755 ${gtkSource} "$out/bin/desktop-gtk4-theme-check"
+    '';
+  };
 in
 pkgs.runCommand "desktop-theme-tests"
   {
@@ -59,6 +81,7 @@ pkgs.runCommand "desktop-theme-tests"
     XDG_DATA_DIRS = "${home.home.path}/share";
     ICON_ROOT = "${home.home.path}/share/icons";
     KDE_PALETTE_CHECK = "${paletteCheck}/bin/desktop-palette-check";
+    GTK_THEME_CHECK = "${gtkCheck}/bin/desktop-gtk4-theme-check";
     FIREFOX_USER_JS = home.home.file.".mozilla/firefox/personal/user.js".source;
     FONTCONFIG_FILE = pkgs.makeFontsConf {
       fontDirectories = [

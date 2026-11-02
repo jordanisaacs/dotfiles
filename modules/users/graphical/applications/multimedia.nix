@@ -43,6 +43,7 @@ in
       vimiv-qt
 
       # recording/streaming
+      kooha
       obs-studio
 
       # video editing

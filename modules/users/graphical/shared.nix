@@ -112,7 +112,9 @@ in
     };
 
     gtk = {
-      gtk4.theme = config.gtk.theme;
+      # GTK4/libadwaita follows the shared dark preference. Arc's forced CSS
+      # import references an unregistered resource and fails in native apps.
+      gtk4.theme = null;
       gtk3.extraConfig = {
         gtk-application-prefer-dark-theme = true;
         gtk-key-theme-name = if config.jd.keybindings == "emacs" then "Emacs" else "Default";

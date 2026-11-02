@@ -561,6 +561,10 @@
           homeConfiguration = self.homeConfigurations."jd@framework";
           nativeHealth = true;
         };
+        reka-physical-click-focus = import ./tests/reka-physical-click-focus.nix {
+          inherit pkgs;
+          homeConfiguration = self.homeConfigurations."jd@framework";
+        };
         reka-shutdown = import ./tests/reka-shutdown.nix {
           inherit pkgs;
           home = self.homeConfigurations."jd@framework".config;
