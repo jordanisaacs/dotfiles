@@ -1,4 +1,7 @@
-{ pkgs }:
+{
+  pkgs,
+  bootKeyring ? false,
+}:
 let
   terminalProbe = pkgs.writers.writePython3Bin "greeter-terminal-probe" { } ''
     import json
@@ -63,11 +66,16 @@ pkgs.testers.runNixOSTest {
       };
       greetd = {
         enable = true;
+        bootKeyringUsers = lib.optionals bootKeyring [ "alice" ];
         # Reka sorts after Oxbow: this proves the actual declared default.
         defaultWindowManager = "reka";
       };
     };
     virtualisation.memorySize = 768;
+    services = lib.mkIf bootKeyring {
+      fprintd.enable = true;
+      gnome.gnome-keyring.enable = true;
+    };
     environment.systemPackages = [ terminalProbe ];
     users.users = lib.genAttrs [ "alice" "bob" ] (name: {
       isNormalUser = true;

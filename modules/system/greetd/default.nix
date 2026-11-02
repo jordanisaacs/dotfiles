@@ -65,6 +65,7 @@ let
   };
 in
 {
+  imports = [ ./boot-keyring.nix ];
   options.jd.greetd = {
     enable = lib.mkEnableOption "greetd login management";
     defaultWindowManager = lib.mkOption {

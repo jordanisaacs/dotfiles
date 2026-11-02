@@ -165,7 +165,6 @@ in
         };
       };
 
-      services.mako.enable = true;
       services.polkit-gnome.enable = true;
     }
     (mkIf cfg.screenlock.enable (

@@ -1,0 +1,43 @@
+--- a/src/screencast/pipewire_screencast.c
++++ b/src/screencast/pipewire_screencast.c
+@@ -226,6 +226,10 @@
+ 		goto done;
+ 	}
+ 	struct pw_buffer *pw_buf = cast->current_frame.pw_buffer;
++	if (!cast->current_frame.completed) {
++		pw_stream_return_buffer(cast->stream, pw_buf);
++		goto done;
++	}
+ 	struct spa_buffer *spa_buf = pw_buf->buffer;
+ 	struct spa_data *d = spa_buf->datas;
+ 
+@@ -365,13 +369,13 @@
+ 	switch (state) {
+ 	case PW_STREAM_STATE_STREAMING:
+ 		cast->pwr_stream_state = true;
+-		xdpw_pwr_dequeue_buffer(cast);
+-		xdpw_wlr_frame_capture(cast);
++		/* A temporary pause does not cancel an in-flight Wayland capture. */
++		if (!cast->current_frame.pw_buffer) {
++			xdpw_pwr_dequeue_buffer(cast);
++			xdpw_wlr_frame_capture(cast);
++		}
+ 		break;
+ 	case PW_STREAM_STATE_PAUSED:
+-		if (old == PW_STREAM_STATE_STREAMING && cast->current_frame.pw_buffer) {
+-			xdpw_pwr_enqueue_buffer(cast);
+-		}
+ 		// fall through
+ 	default:
+ 		cast->pwr_stream_state = false;
+--- a/meson.build
++++ b/meson.build
+@@ -25,7 +25,7 @@
+ inc = include_directories('include')
+ 
+ rt = cc.find_library('rt')
+-pipewire = dependency('libpipewire-0.3', version: '>= 0.3.62')
++pipewire = dependency('libpipewire-0.3', version: '>= 1.4.0')
+ wayland_client = dependency('wayland-client')
+ wayland_protos = dependency('wayland-protocols', version: '>=1.24')
+ iniparser = dependency('inih')

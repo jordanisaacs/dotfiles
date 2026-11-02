@@ -342,6 +342,7 @@
           greetd = {
             enable = true;
             defaultWindowManager = "oxbow";
+            bootKeyringUsers = [ "jd" ];
           };
           framework = {
             enable = true;
@@ -480,6 +481,14 @@
       };
       checks.${system} = style.checks // {
         formatting = treefmt.config.build.check self;
+        clipboard-history = import ./tests/clipboard-history.nix {
+          inherit pkgs;
+          homeConfiguration = self.homeConfigurations."jd@framework";
+        };
+        notification-center = import ./tests/notification-center.nix {
+          inherit pkgs;
+          homeConfiguration = self.homeConfigurations."jd@framework";
+        };
         framework = self.nixosConfigurations.framework.config.system.build.toplevel;
         home-framework = self.homeConfigurations."jd@framework".activationPackage;
         mission-center-apps = pkgs.mission-center.tests.uwsm-apps;
@@ -511,6 +520,10 @@
           inherit pkgs;
           home = self.homeConfigurations."jd@framework".config;
         };
+        firefox-bpc = import ./tests/firefox-bpc.nix {
+          inherit pkgs;
+          home = self.homeConfigurations."jd@framework".config;
+        };
         wifi-migration = import ./tests/wifi-migration.nix { inherit pkgs; };
         wifi-boot = import ./tests/wifi-boot.nix { inherit pkgs; };
         initrd-dlopen = import ./tests/initrd-dlopen.nix { inherit pkgs; };
@@ -535,6 +548,7 @@
           homeConfiguration = self.homeConfigurations."jd@framework";
           nixosConfiguration = self.nixosConfigurations.framework;
         };
+        boot-keyring-unlock = import ./tests/boot-keyring-unlock.nix { inherit pkgs; };
         desktop-keyboard = import ./tests/desktop-keyboard.nix {
           inherit pkgs;
           homeConfiguration = self.homeConfigurations."jd@framework";
@@ -579,12 +593,22 @@
         };
         river-app-health = import ./tests/river-health.nix { inherit pkgs; };
         login-greeter = import ./tests/login-greeter.nix { inherit pkgs; };
+        login-greeter-keyring = import ./tests/login-greeter.nix {
+          inherit pkgs;
+          bootKeyring = true;
+        };
+        kooha-capture = import ./tests/kooha-capture.nix { inherit pkgs; };
+        kooha-capture-drm = import ./tests/kooha-capture.nix {
+          inherit pkgs;
+          drm = true;
+        };
         audio-session = import ./tests/audio-session.nix {
           inherit pkgs;
           nixosConfiguration = self.nixosConfigurations.framework;
         };
         audio-volume = import ./tests/audio-volume.nix {
           inherit pkgs;
+          pipewire = self.nixosConfigurations.framework.config.services.pipewire.package;
           home = self.homeConfigurations."jd@framework".config;
         };
         boot-console = import ./tests/boot-console.nix { inherit pkgs; };

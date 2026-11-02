@@ -7,6 +7,14 @@
 with lib;
 let
   cfg = config.jd.graphical.applications;
+  koohaExperimental = pkgs.kooha.overrideAttrs (old: {
+    # Kooha checks encoder availability at runtime. The modern VA encoders
+    # and additional experimental formats are provided by plugins-bad.
+    buildInputs = old.buildInputs ++ [ pkgs.gst_all_1.gst-plugins-bad ];
+    preFixup = (old.preFixup or "") + ''
+      gappsWrapperArgs+=(--set KOOHA_EXPERIMENTAL all)
+    '';
+  });
   isGraphical =
     let
       cfg = config.jd.graphical;
@@ -43,7 +51,7 @@ in
       vimiv-qt
 
       # recording/streaming
-      kooha
+      koohaExperimental
       obs-studio
 
       # video editing

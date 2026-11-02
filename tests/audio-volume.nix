@@ -1,6 +1,7 @@
 {
   pkgs,
   home,
+  pipewire ? pkgs.pipewire,
   stock ? false,
 }:
 let
@@ -13,7 +14,7 @@ pkgs.runCommand "audio-volume-${if stock then "uncapped" else "bounded"}"
   {
     nativeBuildInputs = [
       python
-      pkgs.pipewire
+      pipewire
       pkgs.wireplumber
       pkgs.pulseaudio
       pkgs.xvfb

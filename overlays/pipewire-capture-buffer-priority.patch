@@ -1,0 +1,14 @@
+# Upstream: https://github.com/PipeWire/pipewire/commit/cebbb24d63a97590b11a9998f1f8bfe807b83fcf
+# link: let the consumer's buffer count decide on capture links
+--- a/src/pipewire/impl-link.c
++++ b/src/pipewire/impl-link.c
+@@ -706,9 +706,6 @@
+ 		 * because of the exclusive flag */
+ 		if (output->node->remote || input->node->remote || !output->exclusive)
+ 			alloc_flags |= PW_BUFFERS_FLAG_SHARED;
+-
+-		if (output->node->driver)
+-			alloc_flags |= PW_BUFFERS_FLAG_IN_PRIORITY;
+ 
+ 		/* if output port can alloc buffers, alloc skeleton buffers */
+ 		if (SPA_FLAG_IS_SET(out_flags, SPA_PORT_FLAG_CAN_ALLOC_BUFFERS)) {

@@ -42,6 +42,9 @@ in
     services = {
       pipewire = mkIf cfg.sound.enable {
         enable = true;
+        # Capture allocation is negotiated by the server. Keep client libraries
+        # on the upstream package to avoid rebuilding unrelated applications.
+        package = pkgs.pipewire-capture;
         alsa.enable = true;
         alsa.support32Bit = true;
         pulse.enable = true;

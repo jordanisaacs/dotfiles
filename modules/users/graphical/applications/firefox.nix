@@ -49,6 +49,7 @@ let
       sponsorblock
       return-youtube-dislikes
     ]
+    ++ [ (import ./firefox-bpc.nix { inherit pkgs; }) ]
     ++ optional cfg.firefox.videoDownloader video-downloadhelper
     ++ optional cfg.firefox.vim.enable tridactyl
     ++ optional config.jd.applications.activitywatch.enable aw-watcher-web;

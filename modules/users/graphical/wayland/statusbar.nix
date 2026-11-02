@@ -101,6 +101,7 @@ in
               "privacy"
               "network"
               "pulseaudio"
+              "custom/notifications"
               "idle_inhibitor#indicator"
               "power-profiles-daemon"
               "battery"
@@ -166,6 +167,25 @@ in
               on-scroll-up = "${pkgs.jdScripts.soundTools}/bin/stools vol up 1";
               on-scroll-down = "${pkgs.jdScripts.soundTools}/bin/stools vol down 1";
               smooth-scrolling-threshold = 5;
+            };
+            "custom/notifications" = {
+              format = "{icon}";
+              format-icons = {
+                notification = "󱅫";
+                none = "󰂜";
+                dnd-notification = "󰂠";
+                dnd-none = "󰪓";
+                inhibited-notification = "󰂛";
+                inhibited-none = "󰪑";
+                dnd-inhibited-notification = "󰂛";
+                dnd-inhibited-none = "󰪑";
+              };
+              return-type = "json";
+              exec = "${config.services.swaync.package}/bin/swaync-client --subscribe-waybar";
+              on-click = "${config.services.swaync.package}/bin/swaync-client --toggle-panel --skip-wait";
+              on-click-right = "${config.services.swaync.package}/bin/swaync-client --toggle-dnd --skip-wait";
+              escape = true;
+              tooltip = true;
             };
             "power-profiles-daemon" = {
               format = "{icon}";
@@ -340,6 +360,11 @@ in
         #custom-tag.urgent { color: @bar_warning; }
         #custom-layout { color: @bar_muted; }
         #privacy-item { color: @bar_danger; }
+        #custom-notifications.notification { color: @bar_accent; }
+        #custom-notifications.dnd-notification, #custom-notifications.dnd-none,
+        #custom-notifications.dnd-inhibited-notification, #custom-notifications.dnd-inhibited-none {
+          color: @bar_warning;
+        }
         #network.disconnected, #network.disabled, #network.linked,
         #battery.warning, #power-profiles-daemon.power-saver { color: @bar_warning; }
         #battery.critical, #temperature.critical { color: @bar_danger; }

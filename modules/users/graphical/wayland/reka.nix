@@ -26,6 +26,20 @@ let
           "${pkgs.ghostty}/bin/ghostty"
         ];
         launcher = [ "${pkgs.fuzzel}/bin/fuzzel" ];
+        "s-v" = [
+          "${pkgs.uwsm}/bin/uwsm"
+          "app"
+          "-t"
+          "service"
+          "--"
+          "${cfg.clipboard.package}/bin/clipboard-history"
+          "pick"
+        ];
+        "s-S-v" = [
+          "${config.services.swaync.package}/bin/swaync-client"
+          "--toggle-panel"
+          "--skip-wait"
+        ];
         quit = [
           "${pkgs.uwsm}/bin/uwsm"
           "app"

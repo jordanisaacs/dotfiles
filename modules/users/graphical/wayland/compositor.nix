@@ -209,6 +209,20 @@ let
     inherit wayExit;
     setup = "${compositorStartup}/bin/compositor-setup";
     commandBindings = {
+      "Super+v" = [
+        "${pkgs.uwsm}/bin/uwsm"
+        "app"
+        "-t"
+        "service"
+        "--"
+        "${cfg.clipboard.package}/bin/clipboard-history"
+        "pick"
+      ];
+      "Super+Shift+v" = [
+        "${config.services.swaync.package}/bin/swaync-client"
+        "--toggle-panel"
+        "--skip-wait"
+      ];
       Print = [ "${captureRegion}/bin/wl-capture-region" ];
       "Super+Print" = [ "${captureDisplay}/bin/wl-capture-display" ];
       "Super+Shift+Print" = [ "${captureDisplays}/bin/wl-capture-displays" ];
