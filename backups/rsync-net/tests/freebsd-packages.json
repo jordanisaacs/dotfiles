@@ -1,0 +1,542 @@
+{
+  "packages": {
+    "abseil": {
+      "hash": "sha256-Z9CoHu4qJH3QAj+S2+qDVhn8Dh3ifBnfLBfLtZbTPp8=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/abseil-20250127.1_2~2$briqrjhe.pkg",
+      "version": "20250127.1_2"
+    },
+    "avahi-app": {
+      "hash": "sha256-HGAvaG+FATiJnQyycNybWmLXefrygtYGzzxhIuyz16s=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/avahi-app-0.8_6~2$iunfrs7p.pkg",
+      "version": "0.8_6"
+    },
+    "aws-c-auth": {
+      "hash": "sha256-XumVZDnA3yIaBcHsswj56MXGFvvJeYwnWaL2HHUgWfs=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/aws-c-auth-1.0.0~2$nx4ky9h5.pkg",
+      "version": "1.0.0"
+    },
+    "aws-c-cal": {
+      "hash": "sha256-HsNwTKjACg4uiLTfDpsqqakYTybWDsiEivVkizLO3o8=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/aws-c-cal-1.0.0~2$r6ozmb45.pkg",
+      "version": "1.0.0"
+    },
+    "aws-c-common": {
+      "hash": "sha256-CDx/g0QwL9PRwa5hYX9bIbdFZBQNaR3EfyflckPUFxU=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/aws-c-common-1.0.2,1~2$hh1pqs1f.pkg",
+      "version": "1.0.2,1"
+    },
+    "aws-c-compression": {
+      "hash": "sha256-xxzQEWi2CcPgOPsxvy7UGNtz16mHuRkYIQpA/0PpjRE=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/aws-c-compression-1.0.0~2$fsgt3isf.pkg",
+      "version": "1.0.0"
+    },
+    "aws-c-event-stream": {
+      "hash": "sha256-+IUhSNnWdZ4aIEMxi43rz7knjj3UoficofzM2XfYXEU=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/aws-c-event-stream-1.0.0,1~2$g1xijc38.pkg",
+      "version": "1.0.0,1"
+    },
+    "aws-c-http": {
+      "hash": "sha256-GcIwhX8i+R3uVkWi2hSAgzgFfODHFYNDEc2UKS7ZlnI=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/aws-c-http-1.0.0~2$bhoes18m.pkg",
+      "version": "1.0.0"
+    },
+    "aws-c-io": {
+      "hash": "sha256-0l4qyTRC2DbQ8ytl6MFg4wtDxhEN+UmeHXR5ekN9NTg=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/aws-c-io-1.0.0~2$ua8r9qa7.pkg",
+      "version": "1.0.0"
+    },
+    "aws-c-mqtt": {
+      "hash": "sha256-0Imu4sacJ1CHjkpBmlzpEZv5+R8D8I/iQp2p/T3zyyg=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/aws-c-mqtt-1.0.0~2$dtw8mbhi.pkg",
+      "version": "1.0.0"
+    },
+    "aws-c-s3": {
+      "hash": "sha256-OT/IYPOPQuDtcC6y8B73MTCK0Lxix2K5xJLq83hXRUY=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/aws-c-s3-1.3.0~2$ea8fsgfa.pkg",
+      "version": "1.3.0"
+    },
+    "aws-c-sdkutils": {
+      "hash": "sha256-4nVYx527PziiDL5viW1N/zDHd7rJTspkyc8C4t8LHE0=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/aws-c-sdkutils-1.0.0~2$d78gfzfu.pkg",
+      "version": "1.0.0"
+    },
+    "aws-checksums": {
+      "hash": "sha256-JzBhQ8D+sKlkJgUXBSMQbozX0zHXhd7RT4BEVLQbIwg=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/aws-checksums-1.0.1,1~2$ik7jhx7e.pkg",
+      "version": "1.0.1,1"
+    },
+    "aws-crt-cpp": {
+      "hash": "sha256-3OLuVrtjBWkVB5zaLtxCsK53Uv0Y84fDl+KOyD2RuVY=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/aws-crt-cpp-0.43.8~2$qgm8wcco.pkg",
+      "version": "0.43.8"
+    },
+    "aws-sdk-cpp": {
+      "hash": "sha256-4BTGoX5yOdgxEDgE7/Q9Yyyo3xN8FlJHej04U3aIZ9w=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/aws-sdk-cpp-1.11.901~2$qisorqcd.pkg",
+      "version": "1.11.901"
+    },
+    "boehm-gc": {
+      "hash": "sha256-XMHpPO5mlPVlok1b1him4ILjHbIvbYu43Q1rJrYbL9c=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/boehm-gc-8.2.10~2$erfgr6uz.pkg",
+      "version": "8.2.10"
+    },
+    "boehm-gc-threaded": {
+      "hash": "sha256-RdLkBrrDDMq0UYGx/ApsYPso4mwBrkQqF5rJr0fqNtU=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/boehm-gc-threaded-8.2.10~2$5fjgiuu4.pkg",
+      "version": "8.2.10"
+    },
+    "boost-libs": {
+      "hash": "sha256-9LR8cJXiYEmxOaXyRUZHI0Y4ttj/UPaPZftd3IQxhjk=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/boost-libs-1.92.0~2$owjpao66.pkg",
+      "version": "1.92.0"
+    },
+    "brotli": {
+      "hash": "sha256-dNRIcePMZNBtJZuiOnroPFN/pu7km2dcTAIPag9fTDk=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/brotli-1.2.1,1~2$5q398ypj.pkg",
+      "version": "1.2.1,1"
+    },
+    "ca_root_nss": {
+      "hash": "sha256-SP60jMZ3qy4mpsJ1tAuqT/Nu5zDKH+4U87aX4AiyKRU=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/ca_root_nss-3.132~2$4wzgj4o7.pkg",
+      "version": "3.132"
+    },
+    "consolekit2": {
+      "hash": "sha256-WOloT3dYoHA+vfK1kMO8zsnDPZowuG5H+u6P1Ewtx7U=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/consolekit2-2.0.0_2~2$asn3ybbz.pkg",
+      "version": "2.0.0_2"
+    },
+    "curl": {
+      "hash": "sha256-dfR46i1HP0ZF3KxMg7Mvwbrk2KuU2mJJlQgZebqHGn8=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/curl-8.23.0~2$eerhuq1d.pkg",
+      "version": "8.23.0"
+    },
+    "dbus": {
+      "hash": "sha256-TI4OZIwHZe7v6VUX9ePmzDdA/tx+sud82g5KJOW9kkE=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/dbus-1.16.2_4,1~2$3j1re4dd.pkg",
+      "version": "1.16.2_4,1"
+    },
+    "dbus-glib": {
+      "hash": "sha256-R12WjPSLOhZ+zzPOn0DnzQ0IqVPSoyBhQjH+luSA850=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/dbus-glib-0.116~2$ztayb64g.pkg",
+      "version": "0.116"
+    },
+    "duktape-lib": {
+      "hash": "sha256-fmpW29MlUkchLyhFnZW/lTXkagqsbbNYkv+PUMCsXBE=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/duktape-lib-2.7.0_1~2$t5ftbcsc.pkg",
+      "version": "2.7.0_1"
+    },
+    "editline": {
+      "hash": "sha256-6YofrR7hRUfLzjXgpYn9JqSoDKU17tkbohOKjr9ohDQ=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/editline-2.1.0~2$3q3pazus.pkg",
+      "version": "2.1.0"
+    },
+    "expat": {
+      "hash": "sha256-JM9tpmmpf8WS4U0zRVWTV9DuYpxs5o63QYrvNqXVBwQ=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/expat-2.8.4~2$ace6n1r1.pkg",
+      "version": "2.8.4"
+    },
+    "fftw3": {
+      "hash": "sha256-/9ie1vWnUl9uosItGxYxWydsU0fAMEGuBzRebHleGYk=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/fftw3-3.3.11~2$9gpmaexq.pkg",
+      "version": "3.3.11"
+    },
+    "fftw3-float": {
+      "hash": "sha256-A7ZJg+pG6nT2LfevUXCZaqPH/qTGoHhaTJHdIJ1RA1c=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/fftw3-float-3.3.11~2$qhnaocse.pkg",
+      "version": "3.3.11"
+    },
+    "flac": {
+      "hash": "sha256-KmS0Nh5+Kw5WVnlIeyW6+6uFfqSE40T9m9a+pl5TEvg=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/flac-1.5.0,1~2$ryrw93ad.pkg",
+      "version": "1.5.0,1"
+    },
+    "fusefs-libs": {
+      "hash": "sha256-vnxcYfKkZ8VZxIyXAMhk5PFH+huAhLToSZzKnGUAUuU=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/fusefs-libs-2.9.9_2~2$xzwdiouc.pkg",
+      "version": "2.9.9_2"
+    },
+    "gdbm": {
+      "hash": "sha256-oJzWslPEE5Z/doc1R4ySYAg21vkt7qoTBnq2FITX5T0=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/gdbm-1.26~2$cbsjnkdn.pkg",
+      "version": "1.26"
+    },
+    "gettext-runtime": {
+      "hash": "sha256-vNiOKvXoIJPTQluRTXqghJGyBi/Lj10ftEYB/EHCa+I=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/gettext-runtime-1.0_1~2$35am8deg.pkg",
+      "version": "1.0_1"
+    },
+    "glib": {
+      "hash": "sha256-DFE98eHklQZDCLX+HKHJQnf85RmR1e7G4rusz3ZvMiw=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/glib-2.88.3,2~2$t5g711b8.pkg",
+      "version": "2.88.3,2"
+    },
+    "gnome_subr": {
+      "hash": "sha256-9ro130dhDLqlhChloXWgipvPgw70WwqJSfqGJnZxbHU=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/gnome_subr-1.0~2$6cxdgia4.pkg",
+      "version": "1.0"
+    },
+    "hwdata": {
+      "hash": "sha256-i+N3KhEMLolEe0ktki/7wkX5VCNEyr9ZueYc+RiwcyQ=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/hwdata-0.411,1~2$hkin13mm.pkg",
+      "version": "0.411,1"
+    },
+    "icu": {
+      "hash": "sha256-tOl+ru0py0vOW3BNhMjgMGVbk9yt6dnJKSwj3f8lfog=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/icu-76.1,1~2$f965fbwy.pkg",
+      "version": "76.1,1"
+    },
+    "indexinfo": {
+      "hash": "sha256-2a4CDXxyt2V90qpttmbuwaNjLw1apxDgL+QqXROJvfo=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/indexinfo-0.3.1_1~2$qyh4oti1.pkg",
+      "version": "0.3.1_1"
+    },
+    "lame": {
+      "hash": "sha256-fp+zAfM1nvQl1yg9eG5cqNLzXNfMWtapaUFRvyVfo0o=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/lame-4.0~2$m3mo3u6c.pkg",
+      "version": "4.0"
+    },
+    "libICE": {
+      "hash": "sha256-Ma8xeAmjxIPXIGHOvv6XpfvXYVazTW+slPPgXtTR6TQ=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/libICE-1.1.2,1~2$cpenkf8j.pkg",
+      "version": "1.1.2,1"
+    },
+    "libSM": {
+      "hash": "sha256-Em4vvFEa/rlH3q9jUgLK01imJAH+mGv8KGK/nHbaZzw=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/libSM-1.2.6,1~2$mm45w9a5.pkg",
+      "version": "1.2.6,1"
+    },
+    "libX11": {
+      "hash": "sha256-/HUgcm1mE4DqGtvYIiUEB7V1LmPB+SiEFpAtZqiOUEQ=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/libX11-1.8.14,1~2$o3hhi7o9.pkg",
+      "version": "1.8.14,1"
+    },
+    "libXau": {
+      "hash": "sha256-h27SdNNPPPcfK18hfREeGORafgASqpWKFbexp8x7wK0=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/libXau-1.0.12~2$xrn8woi1.pkg",
+      "version": "1.0.12"
+    },
+    "libXdmcp": {
+      "hash": "sha256-OG8P0che2o/kNA1zuyXGHeT31Z/r7D8gGMZXeBhIlQU=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/libXdmcp-1.1.5~2$x3t5e4tq.pkg",
+      "version": "1.1.5"
+    },
+    "libXext": {
+      "hash": "sha256-Boy9HzcgtieVUzktJQ4jNf5nO5O0Ba54llbIaWLgcYs=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/libXext-1.3.7,1~2$ia9mitei.pkg",
+      "version": "1.3.7,1"
+    },
+    "libXfixes": {
+      "hash": "sha256-f0qFMG8nf2sAc4SvXDVeoiP1mAplz2mt0r/JWo7VwgM=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/libXfixes-6.0.2~2$u9jaoh6s.pkg",
+      "version": "6.0.2"
+    },
+    "libXi": {
+      "hash": "sha256-6qUwCnfEpbNhUyQoo2hG2MZDkTUeu8q40twcK03j4uc=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/libXi-1.8.4,1~2$83kcqxks.pkg",
+      "version": "1.8.4,1"
+    },
+    "libXtst": {
+      "hash": "sha256-U92Ab1NqvvmSm8MBnCvSicsbTa9BZKOl5qjg449U1Qo=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/libXtst-1.2.6~2$ookrmxym.pkg",
+      "version": "1.2.6"
+    },
+    "libarchive": {
+      "hash": "sha256-wgubg1pHKreo2os0F9AXT3WjQ0fC0MEXHhHzgYrTCj8=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/libarchive-3.8.8,1~2$cg98bj8z.pkg",
+      "version": "3.8.8,1"
+    },
+    "libblake3": {
+      "hash": "sha256-pMidIe8j061sQnqTKMEzMBa1R/xPdeVSFz464EjI+MA=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/libblake3-1.8.6~2$1oyzs98k.pkg",
+      "version": "1.8.6"
+    },
+    "libcpuid": {
+      "hash": "sha256-+AChXCb3XT8nB7YgUFKsN3II32pRPB5y8QBvCyEh2IY=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/libcpuid-0.8.1~2$1hjx8r96.pkg",
+      "version": "0.8.1"
+    },
+    "libdaemon": {
+      "hash": "sha256-Qz+GPn6wQokU5iQ4O5wH+1TIBf0KiRbQ4BPVfr7OBe0=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/libdaemon-0.14_1~2$5z63xam7.pkg",
+      "version": "0.14_1"
+    },
+    "libdrm": {
+      "hash": "sha256-J9XxQQu0gsDqMjrAvsvh7klauUt1bgBdjeQvqXTo5Uc=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/libdrm-2.4.134,1~2$zie3g53i.pkg",
+      "version": "2.4.134,1"
+    },
+    "libedit": {
+      "hash": "sha256-oefmE3FxxY+c927cBuMD3ArwPOj1XoU1GsHo49+X6ME=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/libedit-3.1.20260512,1~2$ogkhqwbe.pkg",
+      "version": "3.1.20260512,1"
+    },
+    "libevdev": {
+      "hash": "sha256-bcDCYZo53Uid7v4IEkweBlBRmIw2lWlKhz7NUHKSKro=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/libevdev-1.13.2~2$udmezujx.pkg",
+      "version": "1.13.2"
+    },
+    "libevent": {
+      "hash": "sha256-MFJ6NBO0uVHDuOZLW4qQ+uAFmVqw5UNAjbEjH8z7icg=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/libevent-2.1.13~2$3omqpfou.pkg",
+      "version": "2.1.13"
+    },
+    "libffi": {
+      "hash": "sha256-t/PeXhvnj3b0GfWvcLGmPjec46KjrkSILakpKyaGuLk=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/libffi-3.8.0~2$yinxsznm.pkg",
+      "version": "3.8.0"
+    },
+    "libgcrypt": {
+      "hash": "sha256-Pg6UGWQQdQe2R+pI8furrfQPBEKgEFhGN0svrW0F6bA=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/libgcrypt-1.12.4~2$8wpmgc6p.pkg",
+      "version": "1.12.4"
+    },
+    "libgit2": {
+      "hash": "sha256-q5Fq5iypfrSo2qcxePsPkCwnzj2zBbxOA3Cf2irfNs8=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/libgit2-1.9.7~2$c856pesd.pkg",
+      "version": "1.9.7"
+    },
+    "libgpg-error": {
+      "hash": "sha256-ScH9E7dTIONEpr0qDZ89IHfWtG6mT2sxHymx5VhvAqo=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/libgpg-error-1.61~2$45d65zrq.pkg",
+      "version": "1.61"
+    },
+    "libiconv": {
+      "hash": "sha256-a7JZw9mTvADepqRRJZfbqrLFzVpdI+aZbAklVMMB5p4=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/libiconv-1.18_1~2$ecziwi5m.pkg",
+      "version": "1.18_1"
+    },
+    "libidn2": {
+      "hash": "sha256-qiEcj7vC0C2BN9ptHhMPj0aA2u5PMXgPl2iKieaKco0=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/libidn2-2.3.8~2$xw55thf1.pkg",
+      "version": "2.3.8"
+    },
+    "libinotify": {
+      "hash": "sha256-2w7AX4WBmElMkv3jcKavEWIOg9/UX5qJAj6yqk2KxKA=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/libinotify-20240724_3~2$yg9gqfis.pkg",
+      "version": "20240724_3"
+    },
+    "libltdl": {
+      "hash": "sha256-S0JUugKfgM//at+hqNk+USExmRfJnF4jiAUwbNV7QD8=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/libltdl-2.6.2~2$gitpca6r.pkg",
+      "version": "2.6.2"
+    },
+    "liblz4": {
+      "hash": "sha256-TKMQIzcBZDJWmwK34v22+/WLuaSH3dF5QuHCQ+w1IMk=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/liblz4-1.10.0_2,1~2$mmdjckwe.pkg",
+      "version": "1.10.0_2,1"
+    },
+    "libnghttp2": {
+      "hash": "sha256-UN/+Xo6ni2fV0AIBEaLVPrddjyjqIiyzMzoXd4VMnoI=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/libnghttp2-1.70.0~2$5kyz631t.pkg",
+      "version": "1.70.0"
+    },
+    "libogg": {
+      "hash": "sha256-kZCsj6HFNK6EfbLe5sdm0Tj9zPuVyF4kzgRWpzrsoKw=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/libogg-1.3.6,4~2$x593haqb.pkg",
+      "version": "1.3.6,4"
+    },
+    "libpciaccess": {
+      "hash": "sha256-kRmg03HY9fbj1IHB6N/tEWdpHv9xgimcc6rFkwzVN0g=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/libpciaccess-0.19~2$tad8uayn.pkg",
+      "version": "0.19"
+    },
+    "libpsl": {
+      "hash": "sha256-dC6AbwPVcMdSYRzr6WNDvDVKV/R+kk0zL0p0sESVCyY=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/libpsl-0.23.3~2$xxbyr5ky.pkg",
+      "version": "0.23.3"
+    },
+    "libsndfile": {
+      "hash": "sha256-/on4OPDakR2b8qveGowKB3RwXV7b+pJ+lok25cuCi34=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/libsndfile-1.2.2.20251216~2$otdjjuqw.pkg",
+      "version": "1.2.2.20251216"
+    },
+    "libsodium": {
+      "hash": "sha256-o45BXeSL5FFw2xrxFfO/JRj0bYIQl+L+cdjKCBGOPHE=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/libsodium-1.0.22~2$b95czfas.pkg",
+      "version": "1.0.22"
+    },
+    "libsoxr": {
+      "hash": "sha256-IheWBMn0ydex0dnYwMBVC2CbdavHKiyDrTgwnpOHHLQ=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/libsoxr-0.1.3_3~2$94ge5yj5.pkg",
+      "version": "0.1.3_3"
+    },
+    "libssh2": {
+      "hash": "sha256-Gzg45JqSdFX6iECFycujuc1tGMzchgQwTKY8DPrPL9Y=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/libssh2-1.11.1_1,3~2$gadt6fn3.pkg",
+      "version": "1.11.1_1,3"
+    },
+    "libudev-devd": {
+      "hash": "sha256-Kuo/3bgUoKolIm5Q0VykZGyV6fcE7z67Iwxcr1rQulE=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/libudev-devd-0.7.0~2$sdggz6o9.pkg",
+      "version": "0.7.0"
+    },
+    "libunistring": {
+      "hash": "sha256-eFL/pJTZgZU8ZZjipW3UntsOfVd1xq4XJOkvxRhDiXY=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/libunistring-1.4.2~2$ggxbicwh.pkg",
+      "version": "1.4.2"
+    },
+    "libvorbis": {
+      "hash": "sha256-21EfWvZdgjfuZb5OX+u55OEJWKjTtVcL6R/LmEWrXic=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/libvorbis-1.3.7_2,3~2$h3rg5mjw.pkg",
+      "version": "1.3.7_2,3"
+    },
+    "libxcb": {
+      "hash": "sha256-YK6UEbse8e8XPWmBbnM12TRN329uuStOkLsTvfA68Bk=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/libxcb-1.17.0~2$ie3wo5pg.pkg",
+      "version": "1.17.0"
+    },
+    "libxml2": {
+      "hash": "sha256-4o3dZRB9BqOKBryzKHJ0utn9jHmYsKMz+7yQRfjM3ww=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/libxml2-2.15.4~2$ccgj1nkb.pkg",
+      "version": "2.15.4"
+    },
+    "libxslt": {
+      "hash": "sha256-Prw6IvhZGgdJ9gq2IlYU93rrm4riLjT/YeQ8mJ7b3Lk=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/libxslt-1.1.45~2$6c1ouu7c.pkg",
+      "version": "1.1.45"
+    },
+    "llhttp": {
+      "hash": "sha256-RowjaKGVTY3giKney3Ba6gACz4/xXQVs0ZtmjOzmoo4=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/llhttp-9.4.3~2$68dhgn44.pkg",
+      "version": "9.4.3"
+    },
+    "lowdown": {
+      "hash": "sha256-8n3EB2t2zNDSn2DqzEQ8MLYGi1DJvVXlpFWKTJDrsyQ=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/lowdown-3.2.1~2$gnfix9uu.pkg",
+      "version": "3.2.1"
+    },
+    "mpdecimal": {
+      "hash": "sha256-kHZQAweojO/qVxBNI5k1R0/dZCy7ZUs+iE1tkIn14G4=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/mpdecimal-4.0.1~2$mc45jerb.pkg",
+      "version": "4.0.1"
+    },
+    "mpg123": {
+      "hash": "sha256-9uMQjuET1hh7ZrerwAMPhCndBVP1xkw5nTvpiwSPHls=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/mpg123-1.33.7~2$cuihwhhy.pkg",
+      "version": "1.33.7"
+    },
+    "nix": {
+      "hash": "sha256-nGhRBSWMbnbOTdv7FY7UjirWbNIAcW/+8NW4jElnsXA=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/nix-2.32.4_6~2$usdnsqmp.pkg",
+      "version": "2.32.4_6"
+    },
+    "opus": {
+      "hash": "sha256-Bp2fUyOfiRfzWb8VIOQMEBGyP4i//7JI1CD9rNKACDI=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/opus-1.6.1~2$mhst5utc.pkg",
+      "version": "1.6.1"
+    },
+    "orc": {
+      "hash": "sha256-HOhM9q8K4r7WkjW18PbW8YHzAeQmfq8m53ko99+RIeU=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/orc-0.4.44~2$ue51kfdy.pkg",
+      "version": "0.4.44"
+    },
+    "pcre2": {
+      "hash": "sha256-zNJkGaymb2JDUNeIpqTpTE4/avetFCOg7zGrL0E0zUM=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/pcre2-10.49~2$djpup7nu.pkg",
+      "version": "10.49"
+    },
+    "pkg": {
+      "hash": "sha256-h54mmhDR4G6CbeCKgwkw7vULYZbZwqHSYIszpt0fGkg=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/pkg-2.8.4~2$hab9iyib.pkg",
+      "version": "2.8.4"
+    },
+    "polkit": {
+      "hash": "sha256-RzkeixPtfwoEKrfgWaN8MtgMniarGMdpIEdYMz8/5Ng=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/polkit-127~2$jn1tf57e.pkg",
+      "version": "127"
+    },
+    "pulseaudio": {
+      "hash": "sha256-UWOLoRqx0MHu4G2kFhriZ2870iQSWQHxIR/ujWib4Ko=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/pulseaudio-17.0_5~2$s1zqpe8c.pkg",
+      "version": "17.0_5"
+    },
+    "py312-packaging": {
+      "hash": "sha256-uSR5RdJH1i5GAGKhKGTHcBYJb5MoH+qf5QM4juda2K8=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/py312-packaging-26.3~2$15u95yw9.pkg",
+      "version": "26.3"
+    },
+    "python311": {
+      "hash": "sha256-kNbaBLFXs0cQ2mXKgaeJVH50GoUrAlOMK/4FXPUMB08=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/python311-3.11.17~2$g4rd77xh.pkg",
+      "version": "3.11.17"
+    },
+    "python312": {
+      "hash": "sha256-2uTttbMEAKJk3TsJUHejWw0nB7K/MbM4pAaIl2xqWro=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/python312-3.12.15~2$q5xcmhib.pkg",
+      "version": "3.12.15"
+    },
+    "rclone": {
+      "hash": "sha256-3Wd4Qqyy64TetM3gDIvHeus178nu41g8GTRIHT9DutE=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/rclone-1.75.2_1~2$75si4bm3.pkg",
+      "version": "1.75.2_1"
+    },
+    "readline": {
+      "hash": "sha256-rhePusFLEgB7v3hdyjLT7VWK0wS6sbMXlVqs9DkEuvA=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/readline-8.3.6~2$qihtgm7p.pkg",
+      "version": "8.3.6"
+    },
+    "rsync": {
+      "hash": "sha256-AkBTK2Aj+xxC2yR7SuIvoVjN94PH6iZA6IVx3lk6SdA=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/rsync-3.5.1~2$8am3csqi.pkg",
+      "version": "3.5.1"
+    },
+    "s2n-tls": {
+      "hash": "sha256-0sQybGZNS5nDQFfIIb4kgievMIwo5ddfgQUX+FZX5xc=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/s2n-tls-1.7.10,1~2$cip4jona.pkg",
+      "version": "1.7.10,1"
+    },
+    "speexdsp": {
+      "hash": "sha256-cS5PXbxWVg0wAcqq9vX3INwPY2eldgoRwSYdZUrJSFI=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/speexdsp-1.2.1~2$ahha8eiu.pkg",
+      "version": "1.2.1"
+    },
+    "sqlite3": {
+      "hash": "sha256-pnpM/3vj6ghbDpJHU0DnjQKV3a75tIp6zQgKgsEkiHc=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/sqlite3-3.53.4,1~2$5k89e3ug.pkg",
+      "version": "3.53.4,1"
+    },
+    "tailscale": {
+      "hash": "sha256-GRq1iE9hY1QJc3NXvI/T1K9rxAVIEgXJpLbdHpfI/yE=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/tailscale-1.104.4~2$rz7xq7hw.pkg",
+      "version": "1.104.4"
+    },
+    "webrtc-audio-processing": {
+      "hash": "sha256-82xX9K92JP1MqECkgy+Yfcl24wqpqlf3IX3p35JJ4NM=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/webrtc-audio-processing-1.3_1~2$ju58c8m1.pkg",
+      "version": "1.3_1"
+    },
+    "xorgproto": {
+      "hash": "sha256-4HEEeNSJx5VaGb3hreMGRyrQYMHVyL0hq6hsmlr9SfU=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/xorgproto-2025.1~2$zo1t5tf3.pkg",
+      "version": "2025.1"
+    },
+    "xxhash": {
+      "hash": "sha256-Rdu/kYS7RH9pFwcJWLKrEJJOJf9mp/2EgWpa2aqZ8eQ=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/xxhash-0.8.4~2$8p56fp4r.pkg",
+      "version": "0.8.4"
+    },
+    "zstd": {
+      "hash": "sha256-6ZMPLei7pF/E3zrOxrhIN99sLdlWzQdtFz8SOcZprpU=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/All/Hashed/zstd-1.5.7_2~2$8pq3gc9g.pkg",
+      "version": "1.5.7_2"
+    }
+  },
+  "repository": {
+    "Latest/pkg.pkg.sig": {
+      "hash": "sha256-s8hSjmAisVgtuYUvz4RJ3m6bSlm8rz53Xltj0N5nj6g=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/Latest/pkg.pkg.sig"
+    },
+    "data.pkg": {
+      "hash": "sha256-rdgUrdg14ut9aEEdQzWzYofWZf53zco9IpfUjV1eXGg=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/data.pkg"
+    },
+    "meta.conf": {
+      "hash": "sha256-yn8JGk+ezL9TepZqDU1VXN/E3jStW+XJahLESFEwZkw=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/meta.conf"
+    },
+    "packagesite.pkg": {
+      "hash": "sha256-d7rTq8BJmW+88mg4V6VQJ+46GQf1v+JwGRkX6m66VCQ=",
+      "url": "https://pkg.freebsd.org/FreeBSD:14:amd64/quarterly/packagesite.pkg"
+    }
+  }
+}
