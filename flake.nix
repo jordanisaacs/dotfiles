@@ -72,11 +72,6 @@
     # Programs
     neovim-flake.url = "github:jordanisaacs/neovim-flake";
 
-    dwl-flake = {
-      url = "github:jordanisaacs/dwl-flake";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     emacs-config.url = "github:jordanisaacs/emacs-config";
 
     oxbow = {
@@ -466,6 +461,22 @@
         formatting = treefmt.config.build.check self;
         framework = self.nixosConfigurations.framework.config.system.build.toplevel;
         home-framework = self.homeConfigurations."jd@framework".activationPackage;
+        libreoffice-grammar = import ./tests/libreoffice-grammar.nix {
+          inherit pkgs;
+          home = self.homeConfigurations."jd@framework".config;
+        };
+        desktop-theme = import ./tests/desktop-theme.nix {
+          inherit pkgs;
+          home = self.homeConfigurations."jd@framework".config;
+        };
+        desktop-fonts = import ./tests/desktop-fonts.nix {
+          inherit pkgs;
+          home = self.homeConfigurations."jd@framework".config;
+        };
+        firefox-sidebar = import ./tests/firefox-sidebar.nix {
+          inherit pkgs;
+          home = self.homeConfigurations."jd@framework".config;
+        };
         wifi-migration = import ./tests/wifi-migration.nix { inherit pkgs; };
         wifi-boot = import ./tests/wifi-boot.nix { inherit pkgs; };
         initrd-dlopen = import ./tests/initrd-dlopen.nix { inherit pkgs; };

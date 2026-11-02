@@ -9,20 +9,6 @@ let
   cfg = config.jd.graphical.wayland;
   systemCfg = config.machineData.systemConfig;
   isLaptop = systemCfg.laptop.enable or false;
-  isDwl = cfg.type == "dwl";
-
-  dwlTags = pkgs.writeShellApplication {
-    name = "dwl-waybar";
-    runtimeInputs = with pkgs; [
-      gnugrep
-      inotify-tools
-      coreutils
-      gnused
-      gawk
-    ];
-    text = builtins.readFile ./dwl.sh;
-  };
-
   pythonScript = import ../../../../lib/python-script.nix { inherit pkgs; };
   toggleservice = pythonScript "toggleservice" ../../../../scripts/desktop.py {
     action = "toggle";
@@ -181,6 +167,7 @@ in
             "Berkeley Mono Variable"
             "Noto Color Emoji"
           ];
+          # Preserve the terminal size independently of GUI typography changes.
           font-size = 20;
           theme = if cfg.terminal.theme == "tokyo-night" then "TokyoNight" else "Dracula";
           window-padding-x = 2;
@@ -277,12 +264,6 @@ in
         let
           primaryDisplay = if isLaptop then "eDP-1" else "DP-1";
 
-          dwlModule = dispName: {
-            exec = "${dwlTags}/bin/dwl-waybar '${dispName}'";
-            format = "{}";
-            max-length = 75;
-            return-type = "json";
-          };
         in
         {
           enable = true;
@@ -469,19 +450,10 @@ in
                 )
               ))
             ])
-            (mkIf (!isLaptop) (mkMerge [
-              (mkIf isDwl {
-                output = "HDMI-A-1";
-                modules-left = [ "custom/dwl" ];
-                modules = {
-                  "custom/dwl" = dwlModule "HDMI-A-1";
-                };
-              })
-            ]))
           ];
           style = ''
             * {
-              font-size: 24px;
+              font-size: ${toString (config.gtk.font.size * 4 / 3)}px;
             }
 
             #custom-tag.viewed { color: #7aa2f7; }

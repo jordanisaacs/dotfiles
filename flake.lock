@@ -161,26 +161,6 @@
         "type": "github"
       }
     },
-    "dwl-flake": {
-      "inputs": {
-        "nixpkgs": [
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1710474013,
-        "narHash": "sha256-pDdRQG8mc12DKmCY6Mjk6+X0wLDfHxyrqNyIRsH8a8c=",
-        "owner": "jordanisaacs",
-        "repo": "dwl-flake",
-        "rev": "194ecd3360411b7361bbc830d1343a58556a89a9",
-        "type": "github"
-      },
-      "original": {
-        "owner": "jordanisaacs",
-        "repo": "dwl-flake",
-        "type": "github"
-      }
-    },
     "elisp-helpers": {
       "inputs": {
         "fromElisp": "fromElisp"
@@ -2148,7 +2128,6 @@
         "deploy-rs": "deploy-rs",
         "disko": "disko",
         "dwarffs": "dwarffs",
-        "dwl-flake": "dwl-flake",
         "emacs-config": "emacs-config",
         "flake-utils": "flake-utils_2",
         "home-manager": "home-manager_2",

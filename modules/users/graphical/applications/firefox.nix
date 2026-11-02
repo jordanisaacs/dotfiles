@@ -83,6 +83,10 @@ in
             Value = "blocked";
             Locked = true;
           };
+          # Disable the profile-management UI even for profiles with an existing
+          # store ID; browser.profiles.enabled alone is ignored in that case.
+          # Existing personal-profile data and its normal startup stay intact.
+          BlockAboutProfiles = true;
           DisableTelemetry = true;
           DisableFirefoxStudies = true;
           # Disable Nimbus feature rollouts; security Remote Settings stay enabled.
@@ -142,7 +146,6 @@ in
                 "layers.gpu-process.enabled"
                 "devtools.chrome.enabled"
                 "devtools.debugger.remote-enabled"
-                "toolkit.legacyUserProfileCustomizations.stylesheets"
               ]
               (_: {
                 Status = "clear";
@@ -152,12 +155,35 @@ in
         profiles.personal = {
           id = 0;
           extensions.packages = addons;
+          # Firefox 159's vertical tabs keep a 32px minimum in native compact
+          # mode. Override only row sizing here; the native hover/pin UI owns
+          # sidebar width and behavior.
+          userChrome = ''
+            @-moz-document url("chrome://browser/content/browser.xhtml") {
+              @media -moz-pref("sidebar.verticalTabs") {
+                :root[uidensity="compact"] #tabbrowser-tabs {
+                  --tab-min-height: 28px;
+                  --tab-margin-block: 0px;
+                }
+              }
+            }
+          '';
           settings = {
-            # Native vertical tabs: no tree-tab extension or fragile userChrome.
+            # Native vertical tabs; the small stylesheet above adjusts spacing.
             # Firefox source: browser/app/profile/firefox.js, sidebar preferences.
             "sidebar.revamp" = true;
             "sidebar.verticalTabs" = true;
-            "extensions.activeThemeID" = "default-theme@mozilla.org";
+            # Keep the icon rail visible; expand tab labels only while hovered.
+            # Firefox's toolbar sidebar button can pin labels open; clicking it
+            # again restores hover mode without changing these preferences.
+            "sidebar.visibility" = "expand-on-hover";
+            "sidebar.expandOnHover" = true;
+            "browser.uidensity" = 1;
+            "browser.compactmode.show" = true;
+            "toolkit.legacyUserProfileCustomizations.stylesheets" = true;
+            "identity.fxaccounts.toolbar.enabled" = false;
+            "extensions.activeThemeID" = "firefox-compact-dark@mozilla.org";
+            "layout.css.prefers-color-scheme.content-override" = 0;
 
             # Migrate the old globally disabled updates and unsigned-add-on override.
             "extensions.update.autoUpdateDefault" = true;

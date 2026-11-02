@@ -97,7 +97,17 @@ Ordinary CLI tools remain system packages. Home Manager uses upstream program
 modules for Ghostty, gh, Codex, Claude Code, Chromium, Thunderbird, and uv.
 Custom Emacs configuration is disabled for now in favor of stock pgtk Emacs.
 
-Firefox uses native vertical tabs and Mozilla's supported policies to block
+GUI typography is controlled by Home Manager's `gtk.font` setting. Qt derives
+its KDE fonts from it, and Waybar converts points to CSS pixels. GTK has no
+additional text-scaling multiplier. Ghostty keeps its preferred terminal font
+size, while Fuzzel uses physical-DPI font sizing explicitly so connecting a
+scaled monitor does not change its font-sizing mode. Qt uses native KDE platform
+integration with matching dark colors and opaque Kvantum windows.
+Laptop touchpad scrolling defaults to half distance through
+`jd.graphical.wayland.touchpad.scrollFactor`; mouse wheels retain their defaults.
+
+Firefox uses native vertical tabs with an icon rail that expands on hover,
+the built-in dark theme, and Mozilla's supported policies to block
 built-in AI, telemetry, studies, sponsored suggestions and experiments. HTTPS-only,
 Global Privacy Control and standard tracking protection are enabled. The locked
 NUR catalog supplies extension versions; Nix updates those extensions, while
@@ -107,6 +117,9 @@ profile/account/bookmark data is preserved, including Cookie AutoDelete storage.
 Wi-Fi authentication uses wpa_supplicant with the Qt6 `wpa_gui` interface;
 `systemd-networkd` owns DHCP/routes and `systemd-resolved` owns DNS.
 `networkctl`, `resolvectl`, `wpa_cli`, and `wpa_gui` are the management tools.
+The built-in adapter has a systemd `.link` matching its permanent MAC and naming
+it `wifi0`; supplicant, networkd, Waybar, and the Wi-Fi Settings launcher share
+that name. The laptop disables network-online waiting so login works offline.
 A root oneshot imports supported saved iwd personal/open networks before the
 first supplicant start. It preserves `/var/lib/iwd` and any existing supplicant
 configuration, and keeps credentials outside the Nix store in a private file.
@@ -134,7 +147,11 @@ The fixture, desktop and encrypted-boot tests can also be run independently:
 
 ```sh
 nix build .#checks.x86_64-linux.wifi-migration
+nix build .#checks.x86_64-linux.wifi-boot
 nix build .#checks.x86_64-linux.desktop-session
+nix build .#checks.x86_64-linux.desktop-theme
+nix build .#checks.x86_64-linux.desktop-fonts
+nix build .#checks.x86_64-linux.firefox-sidebar
 nix build .#checks.x86_64-linux.encrypted-boot
 ```
 
@@ -144,6 +161,15 @@ module reproduces the pre-fix hang; the normal check requires a complete boot,
 active swap, and stable device readiness after a udev re-probe. The targeted
 rule must sort after systemd's unformatted-device rule and is installed in both
 initrd and the running system. It changes no LUKS headers or key material.
+
+The Wi-Fi VM imports a public fixture profile, associates with a simulated access
+point and acquires a DHCP lease. Omitting the stable link policy reproduces the
+missing-interface failure. The desktop VM launches a real application through
+Fuzzel and UWSM, checking search paths, runtime socket paths and logout cleanup.
+The theme check shows real Wayland widgets after KDE's color-manager startup,
+checking text contrast, font size and opacity. The font check uses Ghostty's
+effective configuration. Firefox's browser UI test moves the pointer to verify
+the icon rail expands and collapses and checks its native pin/unpin behavior.
 
 Wayland SSH and sudo password dialogs use native KDE `ksshaskpass`. Home Manager
 exports both `SSH_ASKPASS` and `SUDO_ASKPASS` before UWSM starts; sudo also has an

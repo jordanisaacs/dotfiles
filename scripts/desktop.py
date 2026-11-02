@@ -2,10 +2,8 @@
 
 import argparse
 import os
-import shutil
 import subprocess
 import sys
-from pathlib import Path
 
 
 def run(arguments, **kwargs):
@@ -36,7 +34,6 @@ def session():
 
 
 def setup():
-    backend = CONFIG["backend"]
     # Called by the compositor once its socket and WM bindings are ready.
     # UWSM exports these variables, notifies systemd and owns target lifetime.
     run(
@@ -51,33 +48,6 @@ def setup():
             "XCURSOR_THEME",
         ]
     )
-    if backend == "dwl":
-        run(
-            [
-                CONFIG["randr"],
-                "--output",
-                "HDMI-A-1",
-                "--transform",
-                "90",
-                "--pos",
-                "0,0",
-            ]
-        )
-        run(
-            [
-                CONFIG["randr"],
-                "--output",
-                "DP-1",
-                "--transform",
-                "normal",
-                "--pos",
-                "1440,400",
-            ]
-        )
-        cache = Path(CONFIG["cacheHome"])
-        cache.mkdir(parents=True, exist_ok=True)
-        with (cache / "dwltags").open("wb") as destination:
-            shutil.copyfileobj(sys.stdin.buffer, destination)
 
 
 def exit_session():
@@ -145,6 +115,8 @@ def configure_oxbow():
         "enabled",
         "--natural-scroll",
         "enabled",
+        "--scroll-factor",
+        str(CONFIG["touchpadScrollFactor"]),
     )
 
     emacs = CONFIG["keybindings"] == "emacs"

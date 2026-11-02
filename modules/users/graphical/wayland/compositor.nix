@@ -53,23 +53,6 @@ let
     ];
   };
 
-  dwlJD = pkgs.dwlBuilder {
-    config = {
-      input = {
-        natscroll = systemCfg ? laptop && systemCfg.laptop.enable;
-      };
-      cmds = {
-        term = [ "${pkgs.ghostty}/bin/ghostty" ];
-        menu = menuCmd;
-        quit = [ "${wayExit}" ];
-        audioup = audioUpCmd;
-        audiodown = audioDownCmd;
-        audiomut = audioMutCmd;
-      };
-      visual.cursorSize = config.jd.graphical.cursor.size;
-    };
-  };
-
   wayExitPackage = desktopScript "wayexit" {
     action = "exit";
     uwsm = "${pkgs.uwsm}/bin/uwsm";
@@ -149,10 +132,7 @@ let
 
   compositorStartup = desktopScript "compositor-setup" {
     action = "setup";
-    backend = cfg.type;
     uwsm = "${pkgs.uwsm}/bin/uwsm";
-    randr = "${pkgs.wlr-randr}/bin/wlr-randr";
-    cacheHome = config.xdg.cacheHome;
   };
   sessionEntry = desktopScript "wayland-session" {
     action = "session";
@@ -160,12 +140,6 @@ let
     command =
       if isRiver then
         [ "${pkgs.river}/bin/river" ]
-      else if isDwl then
-        [
-          "${dwlJD}/bin/dwl"
-          "-s"
-          "${compositorStartup}/bin/compositor-setup"
-        ]
       else
         [ "${pkgs.sway}/bin/sway" ] ++ optional isSwayDbg "--debug";
     profileBin = "${config.home.profileDirectory}/bin";
@@ -201,6 +175,7 @@ let
     cursorTheme = config.home.pointerCursor.name;
     cursorSize = config.jd.graphical.cursor.size;
     keybindings = config.jd.keybindings or "emacs";
+    touchpadScrollFactor = cfg.touchpad.scrollFactor;
     terminal = "${pkgs.ghostty}/bin/ghostty";
     launcher = "${launcher}/bin/app-launcher";
     inherit wayExit;
@@ -231,19 +206,17 @@ let
 
   isSway = cfg.type == "sway";
   isSwayDbg = cfg.type == "sway-dbg";
-  isDwl = cfg.type == "dwl";
   isRiver = cfg.type == "river";
 in
 {
   options.jd.graphical.wayland = {
     type = mkOption {
       type = types.enum [
-        "dwl"
         "sway"
         "sway-dbg"
         "river"
       ];
-      description = ''What desktop/wm to use. Options: "dwl", "sway"'';
+      description = "Wayland compositor: River, Sway, or Sway with debug logging.";
     };
   };
 
@@ -265,7 +238,9 @@ in
         settings.main = {
           terminal = "${pkgs.ghostty}/bin/ghostty -e";
           launch-prefix = "${pkgs.uwsm}/bin/uwsm app -t service --";
-          font = "Berkeley Mono Variable:size=14";
+          # Physical-DPI sizing is stable when other monitors are connected.
+          dpi-aware = "yes";
+          font = "${config.gtk.font.name}:size=12";
         };
       };
 
@@ -274,10 +249,6 @@ in
     (mkIf (isSway || isSwayDbg) {
       home.packages = [ pkgs.sway ];
       xdg.configFile."sway/config".text = swayConfig;
-
-    })
-    (mkIf isDwl {
-      home.packages = [ dwlJD ];
 
     })
     (mkIf isRiver {

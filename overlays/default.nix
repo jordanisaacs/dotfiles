@@ -11,9 +11,9 @@
     (import ./initrd-dlopen.nix)
     (import ./xwayland-keymap.nix)
     (import ./gamescope-errors.nix)
+    (import ./libreoffice-wrapper.nix)
     scripts.overlay
     inputs.nur.overlays.default
-    inputs.dwl-flake.overlays.default
     inputs.oxbow.overlays.default
 
     (_self: super: {

@@ -74,12 +74,19 @@ pkgs.testers.runNixOSTest {
   name = "river-oxbow-systemd-session";
 
   nodes.machine = {
+    imports = [
+      ../modules/system/graphical/portal-support.nix
+      ({ lib, ... }: {
+        options.jd.graphical.enable = lib.mkEnableOption "graphical fixture support";
+      })
+    ];
+    jd.graphical.enable = true;
     virtualisation = {
       memorySize = 1536;
       cores = 2;
     };
     programs.uwsm.enable = true;
-    services.dbus.implementation = "broker";
+    systemd.packages = [ pkgs.xdg-desktop-portal ];
     users.users.${username} = {
       isNormalUser = true;
       uid = 1000;
@@ -95,15 +102,23 @@ pkgs.testers.runNixOSTest {
       "L+ ${homeDirectory}/.config/oxbow/init - - - - ${oxbowInit}"
       "L+ ${home.home.profileDirectory} - - - - ${profile}"
     ];
-    services.greetd = {
-      enable = true;
-      settings = {
-        initial_session = {
-          user = username;
-          command = "${login}/bin/desktop-test-login";
+    services = {
+      dbus = {
+        implementation = "broker";
+        # Home Manager supplies these user services on the laptop. Register the
+        # same upstream units without the system portal module enabling FUSE.
+        packages = [ pkgs.xdg-desktop-portal ];
+      };
+      greetd = {
+        enable = true;
+        settings = {
+          initial_session = {
+            user = username;
+            command = "${login}/bin/desktop-test-login";
+          };
+          # After logout, keep the greeter alive without starting another session.
+          default_session.command = "${pkgs.coreutils}/bin/sleep infinity";
         };
-        # After logout, keep the greeter alive without starting another session.
-        default_session.command = "${pkgs.coreutils}/bin/sleep infinity";
       };
     };
   };
@@ -158,6 +173,27 @@ pkgs.testers.runNixOSTest {
     assert all(directory.startswith("/") and "$" not in directory for directory in data_dirs), data_dirs
     for directory in ${builtins.toJSON home.xdg.systemDirs.data}:
         assert directory in data_dirs, data_dirs
+    # Query the real manager after production initialization. The persistent
+    # touchpad rule must keep the calibrated factor without changing mice.
+    input_rules = json.loads(machine.succeed(user(
+        "env", "OXBOW_SOCKET=" + environment["OXBOW_SOCKET"],
+        "${pkgs.oxbow}/bin/oxctl", "input", "rules", "list", "--json",
+    )))
+    touchpad_rules = [rule for role, rule in input_rules if role == "touchpad"]
+    assert len(touchpad_rules) == 1, input_rules
+    settings = touchpad_rules[0]["settings"]
+    assert settings["scroll_factor"] == ${builtins.toJSON home.jd.graphical.wayland.touchpad.scrollFactor}, settings
+    assert settings["natural_scroll"] is True, settings
+    assert settings["tap"] is True, settings
+    assert not [rule for role, rule in input_rules if role == "mouse"], input_rules
+    machine.succeed(user("systemctl", "--user", "start", "xdg-document-portal.service"))
+    # The FUSE mount is private to its owner; inspect it as that user.
+    try:
+        machine.wait_until_succeeds(user("mountpoint", "-q", runtime + "/doc"), timeout=timedelta(seconds=15))
+    except Exception:
+        print(machine.succeed("journalctl -b -u user@1000.service --no-pager"))
+        print(machine.succeed(user("systemctl", "--user", "status", "xdg-document-portal.service")))
+        raise
     machine.succeed("test -x " + shlex.quote(environment["SUDO_ASKPASS"]))
     x11_environment = [
         name + "=" + environment[name]

@@ -7,6 +7,24 @@
 with lib;
 let
   cfg = config.jd.graphical;
+  kdeTheme =
+    if cfg.theme == "arc-dark" then
+      {
+        package = pkgs.arc-kde-theme;
+        name = "ArcDark";
+      }
+    else
+      {
+        package = pkgs.materia-kde-theme;
+        name = "MateriaDark";
+      };
+  ini = pkgs.formats.ini { };
+  qtFont = "${config.gtk.font.name},${toString config.gtk.font.size},-1,5,50,0,0,0,0,0";
+  opaqueKvantum =
+    pkgs.runCommand "opaque-${kdeTheme.name}" { nativeBuildInputs = [ pkgs.python3 ]; }
+      ''
+        python ${./opaque-kvantum.py} "${kdeTheme.package}/share/Kvantum/${kdeTheme.name}" "$out"
+      '';
 in
 {
   options.jd.graphical = {
@@ -32,16 +50,9 @@ in
 
   config = mkIf cfg.wayland.enable {
     home = {
-      sessionVariables = {
-        QT_QPA_PLATFORMTHEME = "qt6ct";
-      };
-
       packages = with pkgs; [
-        # qt
-        kdePackages.qtstyleplugin-kvantum
-        kdePackages.qt6ct
-
         xdg-utils
+        kdeTheme.package
 
         # Fonts
         nerd-fonts.jetbrains-mono
@@ -80,10 +91,20 @@ in
 
     fonts.fontconfig.enable = true;
 
+    qt = {
+      enable = true;
+      # KDE applications' color-scheme manager requires a platform theme that
+      # reports the desktop dark preference, independently of the widget style.
+      platformTheme.name = "kde";
+      style.name = "kvantum";
+    };
+
     gtk = {
       gtk4.theme = config.gtk.theme;
-      gtk3.extraConfig.gtk-key-theme-name =
-        if config.jd.keybindings == "emacs" then "Emacs" else "Default";
+      gtk3.extraConfig = {
+        gtk-application-prefer-dark-theme = true;
+        gtk-key-theme-name = if config.jd.keybindings == "emacs" then "Emacs" else "Default";
+      };
       enable = true;
       theme = mkMerge [
         (mkIf (cfg.theme == "arc-dark") {
@@ -105,7 +126,9 @@ in
         # already installed in profile
         package = null;
         name = "Berkeley Mono Variable";
-        size = 10;
+        # Shared GUI font: Qt's KDE palette/fonts and Waybar derive from this.
+        # Terminal and launcher fonts have their own explicit sizing policies.
+        size = 15;
       };
     };
 
@@ -137,25 +160,12 @@ in
             text = renderConf;
           };
 
-        "qt6ct/qt6ct.conf" = {
-          text = ''
-            [Appearance]
-            icon_theme=la-capitaine-icon-theme
-            style=kvantum-dark
-          '';
+        "Kvantum/kvantum.kvconfig" = {
+          text = "theme=${kdeTheme.name}";
         };
 
-        "Kvantum/kvantum.kvconfig" = mkMerge [
-          (mkIf (cfg.theme == "arc-dark") { text = "theme=KvArcDark"; })
-          (mkIf (cfg.theme == "materia-dark") { text = "theme=MateriaDark"; })
-        ];
-
-        "Kvantum/ArcDark" = {
-          source = "${pkgs.arc-kde-theme}/share/Kvantum/ArcDark";
-        };
-
-        "Kvantum/MateriaDark" = {
-          source = "${pkgs.materia-kde-theme}/share/Kvantum/MateriaDark";
+        "Kvantum/${kdeTheme.name}" = {
+          source = opaqueKvantum;
         };
 
         "wallpapers" = {
@@ -163,17 +173,27 @@ in
         };
 
         "kdeglobals" = {
-          # TODO: this is a wayland only terminal
-          text = ''
-            [General]
-            TerminalApplication=${pkgs.ghostty}/bin/ghostty
-
-            [KDE]
-            ShowDeleteCommand=false
-
-            [PreviewSettings]
-            MaximumRemoteSize=0
-          '';
+          # KDE applications read their own color roles independently of the
+          # Qt widget style. Install the matching palette, including text colors.
+          source = pkgs.concatText "kdeglobals" [
+            "${kdeTheme.package}/share/color-schemes/${kdeTheme.name}.colors"
+            (ini.generate "kdeglobals-settings" {
+              General = {
+                TerminalApplication = "${pkgs.ghostty}/bin/ghostty";
+                font = qtFont;
+                fixed = qtFont;
+                menuFont = qtFont;
+                smallestReadableFont = qtFont;
+                toolBarFont = qtFont;
+              };
+              Icons.Theme = "Papirus-Dark";
+              KDE = {
+                ShowDeleteCommand = false;
+                widgetStyle = "kvantum";
+              };
+              PreviewSettings.MaximumRemoteSize = 0;
+            })
+          ];
         };
       };
     };
@@ -183,7 +203,7 @@ in
       "org/gnome/desktop/interface" = {
         # https://askubuntu.com/questions/1404764/how-to-use-hdystylemanagercolor-scheme
         color-scheme = "prefer-dark";
-        text-scaling-factor = 1.5;
+        text-scaling-factor = 1.0;
         cursor-size = cfg.cursor.size;
       };
     };
