@@ -1,0 +1,79 @@
+--- a/src/linux/up-backend.c
++++ b/src/linux/up-backend.c
+@@ -608,8 +608,8 @@
+  * Which action will be taken when %UP_DEVICE_LEVEL_ACTION
+  * warning-level occurs.
+  **/
+-const char *
+-up_backend_get_critical_action (UpBackend *backend)
++static const char *
++up_backend_get_critical_action_full (UpBackend *backend, GString *unavailable)
+ {
+ 	struct {
+ 		const gchar *method;
+@@ -661,7 +661,8 @@
+ 	}
+ 
+ 	for (; i < G_N_ELEMENTS (actions); i++) {
+-		GVariant *result;
++		g_autoptr (GVariant) result = NULL;
++		g_autoptr (GError) error = NULL;
+ 
+ 		if (actions[i].can_method) {
+ 			gboolean action_available;
+@@ -671,17 +672,33 @@
+ 							 actions[i].can_method,
+ 							 NULL,
+ 							 G_DBUS_CALL_FLAGS_NONE,
+-							 -1, NULL, NULL);
++							 -1, NULL, &error);
+ 			action_available = check_action_result (result);
+-			g_variant_unref (result);
+-
+-			if (!action_available)
++
++			if (!action_available) {
++				if (unavailable) {
++					const char *reply = NULL;
++					if (result)
++						g_variant_get (result, "(&s)", &reply);
++					if (unavailable->len)
++						g_string_append (unavailable, "; ");
++					g_string_append_printf (unavailable, "%s=%s",
++								actions[i].can_method,
++								reply ? reply : error ? error->message : "no reply");
++				}
+ 				continue;
++			}
+ 		}
+ 
+ 		return actions[i].method;
+ 	}
+ 	g_assert_not_reached ();
++}
++
++const char *
++up_backend_get_critical_action (UpBackend *backend)
++{
++	return up_backend_get_critical_action_full (backend, NULL);
+ }
+ 
+ /**
+@@ -697,9 +714,15 @@
+ 	g_autoptr (GError) error = NULL;
+ 	g_autofree gchar *action = NULL;
+ 	const char *method;
+-
+-	method = up_backend_get_critical_action (backend);
++	g_autoptr (GString) unavailable = g_string_new (NULL);
++
++	method = up_backend_get_critical_action_full (backend, unavailable);
+ 	g_assert (method != NULL);
++
++	/* Report actual critical-action fallback, without making read-only queries noisy. */
++	if (unavailable->len)
++		g_warning ("Critical battery action fallback: %s; selected %s",
++			   unavailable->str, method);
+ 
+ 	/* Take action */
+ 	g_debug ("About to call logind method %s", method);

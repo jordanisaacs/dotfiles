@@ -64,6 +64,11 @@ in
       # UPower observes the system battery regardless of its kernel device name.
       upower = {
         enable = true;
+        # Preserve native eligibility/fallback checks, but record logind's exact
+        # refusal if a critical battery action cannot use the requested sleep.
+        package = pkgs.upower.overrideAttrs (old: {
+          patches = (old.patches or [ ]) ++ [ ./upower-critical-action.patch ];
+        });
         usePercentageForPolicy = true;
         percentageLow = 15;
         percentageCritical = 7;
