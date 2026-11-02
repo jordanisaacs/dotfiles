@@ -1,6 +1,7 @@
 {
   pkgs,
   drm ? false,
+  chooserConfig ? pkgs.writeText "capture-test-chooser" "[screencast]\nchooser_type=none\n",
 }:
 let
   python = pkgs.python3.withPackages (p: [
@@ -124,10 +125,7 @@ pkgs.testers.runNixOSTest {
       tmpfiles.rules = [
         "d /home/alice/.config 0755 alice users -"
         "d /home/alice/.config/xdg-desktop-portal-wlr 0755 alice users -"
-        "L+ /home/alice/.config/xdg-desktop-portal-wlr/config - - - - ${pkgs.writeText "capture-test-chooser" ''
-          [screencast]
-          chooser_type=none
-        ''}"
+        "L+ /home/alice/.config/xdg-desktop-portal-wlr/config - - - - ${chooserConfig}"
         "d /home/alice/.config/gtk-4.0 0755 alice users -"
         "L+ /home/alice/.config/gtk-4.0/settings.ini - - - - ${pkgs.writeText "capture-test-gtk" ''
           [Settings]

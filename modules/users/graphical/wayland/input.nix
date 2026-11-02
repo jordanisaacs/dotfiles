@@ -47,6 +47,7 @@ let
           libinput {
             natural_scroll true
             tap_to_click true
+            click_method ${cfg.touchpad.clickMethod}
             disable_while_typing true
           }
         }
@@ -109,6 +110,15 @@ in
       };
     };
     touchpad = {
+      clickMethod = lib.mkOption {
+        type = lib.types.enum [
+          "none"
+          "button_areas"
+          "clickfinger"
+        ];
+        default = "clickfinger";
+        description = "Physical touchpad click method; clickfinger uses two fingers for a right-click.";
+      };
       scrollFactor = lib.mkOption {
         type = lib.types.numbers.positive;
         default = if config.machineData.systemConfig.laptop.enable or false then 0.5 else 1.0;

@@ -2,6 +2,9 @@
   pkgs,
   withFix ? true,
   bootMountOptions ? [ ],
+  checkShutdown ? false,
+  withPlymouth ? false,
+  withShutdownHandoff ? true,
 }:
 let
   inherit (pkgs) lib;
@@ -45,10 +48,59 @@ let
         run("${pkgs.e2fsprogs}/bin/mkfs.ext4", "/dev/mapper/cryptroot")
         run("${pkgs.util-linux}/bin/mkswap", "/dev/mapper/cryptswap")
       '';
+  escrowObserver = pkgs.writers.writePython3Bin "observe-plymouth-escrow" { } ''
+    import json
+    import os
+    from pathlib import Path
+
+    for process in Path("/proc").iterdir():
+        if not process.name.isdecimal():
+            continue
+        try:
+            command = (process / "cmdline").read_bytes()
+            if b"plymouthd-fd-escrow" not in command:
+                continue
+            state = {
+                "pid": int(process.name),
+                "argv": command.decode().replace("\0", " "),
+                "root": os.readlink(process / "root"),
+                "executable": os.readlink(process / "exe"),
+                "descriptors": [
+                    os.readlink(descriptor)
+                    for descriptor in (process / "fd").iterdir()
+                ],
+            }
+        except (FileNotFoundError, ProcessLookupError):
+            continue
+        with Path("/dev/kmsg").open("w") as output:
+            output.write("<6>PLYMOUTH_ESCROW " + json.dumps(state) + "\n")
+  '';
 in
 pkgs.testers.runNixOSTest {
   name = "chained-luks-boot";
   nodes.machine = {
+    imports = lib.optionals withPlymouth [
+      ../modules/system/kernel
+      ../modules/system/initrd
+      {
+        jd.initrd = {
+          plymouth = {
+            enable = true;
+            theme = "hexa_retro";
+          };
+          quiet = lib.mkForce false;
+        };
+        jd.kernel.quiet = lib.mkForce false;
+        # Keep serial diagnostics while exercising a real pixel renderer, not
+        # Plymouth's serial-console details fallback that never uses escrow.
+        boot.kernelParams = [ "plymouth.ignore-serial-consoles" ];
+        # Negative control reproduces the original missing stage-2 pull-in
+        # while retaining the same renderer, RAMFS and encrypted disks.
+        systemd.services.plymouth-switch-root-initramfs.wantedBy = lib.mkIf (!withShutdownHandoff) (
+          lib.mkForce [ ]
+        );
+      }
+    ];
     virtualisation = {
       emptyDiskImages = [
         17
@@ -64,6 +116,7 @@ pkgs.testers.runNixOSTest {
       fileSystems."/boot".options = bootMountOptions;
     };
     boot.loader.systemd-boot.enable = true;
+    systemd.shutdown.pre-exitrd = lib.mkIf withPlymouth "${escrowObserver}/bin/observe-plymouth-escrow";
     boot.initrd.systemd.emergencyAccess = true;
     environment.systemPackages = [ pkgs.cryptsetup ];
 
@@ -94,19 +147,27 @@ pkgs.testers.runNixOSTest {
           fsType = "ext4";
         };
       };
-      boot.initrd.systemd.services.encrypted-boot-observer = {
-        unitConfig.DefaultDependencies = false;
-        requires = [ "systemd-cryptsetup@cryptkey.service" ];
-        after = [ "systemd-cryptsetup@cryptkey.service" ];
-        wantedBy = [ "initrd.target" ];
-        serviceConfig = {
-          Type = "oneshot";
-          StandardOutput = "journal+console";
-          ExecStart = [
-            "/bin/udevadm settle"
-            "/bin/systemctl show systemd-cryptsetup@cryptkey.service dev-mapper-cryptkey.device --property=Id --property=ActiveState --property=SubState"
-            "/bin/udevadm info --query=property --name=/dev/mapper/cryptkey"
-          ];
+      boot.initrd = {
+        # This variant tests shutdown rather than password entry. A public
+        # fixture credential keeps Plymouth's graphical prompt out of scope.
+        luks.devices.cryptkey.keyFile = lib.mkIf withPlymouth (toString passphrase);
+        systemd = {
+          storePaths = lib.optionals withPlymouth [ passphrase ];
+          services.encrypted-boot-observer = {
+            unitConfig.DefaultDependencies = false;
+            requires = [ "systemd-cryptsetup@cryptkey.service" ];
+            after = [ "systemd-cryptsetup@cryptkey.service" ];
+            wantedBy = [ "initrd.target" ];
+            serviceConfig = {
+              Type = "oneshot";
+              StandardOutput = "journal+console";
+              ExecStart = [
+                "/bin/udevadm settle"
+                "/bin/systemctl show systemd-cryptsetup@cryptkey.service dev-mapper-cryptkey.device --property=Id --property=ActiveState --property=SubState"
+                "/bin/udevadm info --query=property --name=/dev/mapper/cryptkey"
+              ];
+            };
+          };
         };
       };
     };
@@ -118,6 +179,8 @@ pkgs.testers.runNixOSTest {
     in
     ''
       from datetime import timedelta
+      import json
+      import re
 
       machine.wait_for_unit("multi-user.target")
       machine.succeed("${prepare}/bin/prepare-encrypted-boot-fixture")
@@ -126,8 +189,9 @@ pkgs.testers.runNixOSTest {
       machine.crash()
 
       machine.start()
-      machine.wait_for_console_text("Please enter passphrase for disk cryptkey")
-      machine.send_console("vm-only-passphrase\n")
+      if ${if withPlymouth then "False" else "True"}:
+          machine.wait_for_console_text("Please enter passphrase for disk cryptkey")
+          machine.send_console("vm-only-passphrase\n")
       if ${if withFix then "False" else "True"}:
           machine.wait_for_console_text("SYSTEMD_READY=0", timeout=timedelta(seconds=30))
           console = machine.get_console_log()
@@ -161,5 +225,31 @@ pkgs.testers.runNixOSTest {
       assert "SYSTEMD_READY=1" in properties, properties
       for name in ("cryptkey", "cryptroot", "cryptswap"):
           machine.succeed("systemctl is-active dev-mapper-" + name + ".device")
+    ''
+    + lib.optionalString checkShutdown ''
+      # The journal exits before systemd's final unmount and device teardown.
+      # Capture the serial console through the native shutdown RAMFS instead.
+      machine.execute("systemctl poweroff", check_return=False)
+      machine.wait_for_shutdown(timeout=timedelta(seconds=60))
+      console = machine.get_console_log()
+      shutdown = console[console.rfind("Shutting down."):]
+      print("LATE_SHUTDOWN_CONSOLE_BEGIN\n" + shutdown + "\nLATE_SHUTDOWN_CONSOLE_END")
+      assert "Entering exitrd" in shutdown, shutdown
+      assert "Powering off" in shutdown, shutdown
+      exitrd = shutdown.split("Entering exitrd", 1)[1]
+      assert "All filesystems unmounted" in exitrd, shutdown
+      assert "All DM devices detached" in exitrd, shutdown
+      assert "Unable to finalize remaining" not in exitrd, shutdown
+      assert "Failed to unmount" not in exitrd, shutdown
+      if ${if withPlymouth then "True" else "False"}:
+          survivors = [
+              json.loads(match)
+              for match in re.findall(r"PLYMOUTH_ESCROW (\{[^\n]+\})", shutdown)
+          ]
+          assert survivors, "No real graphical Plymouth escrow helper was observed: " + shutdown
+          for survivor in survivors:
+              assert survivor["root"] == "/run/initramfs", survivor
+              assert survivor["executable"].startswith("/run/initramfs/nix/store/"), survivor
+              assert any("/dev/dri/" in path for path in survivor["descriptors"]), survivor
     '';
 }

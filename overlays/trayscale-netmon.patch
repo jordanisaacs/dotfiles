@@ -1,0 +1,13 @@
+# Start the long-lived monitor so netcheck sees interface changes after login.
+--- a/internal/tsutil/client.go
++++ b/internal/tsutil/client.go
+@@ -32,7 +32,9 @@
+ 	monitor, err := netmon.New(bus, logger.Discard)
+ 	if err != nil {
+ 		slog.Error("init netmon monitor", "err", err)
++		return nil
+ 	}
++	monitor.Start()
+ 	return monitor
+ }
+ 

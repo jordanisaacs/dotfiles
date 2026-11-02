@@ -36,6 +36,7 @@ in
       sshfs
 
       # CLI tools
+      bitwarden-cli
       glow
       nnn # file manager
       grit # to-do

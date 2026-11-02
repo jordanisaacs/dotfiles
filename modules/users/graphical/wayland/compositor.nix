@@ -132,7 +132,10 @@ let
     input "type:touchpad" {
       dwt enabled
       tap enabled
+      tap_button_map lrm
       natural_scroll enabled
+      click_method ${cfg.touchpad.clickMethod}
+      clickfinger_button_map lrm
       drag enabled
     }
 
@@ -200,6 +203,7 @@ let
     cursorSize = config.jd.graphical.cursor.size;
     keybindings = config.jd.keybindings or "emacs";
     touchpadScrollFactor = cfg.touchpad.scrollFactor;
+    touchpadClickMethod = lib.replaceStrings [ "_" ] [ "-" ] cfg.touchpad.clickMethod;
     outerGap = cfg.river.gaps.outer;
     keyboardKeymap = cfg.keyboard.keymap;
     keyboardRepeatRate = cfg.keyboard.repeatRate;

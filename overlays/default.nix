@@ -15,6 +15,7 @@
     (import ./tlaplus-toolbox.nix)
     (import ./mission-center.nix)
     (import ./screencast.nix)
+    (import ./trayscale.nix)
     (import ./river-channel.nix)
     (import ./river-vt-lifecycle.nix)
     scripts.overlay

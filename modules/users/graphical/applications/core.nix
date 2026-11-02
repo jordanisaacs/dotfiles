@@ -15,13 +15,16 @@ in
   };
 
   config = mkIf cfg.applications.enable {
-    # Upstream defaults to unlimited amplification. Own the tray through the
-    # native service and bound ordinary scrolling at PulseAudio's unity gain.
-    services.pasystray = {
-      enable = true;
-      extraOptions = [ "--volume-max=100" ];
+    services = {
+      # Upstream defaults to unlimited amplification. Own the tray through the
+      # native service and bound ordinary scrolling at PulseAudio's unity gain.
+      pasystray = {
+        enable = true;
+        extraOptions = [ "--volume-max=100" ];
+      };
+      flameshot.enable = true;
+      trayscale.enable = systemCfg.networking.tailscale.enable;
     };
-    services.flameshot.enable = true;
     # Keep desktop launch helpers available through UWSM's session environment.
     systemd.user.services.flameshot.Service.Environment = lib.mkForce [ ];
 
@@ -88,7 +91,9 @@ in
         # Logitech
         solaar
       ]
-      ++ lib.optional systemCfg.networking.wifi.enable pkgs.wpa_supplicant_gui;
+      ++ lib.optional systemCfg.networking.wifi.enable pkgs.wpa_supplicant_gui
+      # The native service owns the tray; the package also supplies its launcher.
+      ++ lib.optional config.services.trayscale.enable config.services.trayscale.package;
 
     xdg = {
       # The package also ships an uncapped XDG launcher. Only the Home Manager

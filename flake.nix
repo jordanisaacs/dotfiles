@@ -460,6 +460,9 @@
               # This interactive laptop must reach login without an access point.
               systemd.network.wait-online.enable = false;
 
+              # Trayscale uses the local API as this laptop's desktop account.
+              services.tailscale.extraSetFlags = [ "--operator=jd" ];
+
               # The retired local finance service's data is intentionally
               # discarded, as requested. Re-enabling it removes this rule.
               systemd.tmpfiles.rules = lib.optionals (!config.jd.firefly-iii.enable) [
@@ -492,6 +495,8 @@
         framework = self.nixosConfigurations.framework.config.system.build.toplevel;
         home-framework = self.homeConfigurations."jd@framework".activationPackage;
         mission-center-apps = pkgs.mission-center.tests.uwsm-apps;
+        trayscale-localapi = import ./tests/trayscale-localapi.nix { inherit pkgs; };
+        trayscale-netmon = import ./tests/trayscale-netmon.nix { inherit pkgs; };
         activity-monitor-metrics = import ./tests/activity-monitor-metrics.nix { inherit pkgs; };
         libreoffice-grammar = import ./tests/libreoffice-grammar.nix {
           inherit pkgs;
@@ -598,6 +603,7 @@
           bootKeyring = true;
         };
         kooha-capture = import ./tests/kooha-capture.nix { inherit pkgs; };
+        kooha-window-capture = import ./tests/kooha-window-capture.nix { inherit pkgs; };
         kooha-capture-drm = import ./tests/kooha-capture.nix {
           inherit pkgs;
           drm = true;
@@ -615,6 +621,12 @@
         encrypted-boot = import ./tests/encrypted-boot.nix {
           inherit pkgs;
           bootMountOptions = self.nixosConfigurations.framework.config.fileSystems."/boot".options;
+        };
+        encrypted-shutdown = import ./tests/encrypted-boot.nix {
+          inherit pkgs;
+          bootMountOptions = self.nixosConfigurations.framework.config.fileSystems."/boot".options;
+          checkShutdown = true;
+          withPlymouth = true;
         };
         storage-password-boot = import ./tests/encrypted-storage-option.nix {
           inherit pkgs;

@@ -41,10 +41,25 @@ in
         initrd.quiet = mkDefault true;
       };
 
-      # NixOS enables the shutdown unit and Plymouth provides the conditions.
-      # Keep only the ordering that its generic dracut/mkinitcpio unit lacks.
-      systemd.services.plymouth-switch-root-initramfs.after = [
-        "generate-shutdown-ramfs.service"
+      # nixpkgs enables this unit in stage 1 only. The stage-2 daemon must
+      # change root before its surviving DRM helper is started at shutdown.
+      # Keep the native Plymouth command and readiness conditions.
+      systemd.services.plymouth-switch-root-initramfs = {
+        wantedBy = [
+          "halt.target"
+          "kexec.target"
+          "poweroff.target"
+          "reboot.target"
+        ];
+        after = [ "generate-shutdown-ramfs.service" ];
+        before = [ "shutdown.target" ];
+      };
+
+      # The helper execs after Plymouth chroots into the shutdown RAMFS. Its
+      # executable and ELF dependencies must live there, rather than pinning
+      # /oldroot/nix/store until poweroff or losing the retained splash.
+      systemd.shutdownRamfs.storePaths = [
+        "${config.boot.plymouth.package}/libexec/plymouth/plymouthd-fd-escrow"
       ];
 
       boot.plymouth = {

@@ -1,0 +1,19 @@
+# Upstream: https://github.com/DeedleFake/trayscale/commit/61a6d5e2088b80369819b45a0255483882b7237b
+# Backport the obsolete watch-mask flag removal; retain the pinned SDK.
+--- a/internal/tsutil/poller.go
++++ b/internal/tsutil/poller.go
+@@ -96,12 +96,10 @@
+ }
+ 
+ func (p *Poller) watchIPN(ctx context.Context) {
+-	// NotifyInitialNetMap is kept so older daemons that do not send
+-	// InitialStatus still bootstrap. RateLimit cannot be combined with
+-	// PeerChanges / NoNetMap / InitialStatus (HTTP 400).
++	// InitialStatus seeds the peer set. Tailscale 1.104 rejects the obsolete
++	// NotifyInitialNetMap subscription bit with HTTP 400.
+ 	const watcherOpts = ipn.NotifyInitialState |
+ 		ipn.NotifyInitialPrefs |
+-		ipn.NotifyInitialNetMap |
+ 		ipn.NotifyNoPrivateKeys |
+ 		ipn.NotifyWatchEngineUpdates |
+ 		ipn.NotifyNoNetMap |

@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Draw changing colours exclusively in the disposable capture-test desktop."""
 
+import sys
+
 import gi
 
 gi.require_version("Gtk", "4.0")
@@ -13,6 +15,7 @@ def activate(application):
     window = Gtk.ApplicationWindow(application=application)
     window.set_title("Capture motion fixture")
     window.set_default_size(500, 400)
+    window.set_resizable("--fixed-size" not in sys.argv)
     drawing = Gtk.DrawingArea()
     ticks = [0]
 

@@ -14,6 +14,8 @@ in
   };
 
   config = mkIf cfg.enable {
+    home.packages = [ pkgs.yubikey-manager ];
+
     programs.gpg = {
       enable = true;
       homedir = "${config.xdg.dataHome}/gnupg";
