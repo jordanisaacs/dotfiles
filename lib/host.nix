@@ -86,6 +86,7 @@ with utils;
           cpuTempSensor
           ;
         keybindings = config.jd.keybindings;
+        greetdDefaultWindowManager = config.jd.greetd.defaultWindowManager;
       };
     in
     lib.nixosSystem {

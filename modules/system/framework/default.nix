@@ -36,20 +36,12 @@ in
           interval = "weekly";
         };
 
-        # https://community.frame.work/t/headphone-jack-intermittent-noise/5246/90
-        acpid = {
-          enable = true;
-          handlers = {
-            headphone-power-save-off = {
-              event = "jack/headphone HEADPHONE plug";
-              action = "echo 0 >/sys/module/snd_hda_intel/parameters/power_save";
-            };
-            headphone-power-save-on = {
-              event = "jack/headphone HEADPHONE unplug";
-              action = "echo 1 >/sys/module/snd_hda_intel/parameters/power_save";
-            };
-          };
-        };
+        # Match nixos-hardware's Tiger Lake headphone-noise workaround. Keep
+        # the MEI device awake while TLP owns the HDA codec's power policy.
+        # https://github.com/NixOS/nixos-hardware/blob/master/framework/13-inch/common/intel.nix
+        udev.extraRules = ''
+          SUBSYSTEM=="pci", ATTR{vendor}=="0x8086", ATTR{device}=="0xa0e0", ATTR{power/control}="on"
+        '';
 
         thermald.enable = true;
       };
@@ -70,7 +62,7 @@ in
     (mkIf config.jd.graphical.enable {
       boot.initrd.kernelModules = [ "i915" ];
 
-      environment.defaultPackages = with pkgs; [
+      environment.systemPackages = with pkgs; [
         intel-gpu-tools
         vulkan-validation-layers
         vulkan-tools
@@ -81,9 +73,8 @@ in
           enable32Bit = true;
           extraPackages = with pkgs; [
             intel-media-driver
-            libvdpau-va-gl
-            intel-vaapi-driver
           ];
+          extraPackages32 = [ pkgs.driversi686Linux.intel-media-driver ];
         };
       };
     })

@@ -17,6 +17,15 @@ def execute_command():
 
 
 def session():
+    parser = argparse.ArgumentParser(description="Start the configured Wayland session")
+    parser.add_argument("--window-manager", choices=("oxbow", "reka"))
+    arguments = parser.parse_args()
+    is_river = CONFIG["environment"]["XDG_CURRENT_DESKTOP"] == "river"
+    if arguments.window_manager and not is_river:
+        parser.error("window-manager selection requires a River session")
+    os.environ.pop("JD_RIVER_SESSION_WM", None)
+    if arguments.window_manager:
+        os.environ["JD_RIVER_SESSION_WM"] = arguments.window_manager
     for name, value in CONFIG["environment"].items():
         os.environ[name] = os.path.expandvars(str(value))
     # Home Manager's shell expressions are not Python variable expansions.
@@ -34,8 +43,36 @@ def session():
 
 
 def setup():
-    # Called by the compositor once its socket and WM bindings are ready.
-    # UWSM exports these variables, notifies systemd and owns target lifetime.
+    # River's managers have their own notify sockets and cgroups. They notify
+    # their service here; river/init finalizes UWSM from the compositor cgroup.
+    if os.environ.get("JD_RIVER_WM"):
+        systemctl = CONFIG["systemctl"]
+        names = [
+            name
+            for name in ("OXBOW_SOCKET", "XCURSOR_SIZE", "XCURSOR_THEME")
+            if name in os.environ
+        ]
+        if names:
+            run([systemctl, "--user", "import-environment", *names])
+        if "OXBOW_SOCKET" not in os.environ:
+            run([systemctl, "--user", "unset-environment", "OXBOW_SOCKET"])
+        run(
+            [
+                systemctl,
+                "--user",
+                "set-environment",
+                f"JD_RIVER_WM={os.environ['JD_RIVER_WM']}",
+                "JD_DESKTOP_READY=1",
+            ]
+        )
+        run([CONFIG["notify"], "--ready", "--status=Window manager ready"])
+        return
+    finalize_session()
+
+
+def finalize_session():
+    # This must run in River/Sway's original UWSM compositor service. A notify
+    # call from a separate WM service cannot acknowledge that service's startup.
     run(
         [
             CONFIG["uwsm"],
@@ -46,8 +83,16 @@ def setup():
             "I3SOCK",
             "XCURSOR_SIZE",
             "XCURSOR_THEME",
+            "JD_RIVER_WM",
         ]
     )
+
+
+def start_river_manager():
+    manager = os.environ.pop("JD_RIVER_SESSION_WM", CONFIG["windowManager"])
+    os.environ["JD_RIVER_WM"] = manager
+    run([*CONFIG["command"], "--initialize", manager])
+    finalize_session()
 
 
 def exit_session():
@@ -102,7 +147,17 @@ def configure_oxbow():
     def bind_exec(key, command):
         ox("bind", "exec", "--", *command, "to", key)
 
-    ox("input", "keyboard", "repeat", "50", "300")
+    if CONFIG["outerGap"] is not None:
+        ox("gaps", "outer", "--all", str(CONFIG["outerGap"]))
+
+    ox("input", "keyboard", "layout-file", CONFIG["keyboardKeymap"])
+    ox(
+        "input",
+        "keyboard",
+        "repeat",
+        str(CONFIG["keyboardRepeatRate"]),
+        str(CONFIG["keyboardRepeatDelay"]),
+    )
     ox("input", "cursor", "theme", CONFIG["cursorTheme"], str(CONFIG["cursorSize"]))
     ox("input", "pointer", "follow", "always")
     ox(
@@ -175,6 +230,7 @@ def main():
         "command": execute_command,
         "session": session,
         "setup": setup,
+        "river-start": start_river_manager,
         "exit": exit_session,
         "capture": capture,
         "toggle": toggle_service,

@@ -1,0 +1,5 @@
+// Extend the packaged rules instead of replacing the user's layout.
+! include %S/evdev
+
+! option = symbols
+  jd:caps_alt = +jd(caps_alt)

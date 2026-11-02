@@ -8,5 +8,6 @@
     ./power.nix
     ./input.nix
     ./display.nix
+    ./reka.nix
   ];
 }

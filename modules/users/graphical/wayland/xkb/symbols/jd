@@ -1,0 +1,11 @@
+// xkeyboard-config has no caps:alt option. Keep this layout-independent.
+partial modifier_keys
+xkb_symbols "caps_alt" {
+    replace key <CAPS> {
+        type[Group1] = "ONE_LEVEL",
+        symbols[Group1] = [ Alt_L ],
+        actions[Group1] = [ SetMods(modifiers=Mod1) ]
+    };
+    modifier_map None { <CAPS> };
+    modifier_map Mod1 { <CAPS> };
+};

@@ -2096,6 +2096,26 @@
         "type": "github"
       }
     },
+    "reka": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1793516467,
+        "narHash": "sha256-fE0ILAJRHgRr82FlGIP7ebucM+b5Zeb6vxhjjAdfaX0=",
+        "owner": "jordanisaacs",
+        "repo": "reka",
+        "rev": "ecc4c708d41e972894b777679db50eb3048391df",
+        "type": "github"
+      },
+      "original": {
+        "owner": "jordanisaacs",
+        "repo": "reka",
+        "type": "github"
+      }
+    },
     "rnix-lsp": {
       "inputs": {
         "naersk": "naersk",
@@ -2139,6 +2159,7 @@
         "nixpkgs": "nixpkgs_6",
         "nur": "nur",
         "oxbow": "oxbow",
+        "reka": "reka",
         "secrets": "secrets",
         "simple-nixos-mailserver": "simple-nixos-mailserver",
         "treefmt-nix": "treefmt-nix"

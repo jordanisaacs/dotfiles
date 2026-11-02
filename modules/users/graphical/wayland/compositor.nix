@@ -58,6 +58,7 @@ let
     uwsm = "${pkgs.uwsm}/bin/uwsm";
   };
   wayExit = "${wayExitPackage}/bin/wayexit";
+  riverPackage = pkgs.river-reka;
 
   swayConfig = ''
     exec_always ${compositorStartup}/bin/compositor-setup
@@ -120,6 +121,12 @@ let
       drag enabled
     }
 
+    input "type:keyboard" {
+      xkb_file ${cfg.keyboard.keymap}
+      repeat_rate ${toString cfg.keyboard.repeatRate}
+      repeat_delay ${toString cfg.keyboard.repeatDelay}
+    }
+
     output "Dell Inc. DELL U2713H C6F0K32405ML" {
       transform 270
     }
@@ -133,13 +140,15 @@ let
   compositorStartup = desktopScript "compositor-setup" {
     action = "setup";
     uwsm = "${pkgs.uwsm}/bin/uwsm";
+    systemctl = "${pkgs.systemd}/bin/systemctl";
+    notify = "${pkgs.systemd}/bin/systemd-notify";
   };
   sessionEntry = desktopScript "wayland-session" {
     action = "session";
     uwsm = "${pkgs.uwsm}/bin/uwsm";
     command =
       if isRiver then
-        [ "${pkgs.river}/bin/river" ]
+        [ "${riverPackage}/bin/river" ]
       else
         [ "${pkgs.sway}/bin/sway" ] ++ optional isSwayDbg "--debug";
     profileBin = "${config.home.profileDirectory}/bin";
@@ -176,6 +185,10 @@ let
     cursorSize = config.jd.graphical.cursor.size;
     keybindings = config.jd.keybindings or "emacs";
     touchpadScrollFactor = cfg.touchpad.scrollFactor;
+    outerGap = cfg.river.gaps.outer;
+    keyboardKeymap = cfg.keyboard.keymap;
+    keyboardRepeatRate = cfg.keyboard.repeatRate;
+    keyboardRepeatDelay = cfg.keyboard.repeatDelay;
     terminal = "${pkgs.ghostty}/bin/ghostty";
     launcher = "${launcher}/bin/app-launcher";
     inherit wayExit;
@@ -200,8 +213,10 @@ let
     };
   };
   riverInit = desktopScript "river-init" {
-    action = "command";
-    command = [ "${pkgs.oxbow}/bin/oxbow" ];
+    action = "river-start";
+    command = [ "${cfg.river.switchPackage}/bin/river-wm" ];
+    windowManager = cfg.river.windowManager;
+    uwsm = "${pkgs.uwsm}/bin/uwsm";
   };
 
   isSway = cfg.type == "sway";
@@ -209,7 +224,34 @@ let
   isRiver = cfg.type == "river";
 in
 {
+  imports = [ ./river-wm.nix ];
   options.jd.graphical.wayland = {
+    river = {
+      setupCommand = mkOption {
+        type = types.listOf types.str;
+        readOnly = true;
+        internal = true;
+        default = [ "${compositorStartup}/bin/compositor-setup" ];
+        description = "Publish the active window manager's native readiness.";
+      };
+      windowManager = mkOption {
+        type = types.enum [
+          "oxbow"
+          "reka"
+        ];
+        default = config.machineData.greetdDefaultWindowManager or "oxbow";
+        description = "Default River window manager when starting a user session without a login-screen override.";
+      };
+      gaps.outer = mkOption {
+        type = types.nullOr types.ints.unsigned;
+        default = null;
+        description = ''
+          Oxbow outer gap in logical pixels, or null to retain its upstream default.
+          The inner gap is unchanged. Oxbow retains at least half the inner gap
+          at screen edges even when this is zero.
+        '';
+      };
+    };
     type = mkOption {
       type = types.enum [
         "sway"
@@ -253,7 +295,7 @@ in
     })
     (mkIf isRiver {
       home.packages = [
-        pkgs.river
+        riverPackage
         pkgs.oxbow
       ];
       assertions = [
@@ -263,7 +305,9 @@ in
         }
       ];
       xdg.configFile."river/init".source = "${riverInit}/bin/river-init";
-      xdg.configFile."oxbow/init".source = "${oxbowInit}/bin/oxbow-init";
+      xdg.configFile."oxbow/init" = {
+        source = "${oxbowInit}/bin/oxbow-init";
+      };
 
     })
   ]);

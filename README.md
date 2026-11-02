@@ -27,14 +27,61 @@ reference and are not exported by the flake. The old
 `homeManagerConfigurations` alias is removed. `sys apply-user` delegates to the
 Home Manager CLI using the current username and hostname.
 
+The same Home Manager profile includes Oxbow and Reka. After installing the
+updated system and user configurations, log out and back in once to load the
+patched River and managed window-manager services. Press F3 in the system
+login greeter to choose **River (Reka)** or **River (Oxbow)**. For a recovery
+terminal, press F2 and enter `desktop-login --terminal`, or use a normal getty
+on another virtual terminal. Tuigreet's desktop-session menu only supports
+graphical session types; the F2 route records a correct TTY login session.
+
+The system setting `jd.greetd.defaultWindowManager = "oxbow"` selects the default
+login choice; set it to `"reka"` to change that default. The greeter, session
+menu, authentication, and shared default remain NixOS configuration. Home
+Manager owns each user's window-manager configuration. Direct user session
+starts inherit the system default, with an optional user override under
+`jd.graphical.wayland.river.windowManager`.
+
+Switch the running session without restarting River or applications:
+
+```console
+river-wm reka
+river-wm oxbow
+river-wm status
+```
+
+Runtime selection lasts for the current login; layouts may be rearranged. A
+failed start restores the previous manager. Reka uses a minimal Emacs
+window-manager configuration; the custom Emacs editor environment remains
+disabled. Super+Shift+q ends the desktop session.
+
+Reka preserves Super+Shift+Return for Ghostty, Super+x for Fuzzel in the Emacs
+binding profile, Super+Space for floating, Super+f for fullscreen, and
+Super+Shift+c for closing an application. Super+left/right mouse drag moves or
+resizes floating windows. Super+1–9 selects Emacs tab workspaces, creating them
+when needed; these are not Oxbow's overlapping tags. C-x and M-x operate the
+window-manager Emacs. Super+Shift+q ends the session; C-x C-c does not.
+
+Shared keyboard configuration lives under `jd.graphical.wayland.keyboard`.
+Caps Lock is an additional Alt key; set `capsLockAsAlt = false` to restore it.
+One native XKB definition supplies Oxbow, Sway, and Reka's input daemon. Reka
+uses the upstream River channel daemon while its manager service is active for
+device hotplug and touchpad preferences, and Kanshi for output scaling. Its
+readiness hook acknowledges the manager service after River processes a usable
+frame. River's startup process then finalizes UWSM from the compositor service.
+
+The fork is pinned in `flake.lock`. Its native keyboard/floating tests and the
+dotfiles' `reka-session`, `desktop-keyboard`, and `river-input` checks cover the
+protocol features, complete UWSM login/logout, keymap, and input rules.
+
 ```sh
 cd ~/.dotfiles
 nix build --no-link .#checks.x86_64-linux.framework .#checks.x86_64-linux.home-framework
-sudo nixos-rebuild boot --flake .#framework
+sudo -A nixos-rebuild boot --flake .#framework
 ```
 
-For this migration, reboot after preparing the boot generation, choose the
-**Terminal** session in greetd, and activate Home Manager before opening the new
+For this migration, reboot after preparing the boot generation, open the
+recovery terminal from greetd with F2, and activate Home Manager before opening the new
 desktop:
 
 ```sh
@@ -59,12 +106,17 @@ verification stay enabled, and only root is a trusted Nix daemon user.
 The user and system share `jd.keybindings`, which defaults to `"emacs"`.
 Selecting `"vim"` retains the alternative bindings. Emacs mode uses
 Super+n/p for next/previous window, Super+x for the application launcher,
-and Super+Ctrl+b/f for the master ratio. Vim mode uses Super+j/k,
-Super+p, and Super+h/l respectively. Both use Super+Shift+Return for Ghostty,
+and, in Oxbow, Super+Ctrl+b/f for the master ratio. Vim mode uses Super+j/k,
+Super+p, and Super+h/l respectively. Oxbow uses Super+Shift+Return for Ghostty,
 Super+1–9 for tags, Super+Shift+1–9 to move windows, Super+m for monocle,
 Super+t for tiling, and Super+Shift+q to log out. Add Shift to the focus
 bindings to reorder windows. The preference also configures Readline, Zsh,
 tmux, and GTK3 editing; applications with their own shortcuts retain those.
+
+Oxbow's screen-edge padding is controlled by
+`jd.graphical.wayland.river.gaps.outer`; this laptop sets it to zero while
+preserving the upstream gap between tiles. Oxbow still reserves half that
+inner gap at the edges, giving a small inset rather than the large stock margin.
 
 UWSM owns the Wayland session through upstream systemd user units and D-Bus
 broker. The Python `.winitrc` entry passes Home Manager's environment to

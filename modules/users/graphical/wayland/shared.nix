@@ -14,6 +14,21 @@ let
     action = "toggle";
     systemctl = "${pkgs.systemd}/bin/systemctl";
   };
+  riverWaybar = pythonScript "river-waybar" ../../../../scripts/waybar-session.py {
+    waybar = "${cfg.statusbar.pkg}/bin/waybar";
+    defaultManager = cfg.river.windowManager;
+    configurations = {
+      oxbow = toString config.xdg.configFile."waybar/config".source;
+      reka = toString (
+        pkgs.writeText "waybar-reka.json" (
+          builtins.toJSON (
+            map (settings: settings // { modules-left = [ ]; }) config.programs.waybar.settings
+          )
+        )
+      );
+    };
+    style = "${config.xdg.configHome}/waybar/style.css";
+  };
 
   locs = {
     pittsburgh = {
@@ -488,7 +503,11 @@ in
         };
 
         Service = {
-          ExecStart = "${pkgs.waybar}/bin/waybar";
+          ExecStart =
+            if cfg.type == "river" then
+              "${riverWaybar}/bin/river-waybar"
+            else
+              "${cfg.statusbar.pkg}/bin/waybar";
           Environment = "PATH=${
             lib.makeBinPath [
               pkgs.oxbow

@@ -12,9 +12,12 @@
     (import ./xwayland-keymap.nix)
     (import ./gamescope-errors.nix)
     (import ./libreoffice-wrapper.nix)
+    (import ./river-channel.nix)
+    (import ./river-vt-lifecycle.nix)
     scripts.overlay
     inputs.nur.overlays.default
     inputs.oxbow.overlays.default
+    inputs.reka.overlays.default
 
     (_self: super: {
       inherit (import ../configs/editor.nix super inputs.neovim-flake.lib.neovimConfiguration)

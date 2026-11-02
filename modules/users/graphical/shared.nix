@@ -144,6 +144,32 @@ in
     };
 
     xdg = {
+      # Home Manager starts all keyring components in one user service. The
+      # package also ships two XDG launchers, which otherwise initialize the
+      # same daemon again when UWSM starts graphical-session.target.
+      autostart = mkIf config.services.gnome-keyring.enable {
+        enable = true;
+        entries =
+          map
+            (
+              component:
+              let
+                filename = "gnome-keyring-${component}.desktop";
+                entry = pkgs.writeTextDir filename ''
+                  [Desktop Entry]
+                  Type=Application
+                  Name=GNOME Keyring (${component})
+                  Hidden=true
+                '';
+              in
+              "${entry}/${filename}"
+            )
+            [
+              "pkcs11"
+              "secrets"
+            ];
+      };
+
       systemDirs.data = [
         "${pkgs.gtk3}/share/gsettings-schemas/${pkgs.gtk3.name}"
         "${pkgs.gsettings-desktop-schemas}/share/gsettings-schemas/${pkgs.gsettings-desktop-schemas.name}"

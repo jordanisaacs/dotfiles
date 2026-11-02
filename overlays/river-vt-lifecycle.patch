@@ -1,0 +1,39 @@
+diff --git a/river/LayerShell.zig b/river/LayerShell.zig
+--- a/river/LayerShell.zig
++++ b/river/LayerShell.zig
+@@ -137,20 +137,27 @@ fn handleNewSurface(_: *wl.Listener(*wlr.LayerSurfaceV1), wlr_layer_surface: *wlr.La
+     if (wlr_layer_surface.output == null) {
+         var it = server.om.outputs.iterator(.forward);
+         while (it.next()) |output| {
+-            if (output.layer_shell.requested.default) {
++            if (output.layer_shell.requested.default and output.wlr_output != null) {
+                 wlr_layer_surface.output = output.wlr_output;
+                 break;
+             }
+         } else {
+-            if (server.om.outputs.first()) |output| {
+-                log.info("window manager did not set default layer surface output, choosing arbitrary output", .{});
+-                wlr_layer_surface.output = output.wlr_output;
+-            } else {
+-                log.err("no output available for layer surface '{s}'", .{wlr_layer_surface.namespace});
+-                wlr_layer_surface.destroy();
+-                return;
++            it = server.om.outputs.iterator(.forward);
++            while (it.next()) |output| {
++                if (output.wlr_output) |wlr_output| {
++                    log.info("window manager did not set default layer surface output, choosing arbitrary output", .{});
++                    wlr_layer_surface.output = wlr_output;
++                    break;
++                }
+             }
+         }
++        // Backend output destruction precedes removal of the corresponding
++        // scheduled Output in the next window-management sequence.
++        if (wlr_layer_surface.output == null) {
++            log.err("no output available for layer surface '{s}'", .{wlr_layer_surface.namespace});
++            wlr_layer_surface.destroy();
++            return;
++        }
+     }
+ 
+     LayerSurface.create(wlr_layer_surface) catch {

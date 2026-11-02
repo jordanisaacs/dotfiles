@@ -46,6 +46,9 @@ in
         alsa.support32Bit = true;
         pulse.enable = true;
         jack.enable = true;
+        # Audio must survive Xwayland/compositor restarts. The optional X11
+        # bell module otherwise keeps an X connection in the audio daemon.
+        extraConfig.pipewire."10-no-x11-bell"."context.properties"."module.x11.bell" = false;
       };
 
       printing.enable = cfg.printing.enable;
@@ -53,8 +56,14 @@ in
       blueman.enable = cfg.bluetooth.enable;
     };
 
-    #hardware.pulseaudio.enable = cfg.sound.enable;
-
     hardware.bluetooth.enable = cfg.bluetooth.enable;
+
+    # NixOS creates /etc/bluetooth and manages its config files. BlueZ's unit
+    # also declares ConfigurationDirectory with a different mode, causing a
+    # warning at every start. Leave this directory to the NixOS /etc owner;
+    # ProtectSystem=strict still makes it read-only to the daemon.
+    systemd.services.bluetooth.serviceConfig.ConfigurationDirectory = mkIf cfg.bluetooth.enable (
+      mkForce ""
+    );
   };
 }

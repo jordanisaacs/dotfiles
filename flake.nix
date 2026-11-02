@@ -78,6 +78,11 @@
       url = "github:3L0C/oxbow/v0.1.1";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    reka = {
+      url = "github:jordanisaacs/reka";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =
@@ -329,7 +334,10 @@
             permanentMACAddress = privateIdentifiers.wifi.permanentMACAddress;
             ipTime = true;
           };
-          greetd.enable = true;
+          greetd = {
+            enable = true;
+            defaultWindowManager = "oxbow";
+          };
           framework = {
             enable = true;
             fprint = {
@@ -371,6 +379,7 @@
                   wayland = {
                     enable = true;
                     type = "river";
+                    river.gaps.outer = 0;
                     background.enable = true;
                     statusbar.enable = true;
                     screenlock.enable = true;
@@ -505,6 +514,34 @@
         desktop-session = import ./tests/desktop-session.nix {
           inherit pkgs;
           homeConfiguration = self.homeConfigurations."jd@framework";
+        };
+        boot-services = import ./tests/boot-services.nix {
+          inherit pkgs;
+          homeConfiguration = self.homeConfigurations."jd@framework";
+          nixosConfiguration = self.nixosConfigurations.framework;
+        };
+        desktop-keyboard = import ./tests/desktop-keyboard.nix {
+          inherit pkgs;
+          homeConfiguration = self.homeConfigurations."jd@framework";
+        };
+        river-input = import ./tests/river-input.nix {
+          inherit pkgs;
+          homeConfiguration = self.homeConfigurations."jd@framework";
+        };
+        reka-session = import ./tests/reka-session.nix {
+          inherit pkgs;
+          homeConfiguration = self.homeConfigurations."jd@framework";
+        };
+        reka-shutdown = import ./tests/reka-shutdown.nix {
+          inherit pkgs;
+          home = self.homeConfigurations."jd@framework".config;
+        };
+        reka-vt-switch = import ./tests/reka-vt-switch.nix { inherit pkgs; };
+        river-vt-switch = import ./tests/river-vt-switch.nix { inherit pkgs; };
+        login-greeter = import ./tests/login-greeter.nix { inherit pkgs; };
+        audio-session = import ./tests/audio-session.nix {
+          inherit pkgs;
+          nixosConfiguration = self.nixosConfigurations.framework;
         };
         encrypted-boot = import ./tests/encrypted-boot.nix {
           inherit pkgs;
