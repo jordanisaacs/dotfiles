@@ -1,35 +1,37 @@
-{ pkgs
-, config
-, lib
-, ...
+{
+  config,
+  lib,
+  ...
 }:
-with lib; let
+with lib;
+let
   cfg = config.jd.users;
 
   mkUser =
-    { name
-    , groups
-    , uid
-    , password
-    ,
-    }: {
+    {
+      name,
+      groups,
+      uid,
+      password,
+    }:
+    {
       inherit name;
-      value =
-        {
-          inherit name uid;
-          isNormalUser = true;
-          isSystemUser = false;
-          extraGroups = groups;
-        }
-        // (
-          if password == null
-          then {
+      value = {
+        inherit name uid;
+        isNormalUser = true;
+        isSystemUser = false;
+        extraGroups = groups;
+      }
+      // (
+        if password == null then
+          {
             initialPassword = "helloworld";
           }
-          else {
+        else
+          {
             hashedPassword = password;
           }
-        );
+      );
     };
 
   user = _: {
@@ -72,9 +74,10 @@ in
   };
 
   config = {
-    users.users =
-      { root.initialHashedPassword = cfg.rootPassword; }
-      // builtins.listToAttrs (builtins.map mkUser cfg.users);
+    users.users = {
+      root.initialHashedPassword = cfg.rootPassword;
+    }
+    // builtins.listToAttrs (builtins.map mkUser cfg.users);
     users.mutableUsers = cfg.mutableUsers;
   };
 }

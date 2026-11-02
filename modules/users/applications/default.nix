@@ -80,7 +80,7 @@ in
       pyright
 
       # basic bash tools
-      nodePackages.bash-language-server
+      bash-language-server
       shfmt
 
       # accounting
@@ -93,12 +93,15 @@ in
       # Keyboard
       qmk
 
-      uv
-
-      # AI
-      claude-code
-      codex
     ];
+
+    programs = {
+      codex.enable = true;
+
+      claude-code.enable = true;
+
+      uv.enable = true;
+    };
 
     services.playerctld.enable = true;
 

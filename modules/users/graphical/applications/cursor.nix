@@ -1,11 +1,17 @@
-{ pkgs, config, lib, ... }:
+{
+  pkgs,
+  config,
+  lib,
+  ...
+}:
 with lib;
-let 
+let
   cfg = config.jd.graphical.applications.cursor;
-in {
+in
+{
   options.jd.graphical.applications.cursor = {
     enable = mkEnableOption "Cursor editor with Wayland and scaling support";
-    
+
     scale = mkOption {
       type = types.str;
       default = "1.5";

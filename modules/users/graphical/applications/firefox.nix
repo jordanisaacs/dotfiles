@@ -9,32 +9,45 @@ let
   cfg = config.jd.graphical.applications;
   firefoxPkg =
     if cfg.firefox.useDevEdition then pkgs.firefox-devedition-unwrapped else pkgs.firefox-unwrapped;
+  # The flake's NUR revision owns these versions, including Kagi and LanguageTool.
+  # Keep Cookie AutoDelete's existing extension ID and profile storage intact.
+  addons =
+    with pkgs.nur.repos.rycee.firefox-addons;
+    [
+      kagi-search
+      languagetool
+      user-agent-string-switcher
+      redirector
+      rust-search-extension
+      bitwarden
+      ublock-origin
+      multi-account-containers
+      clearurls
+      cookie-autodelete
+      sponsorblock
+      return-youtube-dislikes
+    ]
+    ++ optional cfg.firefox.videoDownloader video-downloadhelper
+    ++ optional cfg.firefox.vim.enable tridactyl
+    ++ optional config.jd.applications.activitywatch.enable aw-watcher-web;
 in
 {
   options.jd.graphical.applications.firefox = {
-    enable = mkOption {
-      type = types.bool;
-      default = false;
-      description = "Enable firefox with config [firefox]";
-    };
+    enable = mkEnableOption "Firefox with the personal profile";
 
     useDevEdition = mkOption {
       type = types.bool;
       default = false;
-      description = "Use firefox dev edition [firefox]";
+      description = "Use Firefox Developer Edition.";
     };
 
     videoDownloader = mkOption {
       type = types.bool;
       default = true;
-      description = "Enable video downloader [vdho]";
+      description = "Enable Video DownloadHelper (version 10+ needs no native companion).";
     };
 
-    vim.enable = mkOption {
-      type = types.bool;
-      default = false;
-      description = "Enable vim navigation [tridactyl]";
-    };
+    vim.enable = mkEnableOption "Tridactyl Vim navigation";
   };
 
   config = mkIf cfg.firefox.enable (mkMerge [
@@ -44,317 +57,131 @@ in
     {
       home.file.".mozilla/firefox/ignore-dev-edition-profile".text = "";
 
-      xdg = {
-        mimeApps = {
-          defaultApplications = {
-            "application/xhtml+xml" = "firefox.desktop";
-            "application/xhtml_xml" = "firefox.desktop";
-            "text/html" = "firefox.desktop";
-
-            "x-scheme-handler/http" = "firefox.desktop";
-            "x-scheme-handler/https" = "firefox.desktop";
-          };
-        };
+      xdg.mimeApps.defaultApplications = {
+        "application/xhtml+xml" = "firefox.desktop";
+        "application/xhtml_xml" = "firefox.desktop";
+        "text/html" = "firefox.desktop";
+        "x-scheme-handler/http" = "firefox.desktop";
+        "x-scheme-handler/https" = "firefox.desktop";
       };
 
       programs.firefox = {
         enable = true;
+        # Retain the existing profile, bookmarks, accounts and extension storage.
+        configPath = ".mozilla/firefox";
         package = pkgs.wrapFirefox firefoxPkg {
           nativeMessagingHosts = optional cfg.firefox.vim.enable pkgs.tridactyl-native;
-          # Wait for vhdcoapp to be packaged in nix: https://github.com/NixOS/nixpkgs/pull/300051
-          # nur repo hasn't been update in months so cant fetch anymore
-          # optional cfg.firefox.videoDownloader pkgs.nur.repos.wolfangaukang.vdhcoapp
         };
-        profiles = {
-          personal = {
-            id = 0;
-            extensions.packages =
-              with pkgs.nur.repos.rycee.firefox-addons;
-              let
-                firefoxTheme =
-                  if (config.jd.graphical.theme == "arc-dark") then
-                    (buildFirefoxXpiAddon {
-                      pname = "arc-dark-theme-firefox";
-                      addonId = "arc-dark-theme@afnankhan";
-                      version = "2021.6.2";
-                      url = "https://addons.mozilla.org/firefox/downloads/file/3786185/arc_dark_theme-2021.6.2-an+fx.xpi";
-                      sha256 = "TRXQCboplZmxi3/HzU5HYs1xEIO0RRzCClliEu6MEEM=";
 
-                      meta = with lib; {
-                        description = "Arc dark theme";
-                        license = licenses.cc-by-30;
-                        platforms = platforms.all;
-                      };
-                    })
-                  else
-                    (buildFirefoxXpiAddon {
-                      pname = "materia-dark-gtk-theme-firefox";
-                      addonId = "{6aff6b84-e31b-45c3-acfa-ef1b9351607d}";
-                      version = "1.0";
-                      url = "https://addons.mozilla.org/firefox/downloads/file/3860526/materia_gtk_dark-1.0.xpi";
-                      sha256 = "mVcT7ssJmYjIHIgvtAkEahs5u4rsAFigYcPMaPbfhr0=";
+        # Supported Firefox enterprise policies, rather than obsolete user.js lists.
+        # https://firefox-admin-docs.mozilla.org/reference/policies/
+        policies = {
+          # Firefox 149.0.2+: blocks every built-in AI feature, including translations,
+          # PDF alt text, summaries, smart tabs/windows, speech and sidebar chat.
+          # https://firefox-admin-docs.mozilla.org/reference/policies/aicontrols/
+          AIControls.Default = {
+            Value = "blocked";
+            Locked = true;
+          };
+          DisableTelemetry = true;
+          DisableFirefoxStudies = true;
+          # Disable Nimbus feature rollouts; security Remote Settings stay enabled.
+          DisableRemoteImprovements = true;
+          DontCheckDefaultBrowser = true;
+          HttpsOnlyMode = "enabled";
+          EnableTrackingProtection.Category = "standard";
+          FirefoxHome = {
+            Search = false;
+            TopSites = true;
+            Highlights = true;
+            Stories = false;
+            SponsoredTopSites = false;
+            SponsoredStories = false;
+            Weather = false;
+            Widgets.Enabled = false;
+          };
+          FirefoxSuggest = {
+            WebSuggestions = false;
+            SponsoredSuggestions = false;
+            ImproveSuggest = false;
+            OnlineEnabled = false;
+            Locked = true;
+          };
+          UserMessaging = {
+            ExtensionRecommendations = false;
+            FeatureRecommendations = false;
+            MoreFromMozilla = false;
+            FirefoxLabs = false;
+            UrlbarInterventions = false;
+            SkipOnboarding = true;
+          };
+          # Bitwarden handles credentials and autofill.
+          OfferToSaveLogins = false;
+          AutofillAddressEnabled = false;
+          AutofillCreditCardEnabled = false;
+          PromptForDownloadLocation = true;
 
-                      meta = with lib; {
-                        description = "Materia dark gtk theme";
-                        license = licenses.cc-by-30;
-                        platforms = platforms.all;
-                      };
-                    });
-              in
+          # Nix updates managed add-ons; user-installed add-ons can still update.
+          # https://firefox-admin-docs.mozilla.org/reference/policies/extensionsettings/
+          ExtensionSettings = listToAttrs (
+            map (addon: nameValuePair addon.addonId { updates_disabled = true; }) addons
+          );
+
+          # Removing a user.js entry alone leaves its old value in prefs.js.
+          # Clear our old graphics/debugging overrides so Firefox selects supported
+          # acceleration and secure defaults on this hardware after migration.
+          # https://firefox-admin-docs.mozilla.org/reference/policies/preferences/
+          Preferences =
+            genAttrs
               [
-                (buildFirefoxXpiAddon {
-                  pname = "cookie-quick-manager";
-                  addonId = "{60f82f00-9ad5-4de5-b31c-b16a47c51558}";
-                  version = "0.5rc2";
-                  url = "https://addons.mozilla.org/firefox/downloads/file/3343599/cookie_quick_manager-0.5rc2-an+fx.xpi";
-                  sha256 = "uCbkQ0OMiAs5mOQuCZ0OGUn/UUiceItQGTuS74BCbG4=";
-                  meta = with lib; {
-                    description = "Manage cookies better";
-                    license = licenses.gpl3;
-                    platforms = platforms.all;
-                  };
-                })
-                (buildFirefoxXpiAddon {
-                  pname = "kagi-firefox";
-                  addonId = "search@kagi.com";
-                  version = "0.3.3";
-                  url = "https://addons.mozilla.org/firefox/downloads/file/4144699/kagi_search_for_firefox-0.3.3.xpi";
-                  sha256 = "0hcw172sj4x4kawqfcxzgzdrrcivp6v6r84vxcykxd3b4nd0b2p2";
-
-                  meta = with lib; {
-                    description = ''
-                      A simple helper extension for setting Kagi as a default search engine, and automatically logging in to Kagi in private browsing windows.
-                    '';
-                    license = licenses.mpl20;
-                    platforms = platforms.all;
-                  };
-                })
-                (buildFirefoxXpiAddon {
-                  pname = "languagetool-firefox";
-                  version = "5.8.10";
-                  addonId = "languagetool-webextension@languagetool.org";
-                  url = "https://addons.mozilla.org/firefox/downloads/file/4026397/languagetool-5.8.10.xpi";
-                  sha256 = "sha256-3OPw5oVD5kqX9mnxVOm5pEWSKNiqJVx8whh/bEuremE=";
-
-                  meta = with lib; {
-                    description = ''
-                      Check your texts for spelling and grammar problems everywhere on the web
-                    '';
-                    platforms = platforms.all;
-                  };
-                })
-                (buildFirefoxXpiAddon {
-                  pname = "enforce-browser-fonts";
-                  version = "1.2";
-                  addonId = "{83e08b00-32de-44e7-97bb-1bab84d1350f}";
-                  url = "https://addons.mozilla.org/firefox/downloads/file/3782841/enforce_browser_fonts-1.2.xpi";
-                  sha256 = "sha256-h8h1hXim3d9y+Anze3ENz1dAneNXywINwcGXRieGl0U=";
-
-                  meta = with lib; {
-                    description = ''
-                      Enforce browser fonts easily instead of letting websites use their own fonts.
-                      Easily toggle between browser fonts and website fonts by clicking on addon toolbar
-                      icon or its keyboard shortcut (Alt-Comma).
-                    '';
-                    platforms = platforms.all;
-                  };
-                })
-                (buildFirefoxXpiAddon {
-                  pname = "kagi-firefox";
-                  addonId = "search@kagi.com";
-                  version = "0.3.3";
-                  url = "https://addons.mozilla.org/firefox/downloads/file/4144699/kagi_search_for_firefox-0.3.3.xpi";
-                  sha256 = "0hcw172sj4x4kawqfcxzgzdrrcivp6v6r84vxcykxd3b4nd0b2p2";
-
-                  meta = with lib; {
-                    description = ''
-                      A simple helper extension for setting Kagi as a default search engine, and automatically logging in to Kagi in private browsing windows.
-                    '';
-                    license = licenses.mpl20;
-                    platforms = platforms.all;
-                  };
-                })
-                # (buildFirefoxXpiAddon {
-                #   pname = "bypass-paywalls";
-                #   addonId = "magnolia@12.34";
-                #   version = "master";
-                #   url =
-                #     "https://gitflic.ru/project/magnolia1234/bpc_uploads/blob/raw?file=bypass_paywalls_clean-3.9.0.0.xpi&inline=false&commit=0532b9830d43992b2f2e63e5335d58d1a8681704";
-                #   sha256 =
-                #     "sha256-DLhryk7rdglguLEUscvZgveC2adyTDTyC0mp2eTuvBs=";
-                #   meta = with lib; {
-                #     description = "A paywall bypasser";
-                #     license = licenses.mit;
-                #     platforms = platforms.all;
-                #   };
-                # })
-                firefoxTheme
-
-                # Rycee NUR: https://nur.nix-community.org/repos/rycee/
-                user-agent-string-switcher
-                redirector
-                rust-search-extension
-                bitwarden
-                ublock-origin
-                multi-account-containers
-                clearurls
-                cookie-autodelete
-                firefox-translations
-                video-downloadhelper
-
-                # Youtube
-                sponsorblock
-                return-youtube-dislikes
+                "media.ffmpeg.vaapi.enabled"
+                "media.gpu-process-decoder"
+                "dom.webgpu.enabled"
+                "gfx.webrender.all"
+                "layers.mlgpu.enabled"
+                "layers.gpu-process.enabled"
+                "devtools.chrome.enabled"
+                "devtools.debugger.remote-enabled"
+                "toolkit.legacyUserProfileCustomizations.stylesheets"
               ]
-              ++ optional cfg.firefox.vim.enable tridactyl
-              ++ optional config.jd.applications.activitywatch.enable aw-watcher-web;
-            userChrome = ''
-              .titlebar-spacer{ display: none !important }
-              .titlebar-buttonbox-container{ display: none !important }
-            '';
-            settings =
-              let
-                newTab =
-                  let
-                    activityStream = "browser.newtabpage.activity-stream";
-                  in
-                  {
-                    "${activityStream}.feeds.topsites" = true;
-                    "${activityStream}.feeds.section.highlights" = true;
-                    "${activityStream}.feeds.section.topstories" = false;
-                    "${activityStream}.feeds.section.highlights.includePocket" = false;
-                    "${activityStream}.section.highlights.includePocket" = false;
-                    "${activityStream}.showSearch" = false;
-                    "${activityStream}.showSponsoredTopSites" = false;
-                    "${activityStream}.showSponsored" = false;
-                  };
+              (_: {
+                Status = "clear";
+              });
+        };
 
-                searchBar = {
-                  "browser.urlbar.suggest.quicksuggest.sponsored" = false;
-                  "browser.urlbar.suggest.quicksuggest.nonsponsored" = false;
-                  "browser.newtabpage.activity-stream.improvesearch.topSiteSearchShorcuts" = false;
-                  "browser.urlbar.showSearchSuggestionsFirst" = false;
-                };
+        profiles.personal = {
+          id = 0;
+          extensions.packages = addons;
+          settings = {
+            # Native vertical tabs: no tree-tab extension or fragile userChrome.
+            # Firefox source: browser/app/profile/firefox.js, sidebar preferences.
+            "sidebar.revamp" = true;
+            "sidebar.verticalTabs" = true;
+            "extensions.activeThemeID" = "default-theme@mozilla.org";
 
-                extensions = {
-                  "extensions.update.autoUpdateDefault" = false;
-                  "extensions.update.enabled" = false;
-                };
+            # Migrate the old globally disabled updates and unsigned-add-on override.
+            "extensions.update.autoUpdateDefault" = true;
+            "extensions.update.enabled" = true;
+            "xpinstall.signatures.required" = true;
+            "dom.security.https_only_mode" = true;
+            "privacy.globalprivacycontrol.enabled" = true;
 
-                telemetry = {
-                  "browser.newtabpage.activity-stream.telemetry" = false;
-                  "browser.newtabpage.activity-stream.feeds.telemetry" = false;
-                  "browser.newtabpage.activity-stream.asrouter.userprefs.cfr.addons" = false;
-                  "browser.newtabpage.activity-stream.asrouter.userprefs.cfr.features" = false;
-                  "browser.ping-centre.telemetry" = false;
-                  "toolkit.telemetry.reportingpolicy.firstRun" = false;
-                  "toolkit.telemetry.unified" = false;
-                  "toolkit.telemetry.archive.enabled" = false;
-                  "toolkit.telemetry.updatePing.enabled" = false;
-                  "toolkit.telemetry.shutdownPingSender.enabled" = false;
-                  "toolkit.telemetry.newProfilePing.enabled" = false;
-                  "toolkit.telemetry.bhrPing.enabled" = false;
-                  "toolkit.telemetry.firstShutdownPing.enabled" = false;
-                  "datareporting.healthreport.uploadEnabled" = false;
-                  "datareporting.policy.dataSubmissionEnabled" = false;
-                  "security.protectionspopup.recordEventTelemetry" = false;
-                  "security.identitypopup.recordEventTelemetry" = false;
-                  "security.certerrors.recordEventTelemetry" = false;
-                  "security.app_menu.recordEventTelemetry" = false;
-                  "toolkit.telemetry.pioneer-new-studies-available" = false;
-                  "app.shield.optoutstudies.enable" = false;
-                };
-
-                privacy = {
-                  # clipboard events: https://superuser.com/questions/1595994/dont-let-websites-overwrite-clipboard-in-firefox-without-explicitly-giving-perm
-                  # Breaks copy/paste on websites
-                  #"dom.event.clipboardevents.enabled" = false;
-                  "dom.battery.enabled" = false;
-                  # "privacy.resistFingerprinting" = true;
-                };
-
-                https = {
-                  "dom.security.https_only_mode" = false;
-                  "dom.security.https_only_mode_ever_enabled" = false;
-                };
-
-                graphics = {
-                  "media.ffmpeg.vaapi.enabled" = true;
-                  "media.gpu-process-decoder" = true;
-                  "dom.webgpu.enabled" = true;
-                  "gfx.webrender.all" = true;
-                  "layers.mlgpu.enabled" = true;
-                  "layers.gpu-process.enabled" = true;
-                };
-
-                generalSettings = {
-                  "widget.use-xdg-desktop-portal.file-picker" = 2;
-                  "widget.use-xdg-desktop-portal.mime-handler" = 2;
-                  "browser.aboutConfig.showWarning" = false;
-                  "browser.shell.checkDefaultBrowser" = false;
-                  "extensions.htmlaboutaddons.inline-options.enabled" = false;
-                  "extensions.htmlaboutaddons.recommendations.enabled" = false;
-                  "extensions.pocket.enabled" = false;
-                  "browser.fullscreen.autohide" = false;
-                  "browser.contentblocking.category" = "standard";
-                  # "browser.display.use_document_fonts" = 0; Using enable-browser-fonts extension instead
-                  "xpinstall.signatures.required" = false; # for bypass-payawlls
-                  # Open links in same tab
-                  # https://www.reddit.com/r/firefox/comments/10mms5y/is_there_any_way_to_make_it_where_links_dont_open/
-                  "browser.link.open_newwindow" = 1;
-                  "browser.link.open_newwindow.override.external" = 3;
-                  # warn on quit
-                  "browser.warnOnQuit" = true;
-                  "browser.warnOnQuitShortcut" = true;
-                  "browser.tabs.warnOnClose" = true;
-                  "browser.tabs.warnOnCloseOtherTabs" = true;
-                  # allow userchrome.css & debugging
-                  "toolkit.legacyUserProfileCustomizations.stylesheets" = true;
-                  "devtools.chrome.enabled" = true;
-                  "devtools.debugger.remote-enabled" = true;
-                  # instead of alt menu, use windows key
-                  # "ui.key.menuAccessKey" = 91;
-                };
-
-                toolbars = {
-                  "browser.tabs.firefox-view" = false;
-                  "browser.tabs.cardPreview.enabled" = true;
-                  "browser.tabs.tabMinWidth" = 120;
-                  "browser.toolbars.bookmarks.visibility" = "newtab";
-                  "browser.download.autohideButton" = false;
-                };
-
-                passwords = {
-                  "extensions.formautofill.addresses.enabled" = false;
-                  "extensions.formautofill.creditCards.enabled" = false;
-                  "signon.rememberSignons" = false;
-                  "signon.autofillForms" = false;
-                  "signon.generation.enabled" = false;
-                  "signon.management.page.breach-alerts.enabled" = false;
-                };
-
-                downloads = {
-                  "browser.download.useDownloadDir" = false;
-                  "browser.download.always_ask_before_handling_new_types" = true;
-                };
-
-                cookies = {
-                  "cookiebanners.service.mode" = 1;
-                  "cookiebanners.service.mode.privateBrowsing" = 1;
-                };
-              in
-              generalSettings
-              // passwords
-              // extensions
-              // https
-              // newTab
-              // searchBar
-              // privacy
-              // telemetry
-              // graphics
-              // downloads
-              // toolbars
-              // cookies;
+            "widget.use-xdg-desktop-portal.file-picker" = 2;
+            "widget.use-xdg-desktop-portal.mime-handler" = 2;
+            "browser.fullscreen.autohide" = false;
+            "browser.link.open_newwindow" = 1;
+            "browser.link.open_newwindow.override.external" = 3;
+            "browser.warnOnQuit" = true;
+            "browser.warnOnQuitShortcut" = true;
+            "browser.tabs.warnOnClose" = true;
+            "browser.tabs.warnOnCloseOtherTabs" = true;
+            "browser.toolbars.bookmarks.visibility" = "newtab";
+            "browser.download.autohideButton" = false;
+            "browser.download.always_ask_before_handling_new_types" = true;
+            "signon.autofillForms" = false;
+            "signon.generation.enabled" = false;
+            "cookiebanners.service.mode" = 1;
+            "cookiebanners.service.mode.privateBrowsing" = 1;
           };
         };
       };

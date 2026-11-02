@@ -1,48 +1,13 @@
-{ pkgs, config, lib, ... }:
+{
+  config,
+  lib,
+  ...
+}:
 with lib;
 let
   cfg = config.jd.applications.syncthing;
-  isGraphical = let inherit (config.jd) graphical;
-  in graphical.xorg.enable || graphical.wayland.enable;
-  syncthingtrayv2 = pkgs.runCommand "syncthingtray-fixed" { } ''
-    mkdir $out
-    cp -rs ${pkgs.syncthingtray}/* $out
-
-    chmod +w $out/lib
-    chmod +w $out/lib/qt-5
-    rm $out/lib/qt-5/libsyncthingfileitemaction.a
-
-    mkdir -p $out/lib/qt-5.15.8/plugins
-    ln -s ${pkgs.syncthingtray}/lib/qt-5/libsyncthingfileitemaction.a $out/lib/qt-5.15.8/plugins/
-  '';
-
-  syncthingtray = pkgs.syncthingtray.overrideAttrs (_: {
-    buildInputs = with pkgs; [
-      kdePackages.qt5.qtbase
-      cpp-utilities
-      kdePackages.qtutilities
-      boost
-      kdePackages.qtforkawesome
-      kdePackages.plasma-framework
-    ];
-
-    nativeBuildInputs = with pkgs; [
-      cmake
-      kdePackages.qt5.qttools
-      kdePackages.qt5.wrapQtAppsHook
-    ];
-
-    cmakeFlags = [
-      "-DAUTOSTART_EXEC_PATH=syncthingtray"
-      # See https://github.com/Martchus/syncthingtray/issues/42
-      "-DQT_PLUGIN_DIR:STRING=${placeholder "out"}/lib/qt-5.15.8/plugins"
-      "-DNO_PLASMOID=ON"
-      "-DSYSTEMD_SUPPORT=ON"
-      "-DWEBVIEW_PROVIDER:STRING=none"
-      "-DBUILD_SHARED_LIBS=1"
-    ];
-  });
-in {
+in
+{
   options.jd.applications.syncthing = {
     enable = mkOption {
       description = "Enable syncthing";

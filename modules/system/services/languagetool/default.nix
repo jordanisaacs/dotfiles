@@ -1,15 +1,12 @@
-{ config
-, lib
-, pkgs
-, ...
+{
+  config,
+  lib,
+  pkgs,
+  ...
 }:
-with lib; let
+with lib;
+let
   cfg = config.jd.languagetool;
-
-  name = "langaugetool";
-  user = name;
-  group = name;
-  id = 328;
 in
 {
   options.jd.languagetool = {

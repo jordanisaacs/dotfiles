@@ -1,9 +1,10 @@
-{ pkgs
-, config
-, lib
-, ...
+{
+  config,
+  lib,
+  ...
 }:
-with lib; let
+with lib;
+let
   cfg = config.jd.applications.taskwarrior;
 in
 {
@@ -59,41 +60,38 @@ in
     let
       path = config.programs.taskwarrior.dataLocation;
     in
-    mkIf cfg.enable
-      {
-        programs.taskwarrior = {
-          enable = true;
-          config = {
-            taskd =
-              mkIf cfg.server.enable
-                {
-                  server = "${cfg.server.address}:${builtins.toString cfg.server.port}";
-                  key = "${path}/key";
-                  ca = "${path}/ca";
-                  certificate = "${path}/cert";
-                  credentials = "${cfg.server.credentials}";
-                  trust = "strict";
-                };
-          };
-        };
-
-        homeage.file = mkIf cfg.server.enable {
-          taskserver-ca = {
-            source = cfg.server.ca;
-            symlinks = [ "${path}/ca" ];
-          };
-
-          taskserver-key = {
-            source = cfg.server.key;
-            symlinks = [ "${path}/key" ];
-          };
-
-          taskserver-cert = {
-            source = cfg.server.cert;
-            symlinks = [ "${path}/cert" ];
+    mkIf cfg.enable {
+      programs.taskwarrior = {
+        enable = true;
+        config = {
+          taskd = mkIf cfg.server.enable {
+            server = "${cfg.server.address}:${builtins.toString cfg.server.port}";
+            key = "${path}/key";
+            ca = "${path}/ca";
+            certificate = "${path}/cert";
+            credentials = "${cfg.server.credentials}";
+            trust = "strict";
           };
         };
       };
+
+      homeage.file = mkIf cfg.server.enable {
+        taskserver-ca = {
+          source = cfg.server.ca;
+          symlinks = [ "${path}/ca" ];
+        };
+
+        taskserver-key = {
+          source = cfg.server.key;
+          symlinks = [ "${path}/key" ];
+        };
+
+        taskserver-cert = {
+          source = cfg.server.cert;
+          symlinks = [ "${path}/cert" ];
+        };
+      };
+    };
 }
 # Taskwarrior + timewarrior integration: https://timewarrior.net/docs/taskwarrior/
 # home.activation = {
@@ -106,4 +104,3 @@ in
 #     $DRY_RUN_CMD chmod +x ${config.xdg.dataHome}/task/hooks/on-modify.timewarrior
 #   '';
 # };
-

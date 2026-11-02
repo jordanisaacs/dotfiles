@@ -15,6 +15,20 @@ in
   };
 
   config = mkIf cfg.applications.enable {
+    programs = {
+      emacs = {
+        enable = true;
+        package = pkgs.emacs-pgtk;
+      };
+
+      thunderbird.enable = true;
+
+      chromium = {
+        enable = true;
+        package = pkgs.ungoogled-chromium;
+      };
+    };
+
     home.sessionVariables = {
       CALIBRE_USE_SYSTEM_THEME = "true";
     };
@@ -22,15 +36,10 @@ in
     home.packages =
       with pkgs;
       [
-        xorg.xinput
+        xinput
 
-        thunderbird
         # jdpkgs.rstudioWrapper
         # jdpkgs.texstudioWrapper
-        ungoogled-chromium
-
-        # my emacs - see emacs-config on gh
-        emacs-jd
 
         # updated version with wayland/grim backend
         flameshot
@@ -72,38 +81,54 @@ in
         # Logitech
         solaar
       ]
-      ++ lib.optional systemCfg.networking.wifi.enable pkgs.iwgtk;
+      ++ lib.optional systemCfg.networking.wifi.enable pkgs.wpa_supplicant_gui;
 
-    xdg.desktopEntries = {
-      cider = {
-        name = "Cider";
-        genericName = "Music Streaming";
-        exec = "GDK_DPI_SCALE=1.3 cider --no-sandbox %U";
+    xdg = {
+      desktopEntries.wifi = lib.mkIf systemCfg.networking.wifi.enable {
+        name = "Wi-Fi Settings";
+        genericName = "Wireless network configuration";
+        exec = "${pkgs.wpa_supplicant_gui}/bin/wpa_gui -i ${
+          systemCfg.networking.wifi.interface or "wlan0"
+        }";
+        icon = "network-wireless";
         terminal = false;
-        icon = "Cider";
-        type = "Application";
         categories = [
-          "Audio"
-          "Video"
-        ];
-        mimeType = [
-          "x-scheme-handler/ame"
-          "x-scheme-handler/cider"
-          "x-scheme-handler/itms"
-          "x-scheme-handler/itmss"
-          "x-scheme-handler/musics"
-          "x-scheme-handler/music"
+          "Settings"
+          "Network"
         ];
       };
-    };
 
-    xdg.configFile = {
-      "discord/settings.json" = {
-        text = ''
-          {
-            "SKIP_HOST_UPDATE": true
-          }
-        '';
+      desktopEntries = {
+        cider = {
+          name = "Cider";
+          genericName = "Music Streaming";
+          exec = "GDK_DPI_SCALE=1.3 cider --no-sandbox %U";
+          terminal = false;
+          icon = "Cider";
+          type = "Application";
+          categories = [
+            "Audio"
+            "Video"
+          ];
+          mimeType = [
+            "x-scheme-handler/ame"
+            "x-scheme-handler/cider"
+            "x-scheme-handler/itms"
+            "x-scheme-handler/itmss"
+            "x-scheme-handler/musics"
+            "x-scheme-handler/music"
+          ];
+        };
+      };
+
+      configFile = {
+        "discord/settings.json" = {
+          text = ''
+            {
+              "SKIP_HOST_UPDATE": true
+            }
+          '';
+        };
       };
     };
   };

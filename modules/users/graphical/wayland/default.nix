@@ -1,10 +1,10 @@
-{ pkgs
-, config
-, lib
-, ...
-}: {
+{
+  ...
+}:
+{
   imports = [
     ./compositor.nix
     ./shared.nix
+    ./power.nix
   ];
 }

@@ -1,26 +1,44 @@
-{ config, pkgs, lib, modulesPath, ... }:
-with lib; {
+{
+  config,
+  pkgs,
+  lib,
+  modulesPath,
+  ...
+}:
+with lib;
+{
   # Make this config a iso config
   imports = [
     "${modulesPath}/profiles/all-hardware.nix"
     "${modulesPath}/installer/cd-dvd/iso-image.nix"
   ];
 
-  options.jd = { airgap = mkEnableOption "networking"; };
+  options.jd = {
+    airgap = mkEnableOption "networking";
+  };
 
   config = mkMerge [
     (mkIf config.jd.airgap {
       # Disable networking so the system is air-gapped
       # Comment all of these lines out if you'll need internet access
       boot.initrd.network.enable = false;
-      networking.dhcpcd.enable = false;
-      networking.dhcpcd.allowInterfaces = [ ];
-      networking.interfaces = { };
-      networking.firewall.enable = true;
-      networking.useDHCP = false;
-      networking.useNetworkd = false;
-      networking.wireless.enable = false;
-      networking.networkmanager.enable = lib.mkForce false;
+      networking = {
+        dhcpcd.enable = false;
+
+        dhcpcd.allowInterfaces = [ ];
+
+        interfaces = { };
+
+        firewall.enable = true;
+
+        useDHCP = false;
+
+        useNetworkd = false;
+
+        wireless.enable = false;
+
+        networkmanager.enable = lib.mkForce false;
+      };
     })
     (mkIf (!config.jd.airgap) { networking.networkmanager.enable = true; })
     {
@@ -37,16 +55,24 @@ with lib; {
 
       # Always copytoram so that, if the image is booted from, e.g., a
       # USB stick, nothing is mistakenly written to persistent storage.
-      boot.kernelParams = [ "copytoram" ];
+      boot = {
+        kernelParams = [ "copytoram" ];
 
-      # Secure defaults
-      boot.tmp.cleanOnBoot = true;
-      # https://www.suse.com/support/kb/doc/?id=000020545
-      boot.kernel.sysctl = { "kernel.unprivileged_bpf_disabled" = 1; };
+        # Secure defaults
+        tmp.cleanOnBoot = true;
 
-      boot.kernelPackages = pkgs.linuxPackages_latest;
+        # https://www.suse.com/support/kb/doc/?id=000020545
+        kernel.sysctl = {
+          "kernel.unprivileged_bpf_disabled" = 1;
+        };
 
-      boot.kernelModules = [ "kvm-intel" "kvm-amd" ];
+        kernelPackages = pkgs.linuxPackages_latest;
+
+        kernelModules = [
+          "kvm-intel"
+          "kvm-amd"
+        ];
+      };
 
       # boot.supportedFilesystems = [ "zfs" ];
       networking.hostId = "f6734914";
@@ -67,7 +93,7 @@ with lib; {
         bind
         killall
         dmidecode
-        neofetch
+        fastfetch
         htop
         bat
         unzip
@@ -78,7 +104,7 @@ with lib; {
         ltrace
 
         # Setup script(s)
-        scripts.setupTools
+        jdScripts.setupTools
 
         # text editor
         neovim

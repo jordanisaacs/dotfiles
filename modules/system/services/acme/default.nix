@@ -1,11 +1,8 @@
-{ config
-, lib
-, pkgs
-, ...
+{
+  lib,
+  ...
 }:
-with lib; let
-  cfg = config.jd.acme;
-in
+with lib;
 {
   options.jd.acme = {
     email = mkOption {

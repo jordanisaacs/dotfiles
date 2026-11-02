@@ -4,6 +4,158 @@ My NixOS dotfile flake for both systems and users. Each system/user is built upo
 
 Note: One of my flake inputs points towards a private git repository of secrets. Thus you will not be able to clone and run this repo without some changes. See the notes on my secrets config below.
 
+## Laptop updates
+
+The active laptop is `framework`. Its desktop uses River with the
+`river-window-management-v1` protocol and Oxbow 0.1.1. The old DWM/X11
+session, rivercarro layout generator, and classic River configuration are removed.
+XWayland remains available for applications.
+
+Home Manager has standard, pure flake targets; it does not read
+`/etc/hmsystemdata.json` during evaluation:
+
+```sh
+nix run ~/.dotfiles#home-manager -- build --flake ~/.dotfiles#jd@framework
+home-manager build --flake ~/.dotfiles#jd@framework
+home-manager switch --flake ~/.dotfiles#jd@framework
+```
+
+`framework` is the only active NixOS target. `jd` and `jd@framework` select its
+Home Manager profile. Unused desktop, laptop, server, deployment and installer
+definitions are preserved in [retired/outputs.nix](retired/outputs.nix) for
+reference and are not exported by the flake. The old
+`homeManagerConfigurations` alias is removed. `sys apply-user` delegates to the
+Home Manager CLI using the current username and hostname.
+
+```sh
+cd ~/.dotfiles
+nix build --no-link .#checks.x86_64-linux.framework .#checks.x86_64-linux.home-framework
+sudo nixos-rebuild boot --flake .#framework
+```
+
+For this migration, reboot after preparing the boot generation, choose the
+**Terminal** session in greetd, and activate Home Manager before opening the new
+desktop:
+
+```sh
+nix run ~/.dotfiles#home-manager -- switch -b before-modernization --flake ~/.dotfiles#jd@framework
+~/.nix-profile/bin/codex --version
+```
+
+Home Manager backs up the manually edited `.bashrc` and restores its managed
+version. Once the Nix profile's Codex works, remove the temporary
+`~/.local/bin/codex` symlink, then exit the terminal session and select Wayland.
+The current pinned Codex package is 0.165.0; the temporary installer supplied
+0.166.0. Account settings and credentials remain outside Nix management.
+
+Keep `system.stateVersion` and `home.stateVersion` unchanged when updating
+inputs; these are data compatibility settings. Future updates use
+`nix flake update nixpkgs home-manager` followed by the checks. Nix itself follows `nixVersions.latest` from the locked nixpkgs input.
+Legacy channels are disabled and `nixpkgs` in the registry and `NIX_PATH` refers
+to this same locked input. Signed binary caches are configured for cache.nixos.org,
+nix-community, nixpkgs-wayland, and the existing eigenvalue cache; build sandboxing and signature
+verification stay enabled, and only root is a trusted Nix daemon user.
+
+The user and system share `jd.keybindings`, which defaults to `"emacs"`.
+Selecting `"vim"` retains the alternative bindings. Emacs mode uses
+Super+n/p for next/previous window, Super+x for the application launcher,
+and Super+Ctrl+b/f for the master ratio. Vim mode uses Super+j/k,
+Super+p, and Super+h/l respectively. Both use Super+Shift+Return for Ghostty,
+Super+1–9 for tags, Super+Shift+1–9 to move windows, Super+m for monocle,
+Super+t for tiling, and Super+Shift+q to log out. Add Shift to the focus
+bindings to reorder windows. The preference also configures Readline, Zsh,
+tmux, and GTK3 editing; applications with their own shortcuts retain those.
+
+UWSM owns the Wayland session through upstream systemd user units and D-Bus
+broker. The Python `.winitrc` entry passes Home Manager's environment to
+`uwsm start`; Oxbow signals readiness using `uwsm finalize` after configuration.
+Desktop services follow `graphical-session.target`. Fuzzel launches applications
+and the terminal shortcut launches Ghostty through `uwsm app -t service`, giving
+applications their own cgroups and journal logs. Waybar uses the session slice;
+the wallpaper uses the background slice. Logout uses `uwsm stop`, which stops
+session applications and cleans up the activation environment. Useful tools:
+
+```sh
+systemctl --user status
+systemd-cgls --user-unit app-graphical.slice
+journalctl --user -b
+uwsm app -t service -- firefox.desktop
+uwsm stop
+```
+
+Laptop power and performance use TLP with its `tlp-pd` profile API, UPower,
+and thermald. AC selects performance, battery selects balanced, and power-saver
+is available through `powerprofilesctl` or Waybar. Turbo remains available;
+there are no fixed CPU/GPU frequency caps. Auto-cpufreq and competing profile
+daemons are disabled. UPower hibernates at 5% battery; logind handles the lid
+and suspend-then-hibernate. Idle detection starts after ten minutes and logind
+waits another fifteen minutes before its idle action. wluma discovers supported
+ambient-light sensors and backlights automatically and learns from manual
+brightness changes; it cleanly exits when supported hardware is absent.
+
+Ordinary CLI tools remain system packages. Home Manager uses upstream program
+modules for Ghostty, gh, Codex, Claude Code, Chromium, Thunderbird, and uv.
+Custom Emacs configuration is disabled for now in favor of stock pgtk Emacs.
+
+Firefox uses native vertical tabs and Mozilla's supported policies to block
+built-in AI, telemetry, studies, sponsored suggestions and experiments. HTTPS-only,
+Global Privacy Control and standard tracking protection are enabled. The locked
+NUR catalog supplies extension versions; Nix updates those extensions, while
+manually installed extensions retain their ordinary update mechanism. Existing
+profile/account/bookmark data is preserved, including Cookie AutoDelete storage.
+
+Wi-Fi authentication uses wpa_supplicant with the Qt6 `wpa_gui` interface;
+`systemd-networkd` owns DHCP/routes and `systemd-resolved` owns DNS.
+`networkctl`, `resolvectl`, `wpa_cli`, and `wpa_gui` are the management tools.
+A root oneshot imports supported saved iwd personal/open networks before the
+first supplicant start. It preserves `/var/lib/iwd` and any existing supplicant
+configuration, and keeps credentials outside the Nix store in a private file.
+Enterprise, encrypted, or unsupported profiles need explicit configuration in
+`wpa_gui`; inspect counts with `journalctl -u wifi-profile-migration`.
+Wi-Fi is not required for the laptop to reach its boot target.
+
+`nix flake check` builds the laptop system and home, runs Python fixture tests
+for Wi-Fi migration, boots a NixOS VM to test the real River/Oxbow session and
+application cgroup/logout lifecycle, and rejects NixOS/Home Manager evaluation warnings.
+The development shell provides pinned nixfmt, Ruff, Statix and deadnix.
+`nix fmt` uses upstream treefmt-nix to format both Nix and Python files. The same
+checks run over every Nix/Python source file, including retired references:
+
+```sh
+nix fmt
+nix develop -c statix check .
+nix develop -c deadnix --fail .
+nix develop -c ruff check .
+nix develop -c ruff format --check .
+nix flake check --print-build-logs
+```
+
+The fixture, desktop and encrypted-boot tests can also be run independently:
+
+```sh
+nix build .#checks.x86_64-linux.wifi-migration
+nix build .#checks.x86_64-linux.desktop-session
+nix build .#checks.x86_64-linux.encrypted-boot
+```
+
+Encrypted-boot coverage performs a real UEFI reboot with the laptop's raw
+1 MiB `cryptkey` layout unlocking root and swap. Disabling only the readiness
+module reproduces the pre-fix hang; the normal check requires a complete boot,
+active swap, and stable device readiness after a udev re-probe. The targeted
+rule must sort after systemd's unformatted-device rule and is installed in both
+initrd and the running system. It changes no LUKS headers or key material.
+
+Wayland SSH and sudo password dialogs use native KDE `ksshaskpass`. Home Manager
+exports both `SSH_ASKPASS` and `SUDO_ASKPASS` before UWSM starts; sudo also has an
+`/etc/sudo.conf` fallback. Use `sudo -A command` to request the graphical helper.
+Sudo's PAM stack tries a fingerprint once for up to five seconds before password
+fallback. PAM authenticates these methods sequentially rather than concurrently.
+
+The unused local Firefly III service is disabled on framework. Its data at
+`/var/lib/firefly-iii` is intentionally removed by a boot-only tmpfiles rule
+while the service stays disabled, as requested. The boot menu uses
+systemd-boot’s built-in Shift+O (power off) and Shift+B (reboot) actions.
+
 ## Follow Along
 
 Follow along with my NixOS evolution and things I learn along the way: [NixOS Desktop Series](https://jdisaacs.com/series/nixos-desktop/)
@@ -34,7 +186,7 @@ Some cool excerpts of my dotfiles
 
 * Working GTK/QT theming, icons, and cursors on wayland. See *./modules/users/graphical/shared.nix*.
 * Reproducible firefox with plugins. See *./modules/users/graphical/applications/firefox.nix*.
-* Greetd login that starts up sway. See *./modules/users/graphical/wayland.nix*
+* Greetd login that starts River and Oxbow. See *./modules/users/graphical/wayland/compositor.nix*
 * Mounted on login onedrive filesystem using [onedriver](https://github.com/jstaf/onedriver) and a systemd-unit. See *./modules/users/office365/default.nix*
 
 ### Automagic Wireguard

@@ -1,4 +1,9 @@
-{ config, pkgs, lib, ... }:
+{
+  config,
+  pkgs,
+  lib,
+  ...
+}:
 with lib;
 let
   src = pkgs.fetchFromGitHub {
@@ -45,7 +50,10 @@ let
 
   yubikey-guide = pkgs.symlinkJoin {
     name = "yubikey-guide";
-    paths = [ view-yubikey-guide shortcut ];
+    paths = [
+      view-yubikey-guide
+      shortcut
+    ];
   };
 
   dicewareAddress = "localhost";
@@ -55,9 +63,7 @@ let
     if [ -z "$viewer" ]; then
       viewer="firefox"
     fi
-    exec $viewer "http://"${lib.escapeShellArg dicewareAddress}":${
-      toString dicewarePort
-    }/index.html"
+    exec $viewer "http://"${lib.escapeShellArg dicewareAddress}":${toString dicewarePort}/index.html"
   '';
   dicewarePage = pkgs.stdenv.mkDerivation {
     name = "diceware-page";
@@ -85,21 +91,30 @@ let
     exec = "${dicewareScript}/bin/${dicewareScript.name}";
   };
 
-in {
-  options.jd = { yubikey = mkEnableOption "yubikey tools"; };
+in
+{
+  options.jd = {
+    yubikey = mkEnableOption "yubikey tools";
+  };
 
   config = mkIf config.jd.yubikey {
-    services.pcscd.enable = true;
-    services.udev.packages = [ pkgs.yubikey-personalization ];
-    services.nginx = {
-      # Host the `https://secure.research.vt.edu/diceware/` website offline
-      enable = true;
-      virtualHosts."diceware.local" = {
-        listen = [{
-          addr = dicewareAddress;
-          port = dicewarePort;
-        }];
-        root = "${dicewarePage}";
+    services = {
+      pcscd.enable = true;
+
+      udev.packages = [ pkgs.yubikey-personalization ];
+
+      nginx = {
+        # Host the `https://secure.research.vt.edu/diceware/` website offline
+        enable = true;
+        virtualHosts."diceware.local" = {
+          listen = [
+            {
+              addr = dicewareAddress;
+              port = dicewarePort;
+            }
+          ];
+          root = "${dicewarePage}";
+        };
       };
     };
 
@@ -180,18 +195,20 @@ in {
     # Copy the contents of contrib to the home directory, add a shortcut to
     # the guide on the desktop, and link to the whole repo in the documents
     # folder.
-    system.activationScripts.yubikeyGuide = let
-      homeDir = "/home/nixos/";
-      desktopDir = homeDir + "Desktop/";
-      documentsDir = homeDir + "Documents/";
-    in ''
-      mkdir -p ${desktopDir} ${documentsDir}
-      chown nixos ${homeDir} ${desktopDir} ${documentsDir}
+    system.activationScripts.yubikeyGuide =
+      let
+        homeDir = "/home/nixos/";
+        desktopDir = homeDir + "Desktop/";
+        documentsDir = homeDir + "Documents/";
+      in
+      ''
+        mkdir -p ${desktopDir} ${documentsDir}
+        chown nixos ${homeDir} ${desktopDir} ${documentsDir}
 
-      cp -R ${contrib}/* ${homeDir}
-      ln -sf ${yubikey-guide}/share/applications/yubikey-guide.desktop ${desktopDir}
-      ln -sf ${dicewareWebApp}/share/applications/${dicewareWebApp.name} ${desktopDir}
-      ln -sfT ${src} ${documentsDir}/YubiKey-Guide
-    '';
+        cp -R ${contrib}/* ${homeDir}
+        ln -sf ${yubikey-guide}/share/applications/yubikey-guide.desktop ${desktopDir}
+        ln -sf ${dicewareWebApp}/share/applications/${dicewareWebApp.name} ${desktopDir}
+        ln -sfT ${src} ${documentsDir}/YubiKey-Guide
+      '';
   };
 }

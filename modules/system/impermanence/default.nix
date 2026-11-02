@@ -1,9 +1,10 @@
-{ pkgs
-, config
-, lib
-, ...
+{
+  config,
+  lib,
+  ...
 }:
-with lib; let
+with lib;
+let
   cfg = config.jd.impermanence;
 
   datasets = { name, ... }: {
@@ -46,19 +47,17 @@ in
   config =
     let
       zfs = {
-        boot.initrd.postDeviceCommands =
-          lib.mkAfter
-            (concatMapStringsSep
-              "\n"
-              (d: "zfs rollback -r ${d}@blank")
-              cfg.rollbackDatasets);
+        boot.initrd.postDeviceCommands = lib.mkAfter (
+          concatMapStringsSep "\n" (d: "zfs rollback -r ${d}@blank") cfg.rollbackDatasets
+        );
       };
 
       impermanence = {
         environment.persistence =
           concatMapAttrs
             # persist can be equal to backup, quick and easy to way ensure no merge issues (just overrides)
-            (n: v:
+            (
+              _n: v:
               {
                 ${v.persist} = {
                   hideMounts = true;
@@ -68,11 +67,15 @@ in
                 ${v.backup} = {
                   hideMounts = true;
                 };
-              })
+              }
+            )
             cfg.persistedDatasets;
 
         # Wait to acivate age decryption until mounted
-        system.activationScripts.agenixNewGeneration.deps = [ "specialfs" "persist-files" ];
+        system.activationScripts.agenixNewGeneration.deps = [
+          "specialfs"
+          "persist-files"
+        ];
       };
 
       # TODO: Refactor out
@@ -146,7 +149,11 @@ in
         ];
       };
 
-      mergeConfig = mkMerge [ zfs impermanence apps ];
+      mergeConfig = mkMerge [
+        zfs
+        impermanence
+        apps
+      ];
     in
     mkIf cfg.enable mergeConfig;
 }

@@ -1,67 +1,35 @@
 {
   system,
-  pkgs,
-  lib,
   secrets,
   scripts,
   inputs,
 }:
 {
   overlays = [
+    (import ./dbus-policy.nix)
+    (import ./gawk-info.nix)
+    (import ./initrd-dlopen.nix)
+    (import ./xwayland-keymap.nix)
+    (import ./gamescope-errors.nix)
     scripts.overlay
     inputs.nur.overlays.default
     inputs.dwl-flake.overlays.default
-    inputs.efi-power.overlays.default
-    inputs.nixd.overlays.default
+    inputs.oxbow.overlays.default
 
-    (self: super: {
-      # Version of xss-lock that supports logind SetLockedHint
-      xss-lock = super.xss-lock.overrideAttrs (oa: {
-        src = super.fetchFromGitHub {
-          owner = "xdbob";
-          repo = "xss-lock";
-          rev = "7b0b4dc83ff3716fd3051e6abf9709ddc434e985";
-          sha256 = "TG/H2dGncXfdTDZkAY0XAbZ80R1wOgufeOmVL9yJpSk=";
-        };
-      });
-
-      rivercarro-master = super.rivercarro.overrideAttrs (oa: {
-        version = "master";
-        src = inputs.rivercarro-src;
-        nativeBuildInputs = with super; [
-          pkg-config
-          river-classic
-          wayland
-          wayland-protocols
-          wayland-scanner
-          zig_0_15.hook
-        ];
-        postPatch = ''
-          ln -s ${super.callPackage ./rivercarro.zig.zon.nix { }} $ZIG_GLOBAL_CACHE_DIR/p
-        '';
-      });
-
-      # Commented out because need to update the patch
-      # xorg = prev.xorg // {
-      #   # Override xorgserver with patch to set x11 type
-      #   xorgserver = lib.overrideDerivation prev.xorg.xorgserver (drv: {
-      #     patches = drv.patches ++ [ ./x11-session-type.patch ];
-      #   });
-      # };
-
+    (_self: super: {
       inherit (import ../configs/editor.nix super inputs.neovim-flake.lib.neovimConfiguration)
         neovimJD
         ;
-      inherit (inputs.dwm-flake.packages.${system}) dwmJD;
-      inherit (inputs.emacs-config.packages.${system}) emacs-jd;
-      inherit (inputs.st-flake.packages.${system}) stJD;
-      weechatJD = super.weechat.override {
-        configure =
-          { availablePlugins, ... }:
-          {
-            scripts = with super.weechatScripts; [ weechat-matrix ];
-          };
+      emacs-jd = import ./emacs.nix {
+        editor = inputs.emacs-config;
+        inherit system;
       };
+      weechatJD = super.weechat.override {
+        configure = _: {
+          scripts = with super.weechatScripts; [ weechat-matrix ];
+        };
+      };
+      home-manager = inputs.home-manager.packages.${system}.home-manager;
       agenix-cli = inputs.agenix.packages."${system}".default;
       inherit (inputs.deploy-rs.packages."${system}") deploy-rs;
       jdpkgs = inputs.jdpkgs.packages."${system}";

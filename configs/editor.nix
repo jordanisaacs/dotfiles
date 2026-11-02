@@ -7,71 +7,82 @@ let
     config = {
       build.viAlias = false;
       build.vimAlias = true;
-      vim.languages = {
-        enableLSP = true;
-        enableFormat = true;
-        enableTreesitter = true;
-        enableExtraDiagnostics = true;
+      vim = {
+        languages = {
+          enableLSP = true;
+          enableFormat = true;
+          enableTreesitter = true;
+          enableExtraDiagnostics = true;
 
-        nix.enable = true;
-        nix.format.type = "nixpkgs-fmt";
-        markdown.enable = true;
-        bash.enable = true;
-        html.enable = true;
-        python.enable = true;
-        clang.enable = true;
-      };
-      vim.lsp = {
-        formatOnSave = true;
-
-        lightbulb.enable = true;
-        lspsaga.enable = false;
-        lspkind.enable = true;
-        nvimCodeActionMenu.enable = true;
-        trouble.enable = true;
-        lspSignature.enable = true;
-      };
-
-      vim.visuals = {
-        enable = true;
-        nvimWebDevicons.enable = true;
-        indentBlankline = {
-          enable = true;
-          fillChar = null;
-          eolChar = null;
-          showCurrContext = true;
+          nix.enable = true;
+          nix.format.type = "nixpkgs-fmt";
+          markdown.enable = true;
+          bash.enable = true;
+          html.enable = true;
+          python.enable = true;
+          clang.enable = true;
         };
-      };
-      vim.statusline.lualine.enable = true;
-      vim.theme = {
-        enable = true;
-        name = "tokyonight";
-        style = "night";
-      };
-      vim.autopairs.enable = true;
-      vim.autocomplete = {
-        enable = true;
-        type = "nvim-cmp";
-      };
-      vim.treesitter = {
-        context.enable = true;
-        fold = true;
-      };
-      vim.keys = {
-        enable = true;
-        whichKey.enable = true;
-      };
-      vim.telescope = {
-        enable = true;
-        fileBrowser = {
-          enable = true;
-          hijackNetRW = true;
+
+        lsp = {
+          formatOnSave = true;
+
+          lightbulb.enable = true;
+          lspsaga.enable = false;
+          lspkind.enable = true;
+          nvimCodeActionMenu.enable = true;
+          trouble.enable = true;
+          lspSignature.enable = true;
         };
-      };
-      vim.git = {
-        enable = true;
-        gitsigns.enable = true;
-        gitsigns.codeActions = true;
+
+        visuals = {
+          enable = true;
+          nvimWebDevicons.enable = true;
+          indentBlankline = {
+            enable = true;
+            fillChar = null;
+            eolChar = null;
+            showCurrContext = true;
+          };
+        };
+
+        statusline.lualine.enable = true;
+
+        theme = {
+          enable = true;
+          name = "tokyonight";
+          style = "night";
+        };
+
+        autopairs.enable = true;
+
+        autocomplete = {
+          enable = true;
+          type = "nvim-cmp";
+        };
+
+        treesitter = {
+          context.enable = true;
+          fold = true;
+        };
+
+        keys = {
+          enable = true;
+          whichKey.enable = true;
+        };
+
+        telescope = {
+          enable = true;
+          fileBrowser = {
+            enable = true;
+            hijackNetRW = true;
+          };
+        };
+
+        git = {
+          enable = true;
+          gitsigns.enable = true;
+          gitsigns.codeActions = true;
+        };
       };
     };
   };

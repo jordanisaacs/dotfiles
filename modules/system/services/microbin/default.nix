@@ -1,15 +1,12 @@
-{ config
-, lib
-, pkgs
-, ...
+{
+  config,
+  lib,
+  pkgs,
+  ...
 }:
-with lib; let
+with lib;
+let
   cfg = config.jd.microbin;
-
-  name = "microbin";
-  user = name;
-  group = name;
-  id = 327;
 in
 {
   options.jd.microbin = {

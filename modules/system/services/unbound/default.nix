@@ -1,9 +1,11 @@
-{ config
-, lib
-, pkgs
-, ...
+{
+  config,
+  lib,
+  pkgs,
+  ...
 }:
-with lib; let
+with lib;
+let
   cfg = config.jd.unbound;
   hasMonitoring = config.jd.monitoring.enable;
 in
@@ -16,7 +18,11 @@ in
     };
 
     access = mkOption {
-      type = types.enum [ "world" "wg" "closed" ];
+      type = types.enum [
+        "world"
+        "wg"
+        "closed"
+      ];
       default = "closed";
       description = "What level access to DNS";
     };
@@ -32,32 +38,14 @@ in
     let
       unboundPort = 53;
       wgIps = config.jd.wireguard.allAddresses;
-      wgIpsStripped = with builtins;
-        map
-          (ip: head (splitString "/" ip))
-          wgIps;
-      wgIpsAccess =
-        builtins.map
-          (ip: "${ip} allow")
-          wgIps;
+      wgIpsStripped = with builtins; map (ip: head (splitString "/" ip)) wgIps;
+      wgIpsAccess = builtins.map (ip: "${ip} allow") wgIps;
 
       peerConfs = config.jd.wireguard.peers;
-      peerDomains =
-        attrsets.mapAttrsToList
-          (_: v: ''"${v.domainName}"'')
-          peerConfs;
-      peerZone =
-        attrsets.mapAttrsToList
-          (_: v: ''"${v.domainName}" redirect'')
-          peerConfs;
-      peerData =
-        attrsets.mapAttrsToList
-          (_: v: ''"${v.domainName} IN A ${v.wgAddrV4}"'')
-          peerConfs;
-      peerPtrs =
-        attrsets.mapAttrsToList
-          (_: v: ''"${v.wgAddrV4} www.${v.domainName}"'')
-          peerConfs;
+      peerDomains = attrsets.mapAttrsToList (_: v: ''"${v.domainName}"'') peerConfs;
+      peerZone = attrsets.mapAttrsToList (_: v: ''"${v.domainName}" redirect'') peerConfs;
+      peerData = attrsets.mapAttrsToList (_: v: ''"${v.domainName} IN A ${v.wgAddrV4}"'') peerConfs;
+      peerPtrs = attrsets.mapAttrsToList (_: v: ''"${v.wgAddrV4} www.${v.domainName}"'') peerConfs;
     in
     mkIf cfg.enable (mkMerge [
       {
@@ -108,26 +96,28 @@ in
                 prefetch = "yes";
 
                 interface =
-                  if (cfg.access == "world")
-                  then [ "0.0.0.0" ]
+                  if (cfg.access == "world") then
+                    [ "0.0.0.0" ]
                   else
-                    [ "127.0.0.1" "::1" ]
-                    ++ (optionals
-                      (cfg.access == "wg")
-                      wgIpsStripped);
+                    [
+                      "127.0.0.1"
+                      "::1"
+                    ]
+                    ++ (optionals (cfg.access == "wg") wgIpsStripped);
 
                 do-ip4 = "yes";
                 do-ip6 = "yes";
                 do-udp = "yes";
                 do-tcp = "yes";
                 access-control =
-                  if (cfg.access == "world")
-                  then [ "0.0.0.0/0 allow" ]
+                  if (cfg.access == "world") then
+                    [ "0.0.0.0/0 allow" ]
                   else
-                    [ "127.0.0.0/8 allow" "::1/128 allow" ]
-                    ++ (optionals
-                      (cfg.access == "wg")
-                      wgIpsAccess);
+                    [
+                      "127.0.0.0/8 allow"
+                      "::1/128 allow"
+                    ]
+                    ++ (optionals (cfg.access == "wg") wgIpsAccess);
                 domain-insecure = mkIf cfg.enableWGDomain peerDomains;
                 local-zone = mkIf cfg.enableWGDomain peerZone;
                 local-data = mkIf cfg.enableWGDomain peerData;
@@ -182,7 +172,10 @@ in
           wgconf = config.jd.wireguard;
         in
         mkIf
-          (cfg.access == "wg" && (assertMsg wgconf.enable "Wireguard must be enabled for wireguard ssh firewall"))
+          (
+            cfg.access == "wg"
+            && (assertMsg wgconf.enable "Wireguard must be enabled for wireguard ssh firewall")
+          )
           {
             networking.firewall.interfaces.${wgconf.interface} = {
               allowedTCPPorts = [ unboundPort ];

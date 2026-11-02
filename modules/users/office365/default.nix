@@ -1,21 +1,12 @@
-{ pkgs
-, config
-, lib
-, ...
+{
+  pkgs,
+  config,
+  lib,
+  ...
 }:
-with lib; let
+with lib;
+let
   cfg = config.jd.office365;
-  onedriveLauncher = pkgs.writeShellScriptBin "onedrive-launcher" ''
-    if [ -f ${config.xdg.configHome}/onedrive-launcher ]
-    then
-      for _onedrive_config_dirname_ in $(cat ${config.xdg.configHome}/onedrive-launcher | grep -v '[ \t]*#' )
-      do
-        systmctl --user start onedrive@$_onedrive_config_dirname_
-      done
-    else
-      systemctl --user start onedrive@onedrive
-    fi
-  '';
 in
 {
   options.jd.office365 = {
@@ -51,16 +42,8 @@ in
   config = mkIf cfg.enable {
     # onedrive from https://github.com/NixOS/nixpkgs/blob/nixos-21.05/nixos/modules/services/networking/onedrive.nix
     home.packages =
-      (
-        if cfg.onedrive.enable
-        then [ pkgs.onedrive ]
-        else [ ]
-      )
-      ++ (
-        if cfg.onedriver.enable
-        then [ pkgs.jdpkgs.onedriverWrapper ]
-        else [ ]
-      );
+      (if cfg.onedrive.enable then [ pkgs.onedrive ] else [ ])
+      ++ (if cfg.onedriver.enable then [ pkgs.jdpkgs.onedriverWrapper ] else [ ]);
 
     systemd.user.services = {
       "onedrive@" = mkIf cfg.onedrive.enable {

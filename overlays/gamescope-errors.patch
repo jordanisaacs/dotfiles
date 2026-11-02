@@ -1,0 +1,185 @@
+--- a/src/Utils/Process.cpp
++++ b/src/Utils/Process.cpp
+@@ -98,7 +98,8 @@
+             defer( fclose( pStatFile ) );
+ 
+             pid_t nParentPid = -1;
+-            fscanf( pStatFile, "%*d %*s %*c %d", &nParentPid );
++            if ( fscanf( pStatFile, "%*d %*s %*c %d", &nParentPid ) != 1 )
++                continue;
+             if ( nParentPid > 0 && nParentPid == nPid )
+                 nPids.push_back( *Parse<pid_t>( pEntry->d_name ) );
+         }
+--- a/src/log.cpp
++++ b/src/log.cpp
+@@ -99,8 +99,7 @@
+ 		return;
+ 
+ 	char *buf = nullptr;
+-	vasprintf(&buf, fmt, args);
+-	if (!buf)
++	if (vasprintf(&buf, fmt, args) < 0)
+ 		return;
+ 	defer( free(buf); );
+ 
+--- a/src/Backends/DRMBackend.cpp
++++ b/src/Backends/DRMBackend.cpp
+@@ -2588,12 +2588,14 @@
+ 				// Max length of di_edid_display_descriptor_get_string is 14
+ 				// m_szModel is 16 bytes.
+ 				const char *pszModel = di_edid_display_descriptor_get_string( pDesc );
+-				strncpy( m_Mutable.szModel, pszModel, sizeof( m_Mutable.szModel ) );
++				strncpy( m_Mutable.szModel, pszModel, sizeof( m_Mutable.szModel ) - 1 );
++				m_Mutable.szModel[ sizeof( m_Mutable.szModel ) - 1 ] = '\0';
+ 			}
+ 			else if ( eTag == DI_EDID_DISPLAY_DESCRIPTOR_DATA_STRING )
+ 			{
+ 				const char *pszDataString = di_edid_display_descriptor_get_string( pDesc );
+-				strncpy( m_Mutable.szDataString, pszDataString, sizeof( m_Mutable.szDataString ) );
++				strncpy( m_Mutable.szDataString, pszDataString, sizeof( m_Mutable.szDataString ) - 1 );
++				m_Mutable.szDataString[ sizeof( m_Mutable.szDataString ) - 1 ] = '\0';
+ 			}
+ 		}
+ 
+--- a/src/steamcompmgr.cpp
++++ b/src/steamcompmgr.cpp
+@@ -864,17 +864,24 @@
+ 	}
+ 	defer( fclose(f) );
+ 
+-	fseek(f, 0, SEEK_END);
++	if (fseek(f, 0, SEEK_END) != 0) {
++		xwm_log.errorf_errno("Failed to seek 3D LUT override: %s", path);
++		return true;
++	}
+ 	long fsize = ftell(f);
+-	fseek(f, 0, SEEK_SET);
+-
+-	size_t elems = fsize / sizeof(uint16_t);
+-
+-	if (elems == 0) {
++	if (fsize == 0) {
+ 		return true;
+ 	}
+ 
+-	fread(g_ColorMgmtLutsOverride[nLutIndex].lut3d, elems, sizeof(uint16_t), f);
++	auto &lut = g_ColorMgmtLutsOverride[nLutIndex].lut3d;
++	if (fsize != static_cast<long>(sizeof(lut)) || fseek(f, 0, SEEK_SET) != 0) {
++		xwm_log.errorf("Invalid 3D LUT override size: %s", path);
++		return true;
++	}
++	if (fread(lut, sizeof(lut), 1, f) != 1) {
++		xwm_log.errorf("Failed to read complete 3D LUT override: %s", path);
++		return true;
++	}
+ 	g_ColorMgmtLutsOverride[nLutIndex].bHasLut3D = true;
+ 
+ 	return true;
+@@ -892,17 +899,24 @@
+ 	}
+ 	defer( fclose(f) );
+ 
+-	fseek(f, 0, SEEK_END);
++	if (fseek(f, 0, SEEK_END) != 0) {
++		xwm_log.errorf_errno("Failed to seek shaper LUT override: %s", path);
++		return true;
++	}
+ 	long fsize = ftell(f);
+-	fseek(f, 0, SEEK_SET);
+-
+-	size_t elems = fsize / sizeof(uint16_t);
+-
+-	if (elems == 0) {
++	if (fsize == 0) {
+ 		return true;
+ 	}
+ 
+-	fread(g_ColorMgmtLutsOverride[nLutIndex].lut1d, elems, sizeof(uint16_t), f);
++	auto &lut = g_ColorMgmtLutsOverride[nLutIndex].lut1d;
++	if (fsize != static_cast<long>(sizeof(lut)) || fseek(f, 0, SEEK_SET) != 0) {
++		xwm_log.errorf("Invalid shaper LUT override size: %s", path);
++		return true;
++	}
++	if (fread(lut, sizeof(lut), 1, f) != 1) {
++		xwm_log.errorf("Failed to read complete shaper LUT override: %s", path);
++		return true;
++	}
+ 	g_ColorMgmtLutsOverride[nLutIndex].bHasLut1D = true;
+ 
+ 	return true;
+@@ -4713,7 +4727,13 @@
+ 				char buf[512];
+ 				char *display = XDisplayString( ctx->dpy );
+ 				sprintf( buf,  "xwininfo -d %s -id 0x%lx; xprop -d %s -id 0x%lx; xwininfo -d %s -root -tree", display, id, display, id, display );
+-				system( buf );
++				int nStatus = system( buf );
++				if ( nStatus == -1 )
++					xwm_log.errorf_errno( "Failed to run focus debug command" );
++				else if ( WIFEXITED( nStatus ) && WEXITSTATUS( nStatus ) != 0 )
++					xwm_log.warnf( "Focus debug command exited with status %d", WEXITSTATUS( nStatus ) );
++				else if ( WIFSIGNALED( nStatus ) )
++					xwm_log.warnf( "Focus debug command terminated by signal %d", WTERMSIG( nStatus ) );
+ 			}
+ 		}
+ 	}
+@@ -6777,7 +6797,26 @@
+ 	if ( g_nRuntimeInfoFd < 0 )
+ 		return;
+ 
+-	pwrite( g_nRuntimeInfoFd, &limiter_enabled, sizeof( limiter_enabled ), 0 );
++	size_t nWritten = 0;
++	const char *pData = reinterpret_cast<const char *>( &limiter_enabled );
++	while ( nWritten < sizeof( limiter_enabled ) )
++	{
++		ssize_t nResult = pwrite( g_nRuntimeInfoFd, pData + nWritten,
++			sizeof( limiter_enabled ) - nWritten, nWritten );
++		if ( nResult < 0 )
++		{
++			if ( errno == EINTR )
++				continue;
++			xwm_log.errorf_errno( "Failed to write frame limiter runtime info" );
++			return;
++		}
++		if ( nResult == 0 )
++		{
++			xwm_log.errorf( "Frame limiter runtime info write made no progress" );
++			return;
++		}
++		nWritten += static_cast<size_t>( nResult );
++	}
+ }
+ 
+ static void
+--- a/tests/test_process.cpp
++++ b/tests/test_process.cpp
+@@ -1,5 +1,6 @@
+ #include <catch2/catch_test_macros.hpp>
+ 
++#include <cerrno>
+ #include <filesystem>
+ #include <limits.h>
+ #include <signal.h>
+@@ -156,9 +157,21 @@
+         reaper.reaper_pid = pid;
+ 
+         char buf[32] = {};
+-        read(pipefd[0], buf, sizeof(buf) - 1);
++        size_t nRead = 0;
++        while (nRead < sizeof(buf) - 1)
++        {
++            ssize_t nResult = read(pipefd[0], buf + nRead, 1);
++            if (nResult < 0 && errno == EINTR)
++                continue;
++            if (nResult <= 0)
++                break;
++            if (buf[nRead++] == '\n')
++            {
++                reaper.game_pid = atoi(buf);
++                break;
++            }
++        }
+         close(pipefd[0]);
+-        reaper.game_pid = atoi(buf);
+         return reaper;
+     }
+ 

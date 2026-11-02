@@ -1,9 +1,11 @@
-{ pkgs
-, config
-, lib
-, ...
+{
+  pkgs,
+  config,
+  lib,
+  ...
 }:
-with lib; let
+with lib;
+let
   cfg = config.jd.secrets;
   inherit (config.jd.impermanence.persistedDatasets.root) backup;
 in

@@ -1,10 +1,11 @@
-{ pkgs
-, config
-, lib
-, ...
+{
+  config,
+  lib,
+  ...
 }:
 with lib;
-with builtins; let
+with builtins;
+let
   cfg = config.jd.applications.bat;
 in
 {

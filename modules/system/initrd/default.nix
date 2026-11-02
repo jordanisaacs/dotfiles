@@ -1,23 +1,25 @@
-{ pkgs, config, lib, ... }:
+{
+  pkgs,
+  config,
+  lib,
+  ...
+}:
 with lib;
 let
   cfg = config.jd.initrd;
 
-  systemd = config.systemd.package;
-
-  gpgService = {
-    description = "GPG agent";
-    after =
-      [ "systemd-modules-load.service" "systemd-ask-password-console.service" ];
-  };
-in {
+in
+{
   options.jd.initrd = {
     plymouth = {
       enable = mkEnableOption "enable plymouth";
       theme = mkOption {
         description = "plymouth theme";
         default = "lone";
-        type = types.enum [ "lone" "hexa_retro" ];
+        type = types.enum [
+          "lone"
+          "hexa_retro"
+        ];
       };
     };
 
@@ -26,39 +28,21 @@ in {
 
   config = mkMerge [
     {
-      boot.initrd.systemd.enable = true;
+      # systemd is the only supported initrd implementation.
 
-      # Does not matter for systemd
-      # boot.initrd.verbose = mkDefault cfg.quiet;
-
-      # Debug, needs bashInteractive due to how services are generated
-      boot.kernelParams = (optional cfg.quiet "rd.udev.log_level=3")
-        ++ [ "rd.systemd.debug_shell=1" ];
-      boot.initrd.systemd.storePaths = [ "${pkgs.bashInteractive}/bin/bash" ];
+      boot.kernelParams = optional cfg.quiet "rd.udev.log_level=3";
     }
-    # (mkIf cfg.gpg.enable {
-    #   boot.initrd.systemd = {
-    #     extraBin.pinentry = "${pkgs.systemd-pinentry}/bin/systemd-pinentry";
-    #   };
-    # })
     (mkIf cfg.plymouth.enable {
       jd = {
         kernel.quiet = mkDefault true;
-        kernel.disableBGRTRestore = mkDefault true;
         initrd.quiet = mkDefault true;
       };
 
-      systemd.services.plymouth-switch-root-initramfs = {
-        wantedBy = [
-          "halt.target"
-          "kexec.target"
-          "plymouth-switch-root-initramfs.service"
-          "poweroff.target"
-          "reboot.target"
-        ];
-        unitConfig.After = [ "generate-shutdown-ramfs.service" ];
-        unitConfig.ConditionPathExists = [ "" "/run/initramfs/shutdown" ];
-      };
+      # NixOS enables the shutdown unit and Plymouth provides the conditions.
+      # Keep only the ordering that its generic dracut/mkinitcpio unit lacks.
+      systemd.services.plymouth-switch-root-initramfs.after = [
+        "generate-shutdown-ramfs.service"
+      ];
 
       boot.plymouth = {
         enable = true;

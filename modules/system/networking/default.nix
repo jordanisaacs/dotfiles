@@ -7,6 +7,22 @@
 with lib;
 let
   cfg = config.jd.networking;
+  pythonScript = import ../../../lib/python-script.nix { inherit pkgs; };
+  migrateIwd = pythonScript "wifi-migrate-iwd" ./migrate-iwd.py {
+    source = "/var/lib/iwd";
+    destination = "/etc/wpa_supplicant/imperative.conf";
+  };
+  ipTime = pythonScript "ip-time" ./ip-time.py {
+    interface = cfg.wifi.interface;
+    curl = "${pkgs.curl}/bin/curl";
+    timedatectl = "${pkgs.systemd}/bin/timedatectl";
+  };
+  ipTimeRules = pkgs.linkFarm "ip-time-dispatcher-rules" [
+    {
+      name = "routable.d/ip-time";
+      path = "${ipTime}/bin/ip-time";
+    }
+  ];
 in
 {
   options.jd.networking = {
@@ -33,6 +49,12 @@ in
         type = types.str;
         default = "wlan0";
         description = "Name of wifi NIC";
+      };
+
+      permanentMACAddress = mkOption {
+        type = types.nullOr types.str;
+        default = null;
+        description = "Permanent adapter MAC used to give the Wi-Fi link its configured name.";
       };
 
       ipTime = mkEnableOption "set time based on ip when wifi interface routes";
@@ -114,7 +136,7 @@ in
       networkCfg = listToAttrs (
         map (n: {
           name = "${n}";
-          # Use builtin DHCP of iwd
+          # systemd-networkd provides DHCP for explicitly configured wired links.
           value = {
             useDHCP = true;
           };
@@ -130,7 +152,6 @@ in
       {
         jd.networking.allInterfaces = interfaces;
         networking = {
-          # TODO: Switch to systemd-networkd
           # Routing
           # http://linux-ip.net/html/basic-reading.html
           interfaces = networkCfg;
@@ -141,39 +162,79 @@ in
       }
       (mkIf cfg.wifi.enable (mkMerge [
         {
-          systemd.services.systemd-networkd.environment.SYSTEMD_LOG_LEVEL = "debug";
+          systemd = {
+            # Match the adapter, not its kernel or predictable interface name.
+            # An early .link takes precedence over systemd's default name policy.
+            network.links = mkIf (cfg.wifi.permanentMACAddress != null) {
+              "10-wifi" = {
+                matchConfig.PermanentMACAddress = cfg.wifi.permanentMACAddress;
+                linkConfig = {
+                  NamePolicy = "";
+                  Name = cfg.wifi.interface;
+                };
+              };
+            };
+            network.networks."40-${cfg.wifi.interface}" = {
+              matchConfig = {
+                Name = "${cfg.wifi.interface}";
+              };
+              networkConfig = {
+                DHCP = "yes";
+                IPv6AcceptRA = true;
+                # LinkLocalAddressing = "ipv6";
+                # https://wiki.archlinux.org/title/IPv6#Privacy_extensions
+                IPv6PrivacyExtensions = "kernel";
+              };
+              # A laptop should boot normally when it is away from a saved AP.
+              linkConfig.RequiredForOnline = "no";
+            };
 
-          systemd.network.networks."40-${cfg.wifi.interface}" = {
-            matchConfig = {
-              Name = "${cfg.wifi.interface}";
+            # The upstream module permits group writes to the imperative file.
+            # Clients only need its control socket, so keep credentials private.
+            services."wpa_supplicant-${cfg.wifi.interface}".serviceConfig.ExecStartPre = mkAfter [
+              "+${pkgs.coreutils}/bin/chmod 0600 /etc/wpa_supplicant/imperative.conf"
+            ];
+
+            tmpfiles.rules = [
+              "d /etc/wpa_supplicant 0750 wpa_supplicant wpa_supplicant -"
+            ];
+
+            # Import supported credentials before first startup without putting
+            # them in the Nix store. Existing supplicant config and all iwd files
+            # are retained; unsupported enterprise profiles need manual setup.
+            services.wifi-profile-migration = {
+              description = "Import saved iwd Wi-Fi profiles";
+              requiredBy = [ "wpa_supplicant-${cfg.wifi.interface}.service" ];
+              before = [ "wpa_supplicant-${cfg.wifi.interface}.service" ];
+              after = [
+                "systemd-sysusers.service"
+                "systemd-tmpfiles-setup.service"
+              ];
+              serviceConfig = {
+                Type = "oneshot";
+                RemainAfterExit = true;
+                ExecStart = "${migrateIwd}/bin/wifi-migrate-iwd";
+                User = "root";
+                UMask = "0077";
+                ProtectSystem = "strict";
+                ProtectHome = true;
+                PrivateTmp = true;
+                ReadWritePaths = [ "/etc/wpa_supplicant" ];
+                NoNewPrivileges = true;
+              };
             };
-            networkConfig = {
-              DHCP = "yes";
-              IPv6AcceptRA = true;
-              # LinkLocalAddressing = "ipv6";
-              # https://wiki.archlinux.org/title/IPv6#Privacy_extensions
-              IPv6PrivacyExtensions = "kernel";
-            };
-            # linkConfig = {
-            #   Unmanaged = "yes";
-            # };
           };
 
-          # Race condition with where iwd starts before wireless network card powers on
-          # https://wiki.archlinux.org/title/Iwd#Restarting_iwd.service_after_boot
-          networking.wireless.iwd = {
+          networking.wireless = {
             enable = true;
-            settings = {
-              General = {
-                EnableNetworkConfiguration = false;
-                RequiredFamilyForOnline = "ipv4";
-              };
-              Network = {
-                NameResolvingService = "systemd";
-                EnableIPv6 = true;
-              };
-            };
+            interfaces = [ cfg.wifi.interface ];
+            userControlled = true;
+            allowAuxiliaryImperativeNetworks = true;
+            dbusControlled = false;
           };
+          users.groups.wpa_supplicant.members = map (user: user.name) config.jd.users.users;
+          environment.systemPackages = [ migrateIwd ];
+
         }
         (mkIf cfg.wifi.ipTime {
           assertions = [
@@ -185,26 +246,9 @@ in
 
           services.networkd-dispatcher = {
             enable = true;
-            rules."iptime" = {
-              onState = [ "routable" ];
-              script = ''
-                #!${pkgs.runtimeShell}
-                export PATH=${
-                  lib.makeBinPath (
-                    with pkgs;
-                    [
-                      systemd
-                      curl
-                    ]
-                  )
-                }
-
-                if [[ $IFACE == "wlan0" ]]; then
-                  timedatectl set-timezone "$(curl -fsS4 --interface wlan0 https://ipapi.co/timezone)"
-                fi
-                exit 0
-              '';
-            };
+            # The module's rules option always wraps hooks in a shell.
+            # Supply the directly executable Python hook instead.
+            extraArgs = mkForce [ "--script-dir=${ipTimeRules}" ];
           };
         })
       ]))
@@ -299,10 +343,8 @@ in
 
         services.resolved = {
           enable = true;
-          extraConfig = ''
-            DNSStubListenerExtra=[::1]:53
-          '';
-          fallbackDns = [
+          settings.Resolve.DNSStubListenerExtra = "[::1]:53";
+          settings.Resolve.FallbackDNS = [
             # Quad9
             "9.9.9.9"
             "149.112.112.112"

@@ -1,9 +1,11 @@
-{ config
-, lib
-, pkgs
-, ...
+{
+  config,
+  lib,
+  pkgs,
+  ...
 }:
-with lib; let
+with lib;
+let
   cfg = config.jd.podman;
 in
 {
@@ -18,7 +20,10 @@ in
   };
 
   config = mkIf cfg.enable {
-    environment.systemPackages = with pkgs; [ slirp4netns fuse-overlayfs ];
+    environment.systemPackages = with pkgs; [
+      slirp4netns
+      fuse-overlayfs
+    ];
 
     virtualisation.podman = {
       enable = true;

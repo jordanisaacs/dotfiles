@@ -38,11 +38,6 @@ in
               fi
             ''
           ]
-          ++ lib.optional (cfg.xorg.enable && !config.jd.greetd.enable) ''
-            if [ -z "$DISPLAY" ] && [ "''${XDG_VTNR}" -eq 1 ]; then
-              exec startx
-            fi
-          ''
           ++ lib.optional (cfg.wayland.enable && !config.jd.greetd.enable) ''
             if [ -z "$DISPLAY" ] && [ "''${XDG_VTNR}" -eq 2 ]; then
               exec $HOME/.winitrc

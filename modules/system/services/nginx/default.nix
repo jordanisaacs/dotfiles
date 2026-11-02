@@ -1,9 +1,10 @@
-{ config
-, lib
-, pkgs
-, ...
+{
+  config,
+  lib,
+  ...
 }:
-with lib; let
+with lib;
+let
   cfg = config.jd.proxy;
 in
 {
@@ -15,7 +16,11 @@ in
     };
 
     firewall = mkOption {
-      type = types.enum [ "world" "wg" "closed" ];
+      type = types.enum [
+        "world"
+        "wg"
+        "closed"
+      ];
       default = "closed";
       description = "What level firewall to open";
     };
@@ -88,7 +93,10 @@ in
         wgconf = config.jd.wireguard;
       in
       mkIf
-        (cfg.firewall == "wg" && (assertMsg wgconf.enable "Wireguard must be enabled for wireguard ssh firewall"))
+        (
+          cfg.firewall == "wg"
+          && (assertMsg wgconf.enable "Wireguard must be enabled for wireguard ssh firewall")
+        )
         {
           networking.firewall.interfaces.${wgconf.interface}.allowedTCPPorts = [ cfg.port ];
         }

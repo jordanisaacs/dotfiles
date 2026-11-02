@@ -1,8 +1,24 @@
-{ inputs, patchedPkgs, }:
-{ pkgs, config, lib, ... }:
+{ inputs }:
+{
+  pkgs,
+  config,
+  lib,
+  ...
+}:
 with lib;
-let cfg = config.jd.core;
-in {
+let
+  cfg = config.jd.core;
+in
+{
+  options.jd.keybindings = mkOption {
+    type = types.enum [
+      "vim"
+      "emacs"
+    ];
+    default = "emacs";
+    description = "Default editing and navigation keybinding profile, inherited by users.";
+  };
+
   options.jd.core = {
     enable = mkOption {
       description = "Enable core options";
@@ -12,7 +28,12 @@ in {
 
     time = mkOption {
       description = "Time zone (null if unmanaged)";
-      type = with types; nullOr (enum [ "west" "east" ]);
+      type =
+        with types;
+        nullOr (enum [
+          "west"
+          "east"
+        ]);
       default = "east";
     };
 
@@ -24,79 +45,31 @@ in {
   };
 
   config = mkIf cfg.enable {
-    i18n.defaultLocale = "en_US.UTF-8";
-    console = {
-      earlySetup = true;
-      keyMap = "us";
-      font = "ter-v32n";
-      packages = with pkgs; [ terminus_font ];
-    };
-
-    time.timeZone = if cfg.time == null then
-      null
-    else
-      (if (cfg.time == "east") then
-        "US/Eastern"
-      else
-        (if cfg.time == "west" then "US/Pacific" else "Asia/Bangkok"));
-
-    # Nix search paths/registries from:
-    # https://github.com/gytis-ivaskevicius/flake-utils-plus/blob/166d6ebd9f0de03afc98060ac92cba9c71cfe550/lib/options.nix
-    # Context thread: https://github.com/gytis-ivaskevicius/flake-utils-plus/blob/166d6ebd9f0de03afc98060ac92cba9c71cfe550/lib/options.nix
-    nix = let
-      flakes = filterAttrs (name: value: value ? outputs) inputs;
-      flakesWithPkgs = filterAttrs (name: value:
-        value.outputs ? legacyPackages || value.outputs ? packages) flakes;
-      nixRegistry = builtins.mapAttrs (name: v: { flake = v; }) flakes;
-    in {
-      registry = nixRegistry;
-      nixPath = mapAttrsToList (name: _: "${name}=/etc/nix/inputs/${name}")
-        flakesWithPkgs;
-      package = pkgs.nixVersions.latest;
-      gc = {
-        persistent = true;
-        automatic = true;
-        dates = "weekly";
-        options = "--delete-older-than 14d";
-      };
-      optimise.automatic = true;
-      extraOptions = ''
-        keep-outputs = false
-        keep-derivations = true
-        experimental-features = nix-command flakes
-      '';
-      settings = {
-        auto-optimise-store = true;
-        # For nixpkgs-wayland: https://github.com/nix-community/nixpkgs-wayland#flake-usage
-        substituters = [
-          "https://cache.nixos.org"
-          "https://nixpkgs-wayland.cachix.org"
-          "https://eigenvalue.cachix.org"
-        ];
-        trusted-public-keys = [
-          "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
-          "nixpkgs-wayland.cachix.org-1:3lwxaILxMRkVhehr5StQprHdEo4IrE8sRho9R9HOLYA="
-          "eigenvalue.cachix.org-1:ykerQDDa55PGxU25CETy9wF6uVDpadGGXYrFNJA3TUs="
-        ];
-      };
-    };
-
     environment = {
-      sessionVariables = { EDITOR = "vim"; };
-      etc = mapAttrs' (name: value: {
-        name = "nix/inputs/${name}";
-        value = {
-          source =
-            if name == "nixpkgs" then patchedPkgs.outPath else value.outPath;
-        };
-      }) inputs;
+      sessionVariables.JD_KEYBINDINGS = config.jd.keybindings;
 
-      shells = [ pkgs.zsh pkgs.bash ];
+      etc.inputrc.source = pkgs.writeText "inputrc" (
+        "set editing-mode ${if config.jd.keybindings == "vim" then "vi" else "emacs"}\n"
+        + builtins.readFile (inputs.nixpkgs + "/nixos/modules/programs/bash/inputrc")
+      );
+
+      sessionVariables = {
+        EDITOR = "vim";
+      };
+      etc."nix/inputs/nixpkgs".source = inputs.nixpkgs.outPath;
+
+      shells = [
+        pkgs.zsh
+        pkgs.bash
+      ];
       # ZSH completions
-      pathsToLink = [ "/share/zsh" "/share/bash-completion" ];
+      pathsToLink = [
+        "/share/zsh"
+        "/share/bash-completion"
+      ];
       systemPackages = with pkgs; [
         # Misc.
-        neofetch
+        fastfetch
         bat
         util-linux
 
@@ -160,6 +133,7 @@ in {
 
         # version ocntrol
         git
+        gh
         git-lfs
         git-filter-repo
         difftastic
@@ -186,7 +160,7 @@ in {
         fd
 
         # Scripts
-        scripts.sysTools
+        jdScripts.sysTools
 
         # docs
         tldr
@@ -197,30 +171,91 @@ in {
         rclone
       ];
     };
+    programs.zsh.interactiveShellInit =
+      if config.jd.keybindings == "vim" then "bindkey -v" else "bindkey -e";
+
+    i18n.defaultLocale = "en_US.UTF-8";
+    console = {
+      earlySetup = true;
+      keyMap = "us";
+      font = "ter-v32n";
+      packages = with pkgs; [ terminus_font ];
+    };
+
+    time.timeZone =
+      if cfg.time == null then
+        null
+      else
+        (
+          if (cfg.time == "east") then
+            "US/Eastern"
+          else
+            (if cfg.time == "west" then "US/Pacific" else "Asia/Bangkok")
+        );
+
+    nix = {
+      channel.enable = false;
+      registry.nixpkgs.flake = inputs.nixpkgs;
+      nixPath = [ "nixpkgs=/etc/nix/inputs/nixpkgs" ];
+      package = pkgs.nixVersions.latest;
+      gc = {
+        persistent = true;
+        automatic = true;
+        dates = "weekly";
+        options = "--delete-older-than 14d";
+      };
+      optimise.automatic = true;
+      settings = {
+        experimental-features = [
+          "nix-command"
+          "flakes"
+        ];
+        keep-outputs = false;
+        keep-derivations = true;
+        sandbox = true;
+        require-sigs = true;
+        # Keep NixOS's default root-only daemon administration.
+        substituters = [
+          "https://nix-community.cachix.org"
+          "https://nixpkgs-wayland.cachix.org"
+          "https://eigenvalue.cachix.org"
+        ];
+        # NixOS supplies cache.nixos.org and its signing key.
+        # Extra keys are published by nix-community.org/cache and the Cachix API.
+        trusted-public-keys = [
+          "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
+          "nixpkgs-wayland.cachix.org-1:3lwxaILxMRkVhehr5StQprHdEo4IrE8sRho9R9HOLYA="
+          "eigenvalue.cachix.org-1:ykerQDDa55PGxU25CETy9wF6uVDpadGGXYrFNJA3TUs="
+        ];
+      };
+    };
 
     security.sudo.extraConfig = "Defaults env_reset,timestamp_timeout=5";
     security.sudo.execWheelOnly = true;
 
     hardware.enableRedistributableFirmware = true;
 
-    services.udisks2.enable = true;
-    services.fwupd.enable = true;
+    services = {
+      udisks2.enable = true;
+
+      fwupd.enable = true;
+
+      dbus.implementation = "broker";
+
+      journald.settings.Journal = {
+        MaxRetentionSec = "1month";
+        SystemMaxUse = "1G";
+      };
+    };
 
     programs.ccache.enable = cfg.ccache;
-
-    services.dbus.implementation = "broker";
-
-    services.journald.extraConfig = ''
-      MaxRetentionSec=1month
-      SystemMaxUse=1G
-    '';
 
     documentation = {
       enable = true;
       dev.enable = true;
       man = {
         enable = true;
-        generateCaches = true;
+        cache.enable = true;
       };
       info.enable = true;
       nixos.enable = true;

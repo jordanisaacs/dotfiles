@@ -1,9 +1,11 @@
-{ config
-, lib
-, pkgs
-, ...
+{
+  config,
+  lib,
+  pkgs,
+  ...
 }:
-with lib; let
+with lib;
+let
   cfg = config.jd.calibre;
 
   enable = cfg.web.enable || cfg.server.enable;
@@ -11,7 +13,6 @@ with lib; let
   name = "calibre";
   user = name;
   group = name;
-  id = 328;
 
   libraryDir = "/var/lib/calibre-lib";
 in

@@ -1,9 +1,12 @@
-{ pkgs
-, config
-, lib
-, ...
+{
+  pkgs,
+  config,
+  lib,
+  ...
 }:
-with lib; let cfg = config.jd;
+with lib;
+let
+  cfg = config.jd;
 in
 {
   config = mkIf (cfg.shell == "bash") {
@@ -13,7 +16,10 @@ in
       enable = true;
       historySize = 100;
       historyFileSize = 10000;
-      historyControl = [ "ignorespace" "ignoredups" ];
+      historyControl = [
+        "ignorespace"
+        "ignoredups"
+      ];
       enableCompletion = true;
       bashrcExtra = ''
         PROMPT_COMMAND=__prompt_command
@@ -57,6 +63,5 @@ in
         }
       '';
     };
-  }
-  ;
+  };
 }

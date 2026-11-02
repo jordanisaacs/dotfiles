@@ -51,6 +51,8 @@ in
   };
 
   config = mkIf cfg.enable {
+    programs.gh.enable = true;
+
     programs.git = {
       enable = true;
       settings = {
@@ -83,7 +85,7 @@ in
 
     home.packages = with pkgs; [
       delta
-      scripts.devTools
+      jdScripts.devTools
     ];
   };
 }

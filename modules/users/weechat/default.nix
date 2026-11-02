@@ -1,9 +1,11 @@
-{ pkgs
-, config
-, lib
-, ...
+{
+  pkgs,
+  config,
+  lib,
+  ...
 }:
-with lib; let
+with lib;
+let
   cfg = config.jd.weechat;
 in
 {
@@ -18,7 +20,8 @@ in
   config = mkIf cfg.enable {
     home.packages =
       let
-        myScripts = with pkgs;
+        myScripts =
+          with pkgs;
           stdenv.mkDerivation {
             pname = "weechat-scripts";
             version = "0.1";
@@ -38,17 +41,15 @@ in
             '';
           };
 
-        weechat =
-          pkgs.weechat.override
-            {
-              configure = { availablePlugins, ... }: {
-                scripts = with pkgs.weechatScripts; [
-                  weechat-autosort
-                  multiline
-                  myScripts
-                ];
-              };
-            };
+        weechat = pkgs.weechat.override {
+          configure = _: {
+            scripts = with pkgs.weechatScripts; [
+              weechat-autosort
+              multiline
+              myScripts
+            ];
+          };
+        };
       in
       [
         weechat

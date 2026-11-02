@@ -1,8 +1,17 @@
-{ pkgs, config, lib, ... }:
+{
+  pkgs,
+  config,
+  lib,
+  ...
+}:
 with lib;
-let cfg = config.jd.gpg;
-in {
-  options.jd.gpg = { enable = mkEnableOption "gpg"; };
+let
+  cfg = config.jd.gpg;
+in
+{
+  options.jd.gpg = {
+    enable = mkEnableOption "gpg";
+  };
 
   config = mkIf cfg.enable {
     programs.gpg = {
@@ -45,4 +54,3 @@ in {
     };
   };
 }
-

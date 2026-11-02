@@ -1,9 +1,11 @@
-{ pkgs
-, config
-, lib
-, ...
+{
+  pkgs,
+  config,
+  lib,
+  ...
 }:
-with lib; let
+with lib;
+let
   cfg = config.jd.kernel;
 in
 {
@@ -57,9 +59,11 @@ in
     ];
 
     kernelParams =
-      [ "boot.shell_on_fail" ]
-      ++ optionals cfg.quiet [ "quiet" ]
+      optionals cfg.quiet [ "quiet" ]
       ++ optional cfg.disableBGRTRestore "video=efifb:nobgrt"
-      ++ optionals (!cfg.watchdog) [ "nowatchdog" "nmi_watchdog=0" ];
+      ++ optionals (!cfg.watchdog) [
+        "nowatchdog"
+        "nmi_watchdog=0"
+      ];
   };
 }

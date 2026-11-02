@@ -1,9 +1,10 @@
-{ pkgs
-, config
-, lib
-, ...
+{
+  config,
+  lib,
+  ...
 }:
-with lib; let
+with lib;
+let
   cfg = config.jd.impermanence;
 in
 {
@@ -33,12 +34,11 @@ in
     };
 
     home.persistence.${cfg.backupPool} = {
-      directories =
-        [
-          xdg.dataHome
-          xdg.stateHome
-        ]
-        // (filter isString (attrValues xdg.userDirs));
+      directories = [
+        xdg.dataHome
+        xdg.stateHome
+      ]
+      // (filter isString (attrValues xdg.userDirs));
     };
   };
 }

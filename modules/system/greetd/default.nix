@@ -44,16 +44,6 @@ in
               '';
             };
 
-            xorgSession = pkgs.writeTextFile {
-              name = "xorg-session.desktop";
-              destination = "/xorg-session.desktop";
-              text = ''
-                [Desktop Entry]
-                Name=X11
-                Exec=${pkgs.xlibs.xinit}/bin/startx
-              '';
-            };
-
             # First session is used by default
             sessionDirs = builtins.concatStringsSep ":" (
               (
@@ -63,9 +53,6 @@ in
                   [ ]
               )
               ++ [ zshSession ]
-              ++ (
-                if (config.jd.graphical.enable && config.jd.graphical.xorg.enable) then [ xorgSession ] else [ ]
-              )
             );
           in
           {

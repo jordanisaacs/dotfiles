@@ -1,9 +1,10 @@
-{ pkgs
-, config
-, lib
-, ...
+{
+  config,
+  lib,
+  ...
 }:
-with lib; let
+with lib;
+let
   cfg = config.jd.graphical.wayland;
 in
 {
@@ -28,7 +29,8 @@ in
   };
 
   config = mkIf cfg.enable {
-    # security.pam.services.swaylock = mkIf (cfg.swaylockPam) {};
+    # Use upstream session units, D-Bus broker and environment cleanup.
+    programs.uwsm.enable = true;
     security.pam.services.swaylock = { };
     security.pam.services.waylock = mkIf cfg.waylockPam { };
   };

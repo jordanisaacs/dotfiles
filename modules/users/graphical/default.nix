@@ -1,12 +1,11 @@
-{ pkgs
-, config
-, lib
-, ...
-}: {
+{
+  ...
+}:
+{
   imports = [
+    ./askpass.nix
     ./applications
     ./wayland
-    ./xorg.nix
     ./shared.nix
     ./config.nix
   ];

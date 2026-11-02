@@ -30,7 +30,7 @@ in
     };
   };
 
-  config = mkIf (cfg.xorg.enable || cfg.wayland.enable) {
+  config = mkIf cfg.wayland.enable {
     home = {
       sessionVariables = {
         QT_QPA_PLATFORMTHEME = "qt6ct";
@@ -62,13 +62,14 @@ in
         emote
         #openmoji-color
 
-        jdpkgs.la-capitaine-icon-theme
+        papirus-icon-theme
 
         seahorse
       ];
     };
 
     home.pointerCursor = {
+      enable = true;
       package = pkgs.volantes-cursors;
       name = "volantes_cursors";
       size = cfg.cursor.size;
@@ -80,6 +81,9 @@ in
     fonts.fontconfig.enable = true;
 
     gtk = {
+      gtk4.theme = config.gtk.theme;
+      gtk3.extraConfig.gtk-key-theme-name =
+        if config.jd.keybindings == "emacs" then "Emacs" else "Default";
       enable = true;
       theme = mkMerge [
         (mkIf (cfg.theme == "arc-dark") {
@@ -94,7 +98,7 @@ in
 
       iconTheme = {
         package = null;
-        name = "la-capitaine-icon-theme";
+        name = "Papirus-Dark";
       };
 
       font = {
@@ -102,15 +106,6 @@ in
         package = null;
         name = "Berkeley Mono Variable";
         size = 10;
-      };
-    };
-
-    # https://github.com/nix-community/home-manager/issues/2064
-    systemd.user.targets.tray = lib.mkForce {
-      Unit = {
-        Description = "Home manager system tray";
-        Requires = [ "graphical-session-pre.target" ];
-        After = [ "xdg-desktop-portal-gtk.service" ];
       };
     };
 
@@ -123,7 +118,6 @@ in
       configFile = {
         "fontconfig/conf.d/04-font-priority.conf" =
           let
-            fcBool = x: "<bool>" + (boolToString x) + "</bool>";
             renderConf = ''
               <?xml version='1.0'?>
               <!DOCTYPE fontconfig SYSTEM 'urn:fontconfig:fonts.dtd'>
@@ -172,7 +166,7 @@ in
           # TODO: this is a wayland only terminal
           text = ''
             [General]
-            TerminalApplication=${pkgs.foot}/bin/foot
+            TerminalApplication=${pkgs.ghostty}/bin/ghostty
 
             [KDE]
             ShowDeleteCommand=false
@@ -194,20 +188,6 @@ in
       };
     };
 
-    systemd.user.services.gnome-keyring = mkIf config.machineData.systemConfig.gnome.keyring.enable {
-      Unit = {
-        Description = "GNOME Keyring";
-        PartOf = [ "graphical-session-pre.target" ];
-      };
-
-      Service = {
-        ExecStart = "/run/wrappers/bin/gnome-keyring-daemon --start --foreground";
-        Restart = "on-abort";
-      };
-
-      Install = {
-        WantedBy = [ "graphical-session-pre.target" ];
-      };
-    };
+    services.gnome-keyring.enable = config.machineData.systemConfig.gnome.keyring.enable;
   };
 }

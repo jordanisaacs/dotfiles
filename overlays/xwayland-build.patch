@@ -1,0 +1,95 @@
+--- a/meson.build
++++ b/meson.build
+@@ -4,7 +4,7 @@
+             'c_std=gnu99',
+         ],
+         version: '24.1.14',
+-        meson_version: '>= 0.56.0',
++        meson_version: '>= 0.62.0',
+ )
+ release_date = '2026-10-07'
+ 
+@@ -18,7 +18,6 @@
+ 
+ if cc.get_id() == 'gcc' or cc.get_id() == 'clang'
+     test_wflags = [
+-        '-Wall',
+         '-Wpointer-arith',
+         '-Wmissing-declarations',
+         '-Wformat=2',
+--- a/xkb/xkb.c
++++ b/xkb/xkb.c
+@@ -3649,7 +3649,6 @@
+ _XkbSetNamedIndicator(ClientPtr client, DeviceIntPtr dev,
+                       xkbSetNamedIndicatorReq * stuff)
+ {
+-    unsigned int extDevReason;
+     unsigned int statec, namec, mapc;
+     XkbSrvLedInfoPtr sli;
+     int led = 0;
+@@ -3671,11 +3670,9 @@
+         return BadAlloc;
+ 
+     namec = mapc = statec = 0;
+-    extDevReason = 0;
+ 
+     namec |= (1 << led);
+     sli->namesPresent |= ((stuff->indicator != None) ? (1 << led) : 0);
+-    extDevReason |= XkbXI_IndicatorNamesMask;
+ 
+     if (stuff->setMap) {
+         map->flags = stuff->flags;
+--- a/test/simple-xinit.c
++++ b/test/simple-xinit.c
+@@ -63,12 +63,21 @@
+ }
+ 
+ static int server_displayfd;
+-static const char *server_dead = "server_dead";
++static const char server_dead[] = "server_dead";
+ 
+ static void
+ handle_sigchld(int sig)
+ {
+-    write(server_displayfd, server_dead, strlen(server_dead));
++    int saved_errno = errno;
++    ssize_t written;
++
++    /* The pipe token is smaller than PIPE_BUF, so its write is atomic. */
++    do {
++        written = write(server_displayfd, server_dead, sizeof(server_dead) - 1);
++    } while (written < 0 && errno == EINTR);
++    if (written != sizeof(server_dead) - 1)
++        _exit(1);
++    errno = saved_errno;
+ }
+ 
+ /* Starts the X server, returning its pid. */
+--- a/test/bigreq/request-length.c
++++ b/test/bigreq/request-length.c
+@@ -21,6 +21,7 @@
+  * IN THE SOFTWARE.
+  */
+ 
++#include <errno.h>
+ #include <unistd.h>
+ #include <stdlib.h>
+ #include <poll.h>
+@@ -62,7 +63,16 @@
+     free(xcb_big_requests_enable_reply(c, xcb_big_requests_enable(c), NULL));
+ 
+     /* Manually write out the bad request.  XCB can't help us here.*/
+-    write(fd, &xise_req, sizeof(xise_req));
++    size_t offset = 0;
++    while (offset < sizeof(xise_req)) {
++        ssize_t written = write(fd, (char *) &xise_req + offset,
++                                sizeof(xise_req) - offset);
++        if (written < 0 && errno == EINTR)
++            continue;
++        if (written <= 0)
++            return 2;
++        offset += written;
++    }
+ 
+     /* Block until the server has processed our mess and throws an
+      * error. If we get disconnected, then the server has noticed what we're

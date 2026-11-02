@@ -11,17 +11,7 @@ let
     let
       cfg = config.jd.graphical;
     in
-    cfg.xorg.enable || cfg.wayland.enable;
-
-  retroArch = pkgs.retroarch.override {
-    # retroarch = pkgs.retroarchBare.override {
-    #   withGamemode = false;
-    # };
-    cores = with pkgs.libretro; [
-      dolphin
-      citra
-    ];
-  };
+    cfg.wayland.enable;
 
   steam = pkgs.steam.override (prev: {
     extraLibraries =

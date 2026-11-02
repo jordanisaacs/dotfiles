@@ -1,16 +1,13 @@
-{ config
-, lib
-, pkgs
-, ...
+{
+  config,
+  lib,
+  ...
 }:
-with lib; let
+with lib;
+let
   cfg = config.jd.mailserver;
 
-  friendlyName = lib.strings.stringAsChars
-    (x:
-      if x == "@"
-      then "_"
-      else x);
+  friendlyName = lib.strings.stringAsChars (x: if x == "@" then "_" else x);
 
   accountConf = _: {
     options = {
@@ -82,16 +79,16 @@ in
   };
 
   config = mkIf cfg.enable {
-    age.secrets = with lib;
-      mapAttrs'
-        (name: value: (nameValuePair
-          "mailserver_pwd_${friendlyName name}"
-          {
-            file = value.hashedPasswordFile;
-            path = "${cfg.decryptFolder}/${friendlyName name}";
-            mode = "600";
-          }))
-        cfg.loginAccounts;
+    age.secrets =
+      with lib;
+      mapAttrs' (
+        name: value:
+        (nameValuePair "mailserver_pwd_${friendlyName name}" {
+          file = value.hashedPasswordFile;
+          path = "${cfg.decryptFolder}/${friendlyName name}";
+          mode = "600";
+        })
+      ) cfg.loginAccounts;
 
     security.acme = {
       acceptTerms = true;
@@ -123,14 +120,12 @@ in
       inherit (cfg) mailDirectory;
       indexDir = cfg.indexDirectory;
 
-      loginAccounts =
-        builtins.mapAttrs
-          (name: value:
-            with value; {
-              hashedPasswordFile = "/etc/mailserver/${friendlyName name}";
-              inherit sendOnly aliases;
-            })
-          cfg.loginAccounts;
+      loginAccounts = builtins.mapAttrs (
+        name: value: with value; {
+          hashedPasswordFile = "/etc/mailserver/${friendlyName name}";
+          inherit sendOnly aliases;
+        }
+      ) cfg.loginAccounts;
     };
   };
 }

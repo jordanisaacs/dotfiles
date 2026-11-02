@@ -1,8 +1,15 @@
-{ pkgs, config, lib, ... }:
+{
+  pkgs,
+  config,
+  lib,
+  ...
+}:
 # https://nixos.wiki/wiki/GNOME#Running_GNOME_programs_outside_of_GNOME
 with lib;
-let cfg = config.jd.gnome;
-in {
+let
+  cfg = config.jd.gnome;
+in
+{
   options.jd.gnome = {
     enable = mkOption {
       description = "Enable GNOME programs";

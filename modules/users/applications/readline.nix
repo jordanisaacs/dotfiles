@@ -1,7 +1,13 @@
-{ pkgs, config, lib, ... }:
+{
+  config,
+  lib,
+  ...
+}:
 with lib;
-let cfg = config.jd.applications.readline;
-in {
+let
+  cfg = config.jd.applications.readline;
+in
+{
   options.jd.applications.readline.enable = mkEnableOption "readline";
 
   config = mkIf cfg.enable {
@@ -11,7 +17,7 @@ in {
       includeSystemConfig = true;
       variables = {
         "keyseq-timeout" = 250;
-        "editing-mode" = "emacs";
+        "editing-mode" = if config.jd.keybindings == "vim" then "vi" else "emacs";
         "bell-style" = "none";
 
         # display all possible matches for an ambiguous pattern at first tab
@@ -39,22 +45,23 @@ in {
         ''
           tab: menu-complete
           "\e[Z": menu-complete-backward
-        '' +
-        # https://wiki.archlinux.org/title/readline#Different_cursor_shapes_for_each_mode
         ''
-          $if lnav
-          	set vi-ins-mode-string "I"
-          	set vi-cmd-mode-string "N"
-          $else
-          $if term=linux
-          	set vi-ins-mode-string \1\e[?0c\2
-          	set vi-cmd-mode-string \1\e[?8c\2
-          $else
-          	set vi-ins-mode-string \1\e[6 q\2
-          	set vi-cmd-mode-string \1\e[2 q\2
-          $endif
-          $endif
-        ''
+        +
+          # https://wiki.archlinux.org/title/readline#Different_cursor_shapes_for_each_mode
+          ''
+            $if lnav
+              set vi-ins-mode-string "I"
+              set vi-cmd-mode-string "N"
+            $else
+            $if term=linux
+              set vi-ins-mode-string \1\e[?0c\2
+              set vi-cmd-mode-string \1\e[?8c\2
+            $else
+              set vi-ins-mode-string \1\e[6 q\2
+              set vi-cmd-mode-string \1\e[2 q\2
+            $endif
+            $endif
+          ''
         # emacs mode
         + ''
           $if mode=emacs

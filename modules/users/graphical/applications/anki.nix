@@ -1,15 +1,17 @@
-{ pkgs
-, config
-, lib
-, ...
+{
+  pkgs,
+  config,
+  lib,
+  ...
 }:
-with lib; let
+with lib;
+let
   cfg = config.jd.graphical.applications;
   isGraphical =
     let
       cfg = config.jd.graphical;
     in
-    cfg.xorg.enable || cfg.wayland.enable;
+    cfg.wayland.enable;
 in
 {
   options.jd.graphical.applications.anki = {
@@ -32,21 +34,18 @@ in
     };
   };
 
-  config =
-    mkIf
-      (isGraphical && cfg.enable && cfg.anki.enable)
-      {
-        home = {
-          packages = [ pkgs.anki-bin ];
-          file."${config.xdg.dataHome}/Anki2/addons21/ankisyncd/__init__.py" = mkIf cfg.anki.sync {
-            text = ''
-              import os
+  config = mkIf (isGraphical && cfg.enable && cfg.anki.enable) {
+    home = {
+      packages = [ pkgs.anki-bin ];
+      file."${config.xdg.dataHome}/Anki2/addons21/ankisyncd/__init__.py" = mkIf cfg.anki.sync {
+        text = ''
+          import os
 
-              addr = "${cfg.anki.addr}" # put your server address here
-              os.environ["SYNC_ENDPOINT"] = addr + "sync/"
-              os.environ["SYNC_ENDPOINT_MEDIA"] = addr + "msync/"
-            '';
-          };
-        };
+          addr = "${cfg.anki.addr}" # put your server address here
+          os.environ["SYNC_ENDPOINT"] = addr + "sync/"
+          os.environ["SYNC_ENDPOINT_MEDIA"] = addr + "msync/"
+        '';
       };
+    };
+  };
 }

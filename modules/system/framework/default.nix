@@ -1,7 +1,14 @@
-{ pkgs, config, lib, ... }:
+{
+  pkgs,
+  config,
+  lib,
+  ...
+}:
 with lib;
-let cfg = config.jd.framework;
-in {
+let
+  cfg = config.jd.framework;
+in
+{
   options.jd.framework = {
     enable = mkOption {
       description = "Enable framework options";
@@ -29,21 +36,17 @@ in {
           interval = "weekly";
         };
 
-        fwupd.extraRemotes = [ "lvfs-testing" ];
-
         # https://community.frame.work/t/headphone-jack-intermittent-noise/5246/90
         acpid = {
           enable = true;
           handlers = {
             headphone-power-save-off = {
               event = "jack/headphone HEADPHONE plug";
-              action =
-                "echo 0 >/sys/module/snd_hda_intel/parameters/power_save";
+              action = "echo 0 >/sys/module/snd_hda_intel/parameters/power_save";
             };
             headphone-power-save-on = {
               event = "jack/headphone HEADPHONE unplug";
-              action =
-                "echo 1 >/sys/module/snd_hda_intel/parameters/power_save";
+              action = "echo 1 >/sys/module/snd_hda_intel/parameters/power_save";
             };
           };
         };
@@ -53,19 +56,14 @@ in {
 
       boot = {
         kernelParams = [
-          # Deep sleep
-          "mem_sleep_default=deep"
+          # Current kernels use their default sleep mode; s2idle's old
+          # Framework regression was fixed by 6.8 (nixos-hardware).
           # https://community.frame.work/t/linux-battery-life-tuning/6665/156
           "nvme.noacpi=1"
         ];
 
-        # See: https://01.org/linuxgraphics/downloads/firmware
-        # Audio:
-        # 1. https://community.frame.work/t/headset-microphone-on-linux/12387
-        # 2. https://community.frame.work/t/some-notes-on-audio-in-linux/8815Aa
-        extraModprobeConfig = ''
-          options snd-hda-intel model=dell-headset-multi
-        '';
+        # The dell-headset-multi quirk is only needed before Linux 6.6.8.
+        # https://github.com/NixOS/nixos-hardware/blob/master/framework/13-inch/common/default.nix
       };
     }
     (mkIf cfg.fprint.enable { services.fprintd.enable = true; })

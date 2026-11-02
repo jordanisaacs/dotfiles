@@ -1,9 +1,11 @@
-{ pkgs
-, config
-, lib
-, ...
+{
+  pkgs,
+  config,
+  lib,
+  ...
 }:
-with lib; let
+with lib;
+let
   cfg = config.jd.ssh;
   inherit (config.jd.impermanence.persistedDatasets.root) backup;
 in
@@ -17,7 +19,10 @@ in
 
     type = mkOption {
       description = "Whether is SSH client or server";
-      type = types.enum [ "client" "server" ];
+      type = types.enum [
+        "client"
+        "server"
+      ];
       default = "client";
     };
 
@@ -38,7 +43,10 @@ in
     };
 
     firewall = mkOption {
-      type = types.enum [ "world" "wg" ];
+      type = types.enum [
+        "world"
+        "wg"
+      ];
       description = "Open firewall to everyone or wireguard";
     };
 
@@ -76,7 +84,7 @@ in
 
         # terminfo's for correct formatting of ssh terminal
         environment.systemPackages = [
-          pkgs.foot.terminfo
+          pkgs.ghostty.terminfo
         ];
 
         age.secrets.ssh_host_private_key = {
@@ -93,40 +101,52 @@ in
         services.openssh.openFirewall = true;
       })
       (mkIf
-        (cfg.firewall == "wg" && (assertMsg config.jd.wireguard.enable "Wireguard must be enabled for wireguard ssh firewall"))
+        (
+          cfg.firewall == "wg"
+          && (assertMsg config.jd.wireguard.enable "Wireguard must be enabled for wireguard ssh firewall")
+        )
         {
           services.openssh.openFirewall = false;
           networking.firewall.interfaces.${config.jd.wireguard.interface}.allowedTCPPorts = cfg.ports;
-        })
-      (mkIf (let inherit (config.jd.boot) type; in type == "zfs" || type == "zfs-v2") (mkMerge [
-        (mkIf config.jd.impermanence.enable {
-          environment.persistence.${backup}.directories = [ "/etc/secrets/initrd" ];
-        })
-        {
-          boot.initrd.network = {
-            enable = true;
-            ssh = {
-              enable = true;
-              port = 2323;
-              hostKeys = [
-                "/etc/secrets/initrd/ssh_host_ed25519_key"
-              ];
-              authorizedKeys = cfg.initrdKeys;
-            };
-            postCommands = ''
-              cat <<EOF > /root/.profile
-              if pgrep -x "zfs" > /dev/null
-              then
-                zfs load-key -a
-                killall zfs
-              else
-                echo "zfs not running -- maybe the pool is taking time to load for unforseen reasons"
-              fi
-              EOF
-            '';
-          };
         }
-      ]))
+      )
+      (mkIf
+        (
+          let
+            inherit (config.jd.boot) type;
+          in
+          type == "zfs" || type == "zfs-v2"
+        )
+        (mkMerge [
+          (mkIf config.jd.impermanence.enable {
+            environment.persistence.${backup}.directories = [ "/etc/secrets/initrd" ];
+          })
+          {
+            boot.initrd.network = {
+              enable = true;
+              ssh = {
+                enable = true;
+                port = 2323;
+                hostKeys = [
+                  "/etc/secrets/initrd/ssh_host_ed25519_key"
+                ];
+                authorizedKeys = cfg.initrdKeys;
+              };
+              postCommands = ''
+                cat <<EOF > /root/.profile
+                if pgrep -x "zfs" > /dev/null
+                then
+                  zfs load-key -a
+                  killall zfs
+                else
+                  echo "zfs not running -- maybe the pool is taking time to load for unforseen reasons"
+                fi
+                EOF
+              '';
+            };
+          }
+        ])
+      )
     ]))
   ];
 }

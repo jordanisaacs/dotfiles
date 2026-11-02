@@ -1,10 +1,19 @@
-{ pkgs, config, lib, ... }:
+{
+  pkgs,
+  config,
+  lib,
+  ...
+}:
 with lib;
 let
   cfg = config.jd.graphical.applications;
-  isGraphical = let cfg = config.jd.graphical;
-  in cfg.xorg.enable || cfg.wayland.enable;
-in {
+  isGraphical =
+    let
+      cfg = config.jd.graphical;
+    in
+    cfg.wayland.enable;
+in
+{
   options.jd.graphical.applications.dolphin = {
     enable = mkEnableOption "dolphin file explorer";
   };

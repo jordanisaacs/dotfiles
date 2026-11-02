@@ -1,14 +1,24 @@
-{ pkgs
-, config
-, lib
-, ...
+{
+  config,
+  lib,
+  ...
 }:
 with lib;
-with builtins; let
+with builtins;
+let
   cfg = config.jd.core;
   persist = config.jd.impermanence;
 in
 {
+  options.jd.keybindings = mkOption {
+    type = types.enum [
+      "vim"
+      "emacs"
+    ];
+    default = config.machineData.keybindings or "emacs";
+    description = "Editing and navigation keybinding profile; defaults to the system preference.";
+  };
+
   options.jd.core = {
     enable = mkOption {
       description = "Enable some core configurations";
@@ -30,12 +40,28 @@ in
       ];
     })
     {
-      xdg.enable = true;
-      xdg.userDirs.enable = true;
-      xdg.mime.enable = true;
-      xdg.mimeApps.enable = true;
+      home.sessionVariables.JD_KEYBINDINGS = config.jd.keybindings;
+      xdg = {
+        enable = true;
 
-      home.packages = with pkgs; [ home-manager ];
+        userDirs.enable = true;
+
+        userDirs.setSessionVariables = true;
+
+        mime.enable = true;
+
+        mimeApps.enable = true;
+      };
+
+      programs.home-manager.enable = true;
+
+      # System GC does not expire profiles in the user's XDG state directory.
+      nix.gc = {
+        automatic = true;
+        dates = "weekly";
+        options = "--delete-older-than 30d";
+        randomizedDelaySec = "30min";
+      };
     }
   ]);
 }

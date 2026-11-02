@@ -1,50 +1,39 @@
 # modified from: https://github.com/lucasew/nixcfg/blob/master/packages/wrapWine.nix
-{ pkgs, ... }: { executable
-               , name
-               , config_dir
-               , wineFlags ? ""
-               , tricks ? [ ]
-               , setupScript ? ""
-               , firstRunScript ? ""
-               , is64bits ? false
-               , wine ? pkgs.wineWowPackages.stable
-               ,
-               }:
-with builtins; let
-  wineBin = "${wine}/bin/wine${
-    if is64bits
-    then "64"
-    else ""
-  }";
+{ pkgs, ... }:
+{
+  executable,
+  name,
+  config_dir,
+  wineFlags ? "",
+  tricks ? [ ],
+  setupScript ? "",
+  firstRunScript ? "",
+  is64bits ? false,
+  wine ? pkgs.wineWowPackages.stable,
+}:
+with builtins;
+let
+  wineBin = "${wine}/bin/wine${if is64bits then "64" else ""}";
   requiredPackages = with pkgs; [
     wine
     cabextract
   ];
   wineConfigDir = "${config_dir}/wine";
   PATH = pkgs.lib.makeBinPath requiredPackages;
-  NAME = name;
 
-  HOME =
-    if home == ""
-    then "${WINENIX_PROFILES}/${name}"
-    else home;
-
-  WINEARCH =
-    if is64bits
-    then "win64"
-    else "win32";
+  WINEARCH = if is64bits then "win64" else "win32";
 
   setupHook = "${wine}/bin/wineboot";
 
   tricksHook =
-    if (length tricks) > 0
-    then
+    if (length tricks) > 0 then
       let
         tricksStr = concatStringsSep " " tricks;
         tricksPkg = pkg.winetricks.override { inherit wine; };
       in
       "${tricksPkg}/bin/winetricks ${tricksStr}"
-    else "";
+    else
+      "";
 
   script = pkgs.writeShellScriptBin name ''
     export WINEARCH=${WINEARCH}

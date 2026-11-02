@@ -2,3 +2,5 @@ result
 bin-tmp
 .config/
 .ccls-cache/
+.ruff_cache/
+__pycache__/

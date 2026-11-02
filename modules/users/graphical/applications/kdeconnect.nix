@@ -1,17 +1,22 @@
-{ pkgs
-, config
-, lib
-, ...
+{
+  config,
+  lib,
+  ...
 }:
-with lib; let
+with lib;
+let
   cfg = config.jd.graphical.applications;
   isGraphical =
     let
       cfg = config.jd.graphical;
     in
-    cfg.xorg.enable || cfg.wayland.enable;
+    cfg.wayland.enable;
 
-  portsOpen = let cfg = config.machineData.systemConfig.networking.firewall; in !cfg.enable || cfg.allowKdeconnect;
+  portsOpen =
+    let
+      cfg = config.machineData.systemConfig.networking.firewall;
+    in
+    !cfg.enable || cfg.allowKdeconnect;
 in
 {
   options.jd.graphical.applications.kdeconnect = {
@@ -24,7 +29,12 @@ in
 
   config =
     mkIf
-      (isGraphical && cfg.enable && cfg.kdeconnect.enable && (assertMsg portsOpen "need to open ports on host"))
+      (
+        isGraphical
+        && cfg.enable
+        && cfg.kdeconnect.enable
+        && (assertMsg portsOpen "need to open ports on host")
+      )
       {
         services.kdeconnect = {
           enable = true;

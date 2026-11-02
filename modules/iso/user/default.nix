@@ -1,12 +1,15 @@
-{ pkgs
-, config
-, lib
-, ...
-}: {
+{
+  pkgs,
+  ...
+}:
+{
   users.users.nixos = {
     name = "nixos";
     isNormalUser = true;
-    extraGroups = [ "wheel" "networkmanager" ];
+    extraGroups = [
+      "wheel"
+      "networkmanager"
+    ];
     uid = 1000;
     initialPassword = "helloworld!";
     shell = pkgs.bash;

@@ -1,9 +1,10 @@
-{ pkgs
-, config
-, lib
-, ...
+{
+  config,
+  lib,
+  ...
 }:
-with lib; let
+with lib;
+let
   cfg = config.jd.boot;
 in
 {
@@ -11,7 +12,10 @@ in
     type = mkOption {
       description = "Type of boot. Default encrypted-efi";
       default = null;
-      type = types.enum [ "uefi" "bios" ];
+      type = types.enum [
+        "uefi"
+        "bios"
+      ];
     };
 
     grubDevice = mkOption {
@@ -40,22 +44,7 @@ in
             enable = true;
             editor = false;
             configurationLimit = 15;
-            extraEntries = {
-              # Sorting is from z-a so go after nixos entries
-              "power.conf" = ''
-                title Power Off
-                efi /efi/efi-power/poweroff.efi
-              '';
-              # n*** - where nixos entries are
-              "a-reboot.conf" = ''
-                title Reboot
-                efi /efi/efi-power/reboot.efi
-              '';
-            };
-            extraFiles = {
-              "efi/efi-power/reboot.efi" = "${pkgs.efi-power}/reboot.efi";
-              "efi/efi-power/poweroff.efi" = "${pkgs.efi-power}/poweroff.efi";
-            };
+            # systemd-boot supports Shift+O (power off) and Shift+B (reboot).
           };
         };
       };

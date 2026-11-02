@@ -1,9 +1,11 @@
-{ config
-, lib
-, pkgs
-, ...
+{
+  config,
+  lib,
+  pkgs,
+  ...
 }:
-with lib; let
+with lib;
+let
   cfg = config.jd.monitoring;
 in
 {
@@ -30,10 +32,7 @@ in
       # Nested to get around merges/conditionals showing up in generated toml
       vectorCfg =
         let
-          buildCfg = opt: config:
-            if opt
-            then config
-            else { };
+          buildCfg = opt: config: if opt then config else { };
         in
         {
           sources =
@@ -61,7 +60,12 @@ in
 
       vectorPkg = pkgs.vector.override {
         enableKafka = false;
-        features = [ "vrl-cli" "sources-dnstap" "sinks-file" "unix" ];
+        features = [
+          "vrl-cli"
+          "sources-dnstap"
+          "sinks-file"
+          "unix"
+        ];
       };
     in
     {
@@ -81,7 +85,8 @@ in
           let
             format = pkgs.formats.toml { };
             conf = format.generate "vector.toml" vectorCfg;
-            validateConfig = file:
+            validateConfig =
+              file:
               pkgs.runCommand "validate-vector-conf" { } ''
                 ${vectorPkg}/bin/vector validate --no-environment "${file}"
                 ln -s "${file}" "$out"

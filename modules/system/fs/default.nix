@@ -1,17 +1,25 @@
-{ pkgs
-, config
-, lib
-, ...
+{
+  pkgs,
+  config,
+  lib,
+  ...
 }:
-with lib; let
+with lib;
+let
   cfg = config.jd.fs;
 in
 {
+  imports = [ ./cryptkey-readiness.nix ];
+
   options.jd.fs = {
     type = mkOption {
       description = "Type of boot. Default encrypted-efi";
       default = null;
-      type = types.enum [ "encrypted-efi" "zfs" "zfs-v2" ];
+      type = types.enum [
+        "encrypted-efi"
+        "zfs"
+        "zfs-v2"
+      ];
     };
 
     hostId = mkOption {
@@ -42,9 +50,13 @@ in
       fsConfig = mkMerge [
         {
           # Uses a tmpfs for /tmp (not just on boot)
-          boot.tmp.useTmpfs = true;
-          boot.tmp.tmpfsSize = "50%";
-          boot.tmp.cleanOnBoot = true;
+          boot = {
+            tmp = {
+              useTmpfs = true;
+              tmpfsSize = "50%";
+              cleanOnBoot = true;
+            };
+          };
         }
 
         (mkIf (cfg.type == "encrypted-efi") {
@@ -53,6 +65,8 @@ in
           fileSystems."/boot" = {
             device = "/dev/disk/by-label/BOOT";
             fsType = "vfat";
+            # systemd-boot keeps its random seed on the EFI partition.
+            options = [ "umask=0077" ];
           };
 
           fileSystems."/" = {
@@ -93,7 +107,8 @@ in
         # https://florianfranke.dev/posts/2020/03/installing-nixos-with-encrypted-zfs-on-a-netcup.de-root-server/
         (mkIf (cfg.type == "zfs" || cfg.type == "zfs-v2") {
           boot = {
-            kernelPackages = pkgs.zfs.latestCompatibleLinuxPackages;
+            # Use nixpkgs' supported LTS kernel for out-of-tree ZFS modules.
+            kernelPackages = pkgs.linuxPackages;
 
             supportedFilesystems = [ "zfs" ];
             kernelParams = [ "nohibernate" ];
@@ -102,9 +117,13 @@ in
             zfs.forceImportRoot = false;
           };
 
-          services.zfs.trim.enable = true;
-          services.zfs.autoScrub.enable = true;
-          services.zfs.autoScrub.pools = [ "rpool" ];
+          services = {
+            zfs = {
+              trim.enable = true;
+              autoScrub.enable = true;
+              autoScrub.pools = [ "rpool" ];
+            };
+          };
 
           networking.hostId = cfg.hostId;
 
@@ -131,69 +150,75 @@ in
               "data" = { };
             };
 
-            fileSystems."/" = {
-              device = "rpool/local";
-              fsType = "zfs";
-              neededForBoot = true;
+            fileSystems = {
+              "/" = {
+                device = "rpool/local";
+                fsType = "zfs";
+                neededForBoot = true;
+              };
+
+              "/root" = {
+                device = "rpool/local/root";
+                fsType = "zfs";
+                neededForBoot = true;
+              };
+
+              "/home" = {
+                device = "rpool/local/home";
+                fsType = "zfs";
+                neededForBoot = true;
+              };
+
+              "/nix" = {
+                device = "rpool/persist/nix";
+                fsType = "zfs";
+                neededForBoot = true;
+              };
+
+              "/persist/root" = {
+                device = "rpool/persist/root";
+                fsType = "zfs";
+                neededForBoot = true;
+              };
+
+              "/persist/data" = {
+                device = "rpool/persist/data";
+                fsType = "zfs";
+                neededForBoot = true;
+              };
+
+              "/backup/root" = {
+                device = "rpool/backup/root";
+                fsType = "zfs";
+                neededForBoot = true;
+              };
+
+              "/backup/data" = {
+                device = "rpool/backup/data";
+                fsType = "zfs";
+                neededForBoot = true;
+              };
             };
 
-            fileSystems."/root" = {
-              device = "rpool/local/root";
-              fsType = "zfs";
-              neededForBoot = true;
-            };
-
-            fileSystems."/home" = {
-              device = "rpool/local/home";
-              fsType = "zfs";
-              neededForBoot = true;
-            };
-
-            fileSystems."/nix" = {
-              device = "rpool/persist/nix";
-              fsType = "zfs";
-              neededForBoot = true;
-            };
-
-            fileSystems."/persist/root" = {
-              device = "rpool/persist/root";
-              fsType = "zfs";
-              neededForBoot = true;
-            };
-
-            fileSystems."/persist/data" = {
-              device = "rpool/persist/data";
-              fsType = "zfs";
-              neededForBoot = true;
-            };
-
-            fileSystems."/backup/root" = {
-              device = "rpool/backup/root";
-              fsType = "zfs";
-              neededForBoot = true;
-            };
-
-            fileSystems."/backup/data" = {
-              device = "rpool/backup/data";
-              fsType = "zfs";
-              neededForBoot = true;
-            };
           }
           (mkIf cfg.zfs.userPool {
-            fileSystems."/home/jd" = {
-              device = "rpool/local/home/jd";
-              fsType = "zfs";
+            fileSystems = {
+              "/home/jd" = {
+                device = "rpool/local/home/jd";
+                fsType = "zfs";
+              };
+
+              "/persist/home/jd" = {
+                device = "rpool/persist/home/jd";
+                fsType = "zfs";
+              };
+
+              "/backup/home/jd" = {
+                device = "rpool/backup/home/jd";
+                fsType = "zfs";
+              };
             };
 
-            fileSystems."/persist/home/jd" = {
-              device = "rpool/persist/home/jd";
-              fsType = "zfs";
-            };
-
-            fileSystems."/backup/home/jd" = {
-              device = "rpool/backup/home/jd";
-              fsType = "zfs";
-            };
           })
         ]))
         (mkIf (cfg.type == "zfs") {
@@ -207,42 +232,47 @@ in
               persist = "/persist";
               backup = "/persist";
             };
-            "data" = { backup = "/persist/data"; };
+            "data" = {
+              backup = "/persist/data";
+            };
           };
 
-          fileSystems."/" = {
-            device = "rpool/local/root";
-            fsType = "zfs";
+          fileSystems = {
+            "/" = {
+              device = "rpool/local/root";
+              fsType = "zfs";
+            };
+
+            "/home" = {
+              device = "rpool/local/home";
+              fsType = "zfs";
+            };
+
+            "/nix" = {
+              device = "rpool/local/nix";
+              fsType = "zfs";
+              neededForBoot = true;
+            };
+
+            "/persist" = {
+              device = "rpool/persist/root";
+              fsType = "zfs";
+              neededForBoot = true;
+            };
+
+            "/persist/home" = {
+              device = "rpool/persist/home";
+              fsType = "zfs";
+              neededForBoot = true;
+            };
+
+            "/persist/data" = {
+              device = "rpool/persist/data";
+              fsType = "zfs";
+              neededForBoot = true;
+            };
           };
 
-          fileSystems."/home" = {
-            device = "rpool/local/home";
-            fsType = "zfs";
-          };
-
-          fileSystems."/nix" = {
-            device = "rpool/local/nix";
-            fsType = "zfs";
-            neededForBoot = true;
-          };
-
-          fileSystems."/persist" = {
-            device = "rpool/persist/root";
-            fsType = "zfs";
-            neededForBoot = true;
-          };
-
-          fileSystems."/persist/home" = {
-            device = "rpool/persist/home";
-            fsType = "zfs";
-            neededForBoot = true;
-          };
-
-          fileSystems."/persist/data" = {
-            device = "rpool/persist/data";
-            fsType = "zfs";
-            neededForBoot = true;
-          };
         })
       ];
     in

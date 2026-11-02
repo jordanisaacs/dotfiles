@@ -1,7 +1,18 @@
-{ system, pkgs, lib, user, inputs, patchedPkgs, utils, }:
+{
+  system,
+  pkgs,
+  lib,
+  inputs,
+  utils,
+}:
 with builtins;
-with utils; {
-  mkISO = { name, systemConfig ? { } }:
+with utils;
+{
+  mkISO =
+    {
+      name,
+      systemConfig ? { },
+    }:
     lib.nixosSystem {
       inherit system;
 
@@ -20,61 +31,86 @@ with utils; {
       ];
     };
 
-  mkHost = { name, systemConfig, cpuCores, stateVersion, passthru ? { }
-    , gpuTempSensor ? null, cpuTempSensor ? null, }:
+  mkHost =
+    {
+      name,
+      systemConfig,
+      cpuCores,
+      stateVersion,
+      passthru ? { },
+      gpuTempSensor ? null,
+      cpuTempSensor ? null,
+    }:
     let
       enable = [ "enable" ];
-      moduleFolder = "modules/system/";
 
       toplevelModules = [
         {
           attrPath = [ "isQemuGuest" ];
-          module =
-            import (inputs.nixpkgs + "/nixos/modules/profiles/qemu-guest.nix");
-          config = { services.qemuGuest.enable = true; };
+          keepAttr = false;
+          module = import (inputs.nixpkgs + "/nixos/modules/profiles/qemu-guest.nix");
+          config = {
+            services.qemuGuest.enable = true;
+          };
         }
         {
           attrPath = [ "impermanence" ];
           inherit enable;
         }
         {
-          attrPath = [ "debug" "dwarffs" ];
+          attrPath = [
+            "debug"
+            "dwarffs"
+          ];
           inherit enable;
           module = inputs.dwarffs.nixosModules.dwarffs;
         }
       ];
 
-      finalConfig =
-        foldl' (accum: toplevel: enableModuleConfig toplevel accum) {
-          config = systemConfig;
-          extraModules = [
-            inputs.agenix.nixosModules.age
-            inputs.simple-nixos-mailserver.nixosModule
-            inputs.impermanence.nixosModule
-            passthru
-          ];
-        } toplevelModules;
+      finalConfig = foldl' (accum: toplevel: enableModuleConfig toplevel accum) {
+        config = systemConfig;
+        extraModules = [
+          inputs.agenix.nixosModules.age
+          inputs.simple-nixos-mailserver.nixosModule
+          inputs.impermanence.nixosModule
+          passthru
+        ];
+      } toplevelModules;
 
-      userCfg = {
-        inherit name systemConfig cpuCores gpuTempSensor cpuTempSensor;
+      userCfg = config: {
+        inherit
+          name
+          systemConfig
+          cpuCores
+          gpuTempSensor
+          cpuTempSensor
+          ;
+        keybindings = config.jd.keybindings;
       };
-    in lib.nixosSystem {
+    in
+    lib.nixosSystem {
       inherit system;
 
       modules = [
-        (import ../modules/system { inherit inputs patchedPkgs; })
-        {
-          jd = finalConfig.config;
+        (import ../modules/system { inherit inputs; })
+        (
+          { config, ... }:
+          {
+            jd = finalConfig.config;
 
-          system.stateVersion = stateVersion;
+            system.stateVersion = stateVersion;
 
-          environment.etc = { "hmsystemdata.json".text = toJSON userCfg; };
+            environment.etc = {
+              "hmsystemdata.json".text = toJSON (userCfg config);
+            };
 
-          networking.hostName = name;
+            networking.hostName = name;
 
-          nixpkgs.pkgs = pkgs;
-          nix.settings.max-jobs = lib.mkDefault cpuCores;
-        }
-      ] ++ finalConfig.extraModules;
+            nixpkgs.pkgs = pkgs;
+            nix.settings.max-jobs = lib.mkDefault cpuCores;
+          }
+        )
+      ]
+      ++ finalConfig.extraModules;
     };
 }

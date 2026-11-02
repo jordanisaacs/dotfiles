@@ -1,9 +1,11 @@
-{ config
-, lib
-, pkgs
-, ...
+{
+  config,
+  lib,
+  pkgs,
+  ...
 }:
-with lib; let
+with lib;
+let
   conf = config.jd.syncthing;
 in
 {
@@ -91,9 +93,11 @@ in
         };
 
         networking.firewall.interfaces.${config.jd.wireguard.interface}.allowedTCPPorts =
-          mkIf
-            (assertMsg config.jd.wireguard.enable "Wireguard must be enable for wireguard ssh firewall")
-            [ cfg.port cfg.statusPort ];
+          mkIf (assertMsg config.jd.wireguard.enable "Wireguard must be enable for wireguard ssh firewall")
+            [
+              cfg.port
+              cfg.statusPort
+            ];
       }
     )
     (
@@ -112,8 +116,7 @@ in
         };
 
         networking.firewall.interfaces.${config.jd.wireguard.interface}.allowedTCPPorts =
-          mkIf
-            (assertMsg config.jd.wireguard.enable "Wireguard must be enable for wireguard ssh firewall")
+          mkIf (assertMsg config.jd.wireguard.enable "Wireguard must be enable for wireguard ssh firewall")
             [ cfg.port ];
 
         systemd.services.syncthing-discovery = {

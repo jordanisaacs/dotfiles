@@ -1,9 +1,11 @@
-{ pkgs
-, config
-, lib
-, ...
+{
+  pkgs,
+  config,
+  lib,
+  ...
 }:
-with lib; let
+with lib;
+let
   cfg = config.jd.connectivity;
 in
 {
@@ -28,24 +30,31 @@ in
   };
 
   config = {
-    environment.systemPackages = with pkgs;
-      optional cfg.bluetooth.enable scripts.bluetoothTools
-      ++ optionals cfg.sound.enable [ pulseaudio scripts.soundTools ];
+    environment.systemPackages =
+      with pkgs;
+      optional cfg.bluetooth.enable jdScripts.bluetoothTools
+      ++ optionals cfg.sound.enable [
+        pulseaudio
+        jdScripts.soundTools
+      ];
 
     security.rtkit.enable = cfg.sound.enable;
-    services.pipewire = mkIf cfg.sound.enable {
-      enable = true;
-      alsa.enable = true;
-      alsa.support32Bit = true;
-      pulse.enable = true;
-      jack.enable = true;
+    services = {
+      pipewire = mkIf cfg.sound.enable {
+        enable = true;
+        alsa.enable = true;
+        alsa.support32Bit = true;
+        pulse.enable = true;
+        jack.enable = true;
+      };
+
+      printing.enable = cfg.printing.enable;
+
+      blueman.enable = cfg.bluetooth.enable;
     };
 
     #hardware.pulseaudio.enable = cfg.sound.enable;
 
-    services.printing.enable = cfg.printing.enable;
-
     hardware.bluetooth.enable = cfg.bluetooth.enable;
-    services.blueman.enable = cfg.bluetooth.enable;
   };
 }

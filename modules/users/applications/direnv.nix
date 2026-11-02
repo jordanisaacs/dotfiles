@@ -1,9 +1,11 @@
-{ pkgs
-, config
-, lib
-, ...
+{
+  pkgs,
+  config,
+  lib,
+  ...
 }:
-with lib; let
+with lib;
+let
   cfg = config.jd.applications.direnv;
 in
 {
@@ -16,6 +18,10 @@ in
   };
 
   config = mkIf (config.jd.applications.enable && cfg.enable) {
+    systemd.user.tmpfiles.rules = [
+      "e %C/direnv/layouts - - - 30d"
+    ];
+
     programs.direnv = {
       enable = true;
       nix-direnv.enable = true;
